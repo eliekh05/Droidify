@@ -1,104 +1,104 @@
 /* CSS Variables */
 :root {
-  --primary-color: #4285F4;
-  --secondary-color: #34A853;
-  --accent-color: #FBBC05;
-  --accent-color-hover: #e0a800;
-  --danger-color: #EA4335;
-  --dark-color: #333;
-  --light-color: #f8f9fa;
-  --gray-color: #6c757d;
+    --primary-color: #4285f4;
+    --secondary-color: #34a853;
+    --accent-color: #fbbc05;
+    --accent-color-hover: #e0a800;
+    --danger-color: #ea4335;
+    --dark-color: #333;
+    --light-color: #f8f9fa;
+    --gray-color: #6c757d;
 }
 
 /* Reset and base styles */
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Roboto", sans-serif;
 }
 
 body {
-  background-color: var(--light-color);
-  color: var(--dark-color);
-  width: 100%;
-  overflow-x: hidden;
+    background-color: var(--light-color);
+    color: var(--dark-color);
+    width: 100%;
+    overflow-x: hidden;
 }
 
 .container {
-  width: 90%;
-  max-width: 1200px;
-  margin: 0 auto;
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 .app {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  width: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    width: 100vm;
 }
 
 main {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
 }
 
 /* Section title styles */
 .section-title {
-  text-align: center;
-  margin-bottom: 3rem;
+    text-align: center;
+    margin-bottom: 3rem;
 }
 
 .section-title h2 {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-  color: var(--dark-color);
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--dark-color);
 }
 
 .section-title p {
-  color: var(--gray-color);
-  max-width: 800px;
-  margin: 0 auto;
+    color: var(--gray-color);
+    max-width: 800px;
+    margin: 0 auto;
 }
 
 /* Button styles */
 .btn {
-  display: inline-block;
-  padding: 1rem 2rem;
-  border-radius: 5px;
-  text-decoration: none;
-  font-weight: bold;
-  transition: all 0.3s;
-  cursor: pointer;
-  border: none;
+    display: inline-block;
+    padding: 1rem 2rem;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.3s;
+    cursor: pointer;
+    border: none;
 }
 
 .btn-primary {
-  background-color: white;
-  color: var(--primary-color);
+    background-color: white;
+    color: var(--primary-color);
 }
 
 .btn-primary:hover {
-  background-color: var(--light-color);
+    background-color: var(--light-color);
 }
 
 .btn-secondary {
-  background-color: transparent;
-  color: white;
-  border: 2px solid white;
+    background-color: transparent;
+    color: white;
+    border: 2px solid white;
 }
 
 .btn-secondary:hover {
-  background-color: rgba(255,255,255,0.1);
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 @media (max-width: 768px) {
-  .section-title h2 {
-    font-size: 2rem;
-  }
+    .section-title h2 {
+        font-size: 2rem;
+    }
 
-  .btn {
-    padding: 0.8rem 1.5rem;
-  }
+    .btn {
+        padding: 0.8rem 1.5rem;
+    }
 }
