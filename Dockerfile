@@ -10,8 +10,7 @@ ENV HOME=/home/user \
     SCRAPER_USER_AGENT="DroidifyBot/2.0" \
     SCRAPER_CONCURRENCY="10" \
     SCRAPER_TIMEOUT="20" \
-    CACHE_DEFAULT_TTL="300" \
-    FRONTEND_DIR="/home/user/app/frontend"
+    CACHE_DEFAULT_TTL="300"
 
 WORKDIR /home/user/app
 
@@ -24,8 +23,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 RUN apk del gcc musl-dev
 
+# Only copy the backend — frontend is embedded in app/frontend/
 COPY --chown=user:user backend/app ./app
-COPY --chown=user:user backend/frontend/ ./frontend/
 
 USER user
 

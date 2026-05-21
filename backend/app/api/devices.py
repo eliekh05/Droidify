@@ -23,7 +23,53 @@ async def list_devices(
 
     All merged and deduplicated. No auth required.
     """
-    return await get_devices(q=q, manufacturer=manufacturer, limit=limit, offset=offset)
+    result = await get_devices(q=q, manufacturer=manufacturer, limit=limit, offset=offset)
+
+    # Enrich each device with rom_count from the cached SourceForge/PE/uTWRP indexes
+    # Uses only already-cached data — no extra HTTP requests
+    try:
+        from app.scrapers.sourceforge_roms import get_sourceforge_roms
+        from app.scrapers.pixelexperience import get_pixelexperience_roms
+        from app.scrapers.unofficialtwrp import get_unofficialtwrp_devices
+        import re as _re
+
+        # Gather all ROM indexes (all cached after first warm-up)
+        sf_roms, pe_roms, utwrp_roms = await asyncio.gather(
+            get_sourceforge_roms(),
+            get_pixelexperience_roms(),
+            get_unofficialtwrp_devices(),
+            return_exceptions=True,
+        )
+
+        # Build codename → count maps
+        def _build_count_map(roms_list):
+            counts: dict[str, int] = {}
+            if not isinstance(roms_list, list):
+                return counts
+            for r in roms_list:
+                cn = _re.sub(r'[-_ .]', '', (r.get("codename") or "").lower())
+                if cn:
+                    counts[cn] = counts.get(cn, 0) + 1
+            return counts
+
+        sf_counts   = _build_count_map(sf_roms)
+        pe_counts   = _build_count_map(pe_roms)
+        utwrp_counts = _build_count_map(utwrp_roms)
+
+        for d in result["devices"]:
+            cn_n = _re.sub(r'[-_ .]', '', (d.get("codename") or "").lower())
+            # Count from SourceForge + PixelExperience + unofficialTWRP
+            sf_c   = sf_counts.get(cn_n, 0)
+            pe_c   = pe_counts.get(cn_n, 0)
+            utwrp_c = utwrp_counts.get(cn_n, 0)
+            # LineageOS counts from has_lineageos flag
+            los_c  = len(d.get("lineageos_branches", [])) if d.get("has_lineageos") else 0
+            d["rom_count"] = los_c + sf_c + pe_c + utwrp_c
+    except Exception:
+        # Non-fatal — device cards just won't show ROM count chips
+        pass
+
+    return result
 
 
 @router.get("/{codename}")

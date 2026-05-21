@@ -232,12 +232,21 @@ async def get_roms_for_device(codename: str) -> list[dict]:
 
     # Look up SourceForge global index (cached, no extra HTTP requests)
     try:
+        import re as _re
         from app.scrapers.sourceforge_roms import get_sourceforge_roms
         sf_all = await get_sourceforge_roms()
         cn_lower = codename.lower()
+        cn_norm = _re.sub(r'[-_ .]', '', cn_lower)
+        seen_sf = set()
         for r in sf_all:
-            if (r.get("codename") or "").lower() == cn_lower:
-                roms.append(r)
+            r_cn = (r.get("codename") or "").lower()
+            r_cn_norm = _re.sub(r'[-_ .]', '', r_cn)
+            # Exact match OR normalised match (handles SM-J701F vs smj701f)
+            if r_cn == cn_lower or (cn_norm and r_cn_norm == cn_norm):
+                key = (r.get("name"), r_cn)
+                if key not in seen_sf:
+                    seen_sf.add(key)
+                    roms.append(r)
     except Exception:
         pass
 

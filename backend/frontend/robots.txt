@@ -1,7 +1,0 @@
-User-agent: *
-Allow: /
-
-# API endpoints — allow indexing the docs page but not raw JSON
-Disallow: /api/
-
-Sitemap: https://your-domain.com/sitemap.xml

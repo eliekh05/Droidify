@@ -326,17 +326,32 @@ async def get_devices(
         devices = [d for d in devices if d["codename"].lower() == codename.lower()]
     if q:
         q_lower = q.lower()
-        # Normalise: strip hyphens/spaces so "j701f" matches "SM-J701F" and vice versa
-        q_norm = re.sub('[-_ ]', '', q_lower)
-        devices = [
-            d for d in devices
-            if q_lower in (d["codename"] or "").lower()
-            or q_lower in (d["model_name"] or "").lower()
-            or q_lower in (d["manufacturer"] or "").lower()
-            or q_norm in re.sub('[-_ ]', '', (d["model_name"] or "").lower())
-            or q_norm in re.sub('[-_ ]', '', (d["codename"] or "").lower())
-            or (d["codename"] or "").lower().startswith(q_lower)
-        ]
+        # Normalise: strip hyphens/spaces/dots so "j701f" matches "SM-J701F", "sm j701f", etc.
+        q_norm = re.sub(r'[-_ .+]', '', q_lower)
+        def _match(d):
+            cn    = (d.get("codename") or "").lower()
+            mn    = (d.get("model_name") or "").lower()
+            mfr   = (d.get("manufacturer") or "").lower()
+            cn_n  = re.sub(r'[-_ .+]', '', cn)
+            mn_n  = re.sub(r'[-_ .+]', '', mn)
+            # Direct substring matches
+            if q_lower in cn or q_lower in mn or q_lower in mfr:
+                return True
+            # Normalised substring matches (handles SM-J701F → j701f)
+            if q_norm and (q_norm in cn_n or q_norm in mn_n):
+                return True
+            # Prefix match on codename
+            if cn.startswith(q_lower) or cn_n.startswith(q_norm):
+                return True
+            # The search term could be a model number embedded in model_name
+            # e.g. searching "j701f" should match "Galaxy J7 (SM-J701F)" or just the codename "j7xelte"
+            if q_norm and len(q_norm) >= 3:
+                for part in re.split(r'[-_ ()]', mn):
+                    part_n = re.sub(r'[-_ .+]', '', part.lower())
+                    if part_n and q_norm in part_n:
+                        return True
+            return False
+        devices = [d for d in devices if _match(d)]
     if manufacturer:
         mfr_lower = manufacturer.lower()
         devices = [

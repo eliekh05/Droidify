@@ -1,18 +1,19 @@
-"""Droidify — FastAPI backend + frontend server.
+"""Droidify — FastAPI backend + embedded frontend.
 
-Single process: serves REST API at /api/* and static frontend files at /.
+Single process: serves REST API at /api/* and the entire frontend from
+Python string literals embedded in app/frontend/assets.py and pages.py.
+
+No filesystem reads at runtime — the /frontend directory is gone.
 All data fetched live from free public sources — zero hardcoded content.
 """
 import asyncio
 import logging
 import os
 from contextlib import asynccontextmanager
-from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api.devices import router as devices_router
@@ -21,15 +22,12 @@ from app.api.tools import router as tools_router
 from app.api.roms import router as roms_router
 from app.api.recoveries import router as recoveries_router
 from app.api.guides import router as guides_router
+from app.frontend.router import router as frontend_router
+from app.frontend import pages
 
 logging.basicConfig(
     level=logging.WARNING,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-)
-
-# Frontend directory — set via FRONTEND_DIR env var or auto-detect
-_FRONTEND = Path(
-    os.environ.get("FRONTEND_DIR", str(Path(__file__).parent.parent.parent / "frontend"))
 )
 
 
@@ -50,11 +48,10 @@ async def lifespan(app: FastAPI):
         except Exception:
             pass
 
-    # Fire cache warming in background — works with single or multi-worker
     try:
         asyncio.get_event_loop().create_task(_warm())
     except RuntimeError:
-        pass  # no running loop yet — cache warms on first request
+        pass
     yield
 
 
@@ -71,8 +68,10 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# CORS
-_cors_origins = [o.strip() for o in os.environ.get("CORS_ORIGINS", "*").split(",") if o.strip()]
+# ── CORS ──────────────────────────────────────────────────────────────────────
+_cors_origins = [
+    o.strip() for o in os.environ.get("CORS_ORIGINS", "*").split(",") if o.strip()
+]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_origins,
@@ -89,6 +88,7 @@ async def health():
         "version": "2.0.0",
         "hardcoded_data": False,
         "auth_required": False,
+        "frontend": "embedded",
     }
 
 
@@ -101,38 +101,19 @@ app.include_router(recoveries_router, prefix="/api/recoveries",       tags=["rec
 app.include_router(guides_router,     prefix="/api/guides",           tags=["guides"])
 
 
-# ── Frontend static files ─────────────────────────────────────────────────────
-# FastAPI serves the SPA directly — no nginx needed.
-# Clean URL mapping: /devices → devices.html, etc.
-_frontend = str(_FRONTEND)
+# ── Frontend router (embedded assets + HTML pages) ────────────────────────────
+# Must be included AFTER all /api/* routers so API paths take priority.
+app.include_router(frontend_router)
 
-if _FRONTEND.is_dir():
-    _clean_routes = {
-        "/":           "index.html",
-        "/devices":    "devices.html",
-        "/roms":       "roms.html",
-        "/recoveries": "recoveries.html",
-        "/tools":      "tools.html",
-        "/android":    "android.html",
-        "/guides":     "guides.html",
-    }
 
-    for _path, _file in _clean_routes.items():
-        _abs = os.path.join(_frontend, _file)
-        if os.path.exists(_abs):
-            def _make(p):
-                async def _h():
-                    return FileResponse(p, media_type="text/html")
-                return _h
-            app.get(_path, include_in_schema=False)(_make(_abs))
-
-    @app.exception_handler(StarletteHTTPException)
-    async def _404(request, exc):
-        if exc.status_code == 404:
-            p = os.path.join(_frontend, "404.html")
-            if os.path.exists(p):
-                return FileResponse(p, status_code=404, media_type="text/html")
-        raise exc
-
-    # Mount static assets (CSS, JS, icons, manifest, sw.js, robots.txt)
-    app.mount("/", StaticFiles(directory=_frontend, html=True), name="frontend")
+# ── 404 fallback — serve embedded 404 page ────────────────────────────────────
+@app.exception_handler(StarletteHTTPException)
+async def _http_exception_handler(request: Request, exc: StarletteHTTPException):
+    if exc.status_code == 404:
+        return HTMLResponse(content=pages.page_404, status_code=404)
+    # Re-raise everything else as a plain JSON error
+    from fastapi.responses import JSONResponse
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+    )
