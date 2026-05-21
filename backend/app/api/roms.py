@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Query
+import re
+from fastapi import APIRouter, HTTPException, Query
 from app.scrapers.roms import get_all_roms
 
 router = APIRouter()

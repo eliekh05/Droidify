@@ -1,0 +1,39 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*.pyo
+*.egg-info
+.eggs
+dist
+build
+
+# Envs
+.env
+.venv
+venv/
+ENV/
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docs (not needed in image)
+README.md
+LICENSE
+*.md
+
+# Dev scripts
+Makefile
+install.sh
+build.sh
+docker-compose.yml

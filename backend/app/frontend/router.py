@@ -35,7 +35,7 @@ def _text_response(
     extra_headers: dict | None = None,
 ) -> Response:
     tag = _etag(content)
-    headers = {"ETag": tag, "Cache-Control": "public, max-age=3600"}
+    headers = {"ETag": tag, "Cache-Control": "public, max-age=300, must-revalidate"}
     if extra_headers:
         headers.update(extra_headers)
     return Response(

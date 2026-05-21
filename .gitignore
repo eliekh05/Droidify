@@ -22,12 +22,16 @@ ENV/
 .vscode/
 *.swp
 *.swo
+
+# OS
 .DS_Store
 Thumbs.db
 
-# Docker
-.dockerignore
 
 # Logs
 *.log
-.DS_Store
+
+# Generated / runtime
+*.sqlite
+*.db
+/tmp/

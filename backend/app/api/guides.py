@@ -1,3 +1,4 @@
+import re
 from fastapi import APIRouter, Query, HTTPException
 from app.scrapers.guides import get_guides_for_device, get_all_guides
 

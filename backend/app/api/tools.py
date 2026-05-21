@@ -1,3 +1,4 @@
+import re
 from fastapi import APIRouter, Query
 from app.scrapers.tools import get_tools
 

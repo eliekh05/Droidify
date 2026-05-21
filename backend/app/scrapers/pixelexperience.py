@@ -3,7 +3,7 @@ Pixel Experience scraper
 Source: GitHub raw JSON — 148 devices with brand/name/codename/versions
 """
 import httpx
-from ..services.cache import cache_get, cache_set
+from ..services.cache import get as cache_get, set as cache_set
 
 _URL = "https://raw.githubusercontent.com/PixelExperience/official_devices/master/devices.json"
 

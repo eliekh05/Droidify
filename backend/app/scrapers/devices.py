@@ -16,6 +16,7 @@ from bs4 import BeautifulSoup
 from app.services.cache import cache_key, get as cache_get, set as cache_set
 from app.services.http import fetch, get_client
 
+
 # ── Source URLs ───────────────────────────────────────────────────────────────
 LOS_DEVICES_API    = "https://download.lineageos.org/api/v1/devices"
 LOS_WIKI_SEARCH    = "https://wiki.lineageos.org/search.json"

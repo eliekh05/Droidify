@@ -10,7 +10,7 @@ Uses WordPress REST API — no SourceForge, no scraping HTML.
 import re
 import httpx
 from bs4 import BeautifulSoup
-from ..services.cache import cache_get, cache_set
+from ..services.cache import get as cache_get, set as cache_set
 
 _API_BASE   = "https://unofficialtwrp.com/wp-json/wp/v2/posts"
 _PER_PAGE   = 100

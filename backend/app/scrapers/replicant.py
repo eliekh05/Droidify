@@ -5,7 +5,7 @@ Source: https://replicant.us/supported-devices.php
 import re
 import httpx
 from bs4 import BeautifulSoup
-from ..services.cache import cache_get, cache_set
+from ..services.cache import get as cache_get, set as cache_set
 
 _URL = "https://replicant.us/supported-devices.php"
 

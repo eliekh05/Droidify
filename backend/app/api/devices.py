@@ -1,4 +1,5 @@
 import asyncio
+import re
 from fastapi import APIRouter, Query, HTTPException
 from app.scrapers.devices import get_devices, get_device_detail
 from app.scrapers.roms import get_roms_for_device, LOS_BRANCH_TO_ANDROID
@@ -7,13 +8,21 @@ from app.scrapers.recoveries import get_recovery_for_device
 router = APIRouter()
 
 
+# Only allow safe characters in search — codename/model chars only
+_SAFE_Q  = re.compile(r"[^a-zA-Z0-9 _.+\-]")
+_SAFE_CN = re.compile(r"[^a-zA-Z0-9_\-]")
+
+
 @router.get("")
 async def list_devices(
-    q:            str | None = Query(None, description="Search by model, codename, or manufacturer"),
-    manufacturer: str | None = Query(None, description="Filter by manufacturer"),
-    limit:        int        = Query(50, ge=1, le=200),
-    offset:       int        = Query(0, ge=0),
+    q:            str | None = Query(None, min_length=1, max_length=64,  description="Search by model, codename, or manufacturer"),
+    manufacturer: str | None = Query(None, min_length=1, max_length=64,  description="Filter by manufacturer"),
+    limit:        int        = Query(50,   ge=1, le=200),
+    offset:       int        = Query(0,    ge=0),
 ):
+    # Strip any character that has no business being in a device search
+    if q:            q            = _SAFE_Q.sub("", q).strip()[:64]  or None
+    if manufacturer: manufacturer = _SAFE_Q.sub("", manufacturer).strip()[:64] or None
     """
     Live device index from:
     - LineageOS Download API (281 codenames, active ROM branches)
@@ -74,6 +83,9 @@ async def list_devices(
 
 @router.get("/{codename}")
 async def get_device(codename: str):
+    # Codenames are alphanumeric + underscore/hyphen only — reject anything else
+    if not re.fullmatch(r"[a-zA-Z0-9_\-]{1,64}", codename):
+        raise HTTPException(status_code=400, detail="Invalid codename.")
     """
     Full device detail including hardware specs (from LineageOS Wiki),
     available ROMs, and recovery options. All fetched live.

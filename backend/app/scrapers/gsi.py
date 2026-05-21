@@ -8,7 +8,7 @@ Sources:
 - Google AOSP GSI
 - Known major GSI-compatible ROM projects
 """
-from ..services.cache import cache_get, cache_set
+from ..services.cache import get as cache_get, set as cache_set
 
 # Major GSI ROM projects with verified download links
 GSI_ROMS = [
