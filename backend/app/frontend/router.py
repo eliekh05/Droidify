@@ -156,6 +156,21 @@ async def serve_icon_512():
     return _binary_response(assets.icon_512_b64, "image/png")
 
 
+# Browsers auto-probe these — 404s spam logs and break iOS PWA icon
+@router.get("/favicon.ico", include_in_schema=False)
+async def serve_favicon_ico():
+    return _binary_response(assets.favicon_ico_b64, "image/x-icon")
+
+
+@router.get("/apple-touch-icon.png", include_in_schema=False)
+@router.get("/apple-touch-icon-precomposed.png", include_in_schema=False)
+@router.get("/apple-touch-icon-120x120.png", include_in_schema=False)
+@router.get("/apple-touch-icon-120x120-precomposed.png", include_in_schema=False)
+async def serve_apple_touch_icon():
+    # 180x180 PNG — Safari uses this for home screen / dock icon
+    return _binary_response(assets.apple_touch_b64, "image/png")
+
+
 # ── HTML pages ────────────────────────────────────────────────────────────────
 
 @router.get("/", include_in_schema=False)

@@ -10,6 +10,9 @@ index = """<!DOCTYPE html>
   <link rel="stylesheet" href="/css/style.css" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta name="theme-color" content="#3dd68c" />
   <script>
     // Safari "Request Desktop Site" fix
@@ -298,6 +301,9 @@ devices = """<!DOCTYPE html>
   <link rel="stylesheet" href="/css/style.css" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta name="theme-color" content="#3dd68c" />
   <script>
     // Safari "Request Desktop Site" fix
@@ -518,6 +524,9 @@ device = """<!DOCTYPE html>
   <link rel="stylesheet" href="/css/style.css" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta name="theme-color" content="#3dd68c" />
   <script>
     // Safari "Request Desktop Site" fix
@@ -704,6 +713,9 @@ roms = """<!DOCTYPE html>
   <link rel="stylesheet" href="/css/style.css" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta name="theme-color" content="#3dd68c" />
   <script>
     // Safari "Request Desktop Site" fix
@@ -894,6 +906,9 @@ recoveries = """<!DOCTYPE html>
   <link rel="stylesheet" href="/css/style.css" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta name="theme-color" content="#3dd68c" />
   <script>
     // Safari "Request Desktop Site" fix
@@ -1082,6 +1097,9 @@ tools = """<!DOCTYPE html>
   <link rel="stylesheet" href="/css/style.css" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta name="theme-color" content="#3dd68c" />
   <script>
     // Safari "Request Desktop Site" fix
@@ -1271,6 +1289,9 @@ android = """<!DOCTYPE html>
   <link rel="stylesheet" href="/css/style.css" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta name="theme-color" content="#3dd68c" />
   <script>
     // Safari "Request Desktop Site" fix
@@ -1485,6 +1506,9 @@ guides = """<!DOCTYPE html>
   <link rel="stylesheet" href="/css/style.css" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta name="theme-color" content="#3dd68c" />
   <style>
     .guide-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 1rem; overflow: hidden; }
@@ -1722,6 +1746,9 @@ page_404 = """<!DOCTYPE html>
   <link rel="stylesheet" href="/css/style.css" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta name="theme-color" content="#3dd68c" />
   <script>
     // Safari "Request Desktop Site" fix
