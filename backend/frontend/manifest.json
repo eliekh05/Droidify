@@ -1,0 +1,82 @@
+{
+  "id": "droidify-android-rom-index",
+  "name": "Droidify — Android ROM & Device Index",
+  "short_name": "Droidify",
+  "description": "Live Android ROM, device, recovery and tool indexer. Browse 1000+ ROMs, 1100+ devices. No signin. No payment.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "background_color": "#0b0f14",
+  "theme_color": "#3dd68c",
+  "orientation": "portrait-primary",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["utilities", "technology", "productivity"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Devices",
+      "short_name": "Devices",
+      "description": "Browse Android devices",
+      "url": "/devices.html",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "ROMs",
+      "short_name": "ROMs",
+      "description": "Browse custom ROMs",
+      "url": "/roms.html",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Guides",
+      "short_name": "Guides",
+      "description": "Flashing and rooting guides",
+      "url": "/guides.html",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Recoveries",
+      "short_name": "TWRP",
+      "description": "Browse custom recoveries",
+      "url": "/recoveries.html",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Droidify home screen"
+    }
+  ],
+  "prefer_related_applications": false
+}
