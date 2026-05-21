@@ -213,67 +213,7 @@ async def _check_eos(client, codename: str) -> dict | None:
 
 
 # ── Per-device ROM check ──────────────────────────────────────────────────────
-async def get_roms_for_device(codename: str) -> list[dict]:
-    ck = f"roms:{codename}"
-    cached = await cache_get(ck)
-    if cached is not None:
-        return cached
-
-    async with get_client() as client:
-        results = await asyncio.gather(
-            _check_grapheneos(client, codename),
-            _check_crdroid(client, codename),
-            _check_divestos(client, codename),
-            _check_calyxos(client, codename),
-            _check_eos(client, codename),
-        )
-
-    roms = [r for r in results if r]
-
-    # Look up SourceForge global index (cached, no extra HTTP requests)
-    try:
-        import re as _re
-        from app.scrapers.sourceforge_roms import get_sourceforge_roms
-        sf_all = await get_sourceforge_roms()
-        cn_lower = codename.lower()
-        cn_norm = _re.sub(r'[-_ .]', '', cn_lower)
-        seen_sf = set()
-        for r in sf_all:
-            r_cn = (r.get("codename") or "").lower()
-            r_cn_norm = _re.sub(r'[-_ .]', '', r_cn)
-            # Exact match OR normalised match (handles SM-J701F vs smj701f)
-            if r_cn == cn_lower or (cn_norm and r_cn_norm == cn_norm):
-                key = (r.get("name"), r_cn)
-                if key not in seen_sf:
-                    seen_sf.add(key)
-                    roms.append(r)
-    except Exception:
-        pass
-
-    # Look up unofficialTWRP index (cached, no extra HTTP requests)
-    try:
-        from app.scrapers.unofficialtwrp import get_unofficialtwrp_devices
-        utwrp_all = await get_unofficialtwrp_devices()
-        cn_lower = codename.lower()
-        for r in utwrp_all:
-            if (r.get("codename") or "").lower() == cn_lower:
-                roms.append(r)
-    except Exception:
-        pass
-
-    # Look up Pixel Experience index
-    try:
-        from app.scrapers.pixelexperience import get_pixelexperience_roms
-        pe_all = await get_pixelexperience_roms()
-        cn_lower = codename.lower()
-        for r in pe_all:
-            if (r.get("codename") or "").lower() == cn_lower:
-                roms.append(r)
-    except Exception:
-        pass
-
-    await cache_set(ck, roms, ttl=1800)
-    return roms
+# get_roms_for_device defined below (merged)
 
 
 # ── Global ROM index ──────────────────────────────────────────────────────────
@@ -440,17 +380,19 @@ async def _check_pixelexperience(codename: str) -> dict | None:
     return None
 
 
-# Monkey-patch get_roms_for_device to include new sources
-_original_get_roms_for_device = get_roms_for_device
-
-
 async def get_roms_for_device(codename: str) -> list[dict]:
-    """Fetch all available ROMs for a device — all sources."""
-    ck = f"roms_v2:{codename}"
+    """Fetch all available ROMs for a device — all sources merged."""
+    import re as _re
+
+    ck = f"roms:{codename}"
     cached = await cache_get(ck)
     if cached is not None:
         return cached
 
+    cn_lower = codename.lower()
+    cn_norm  = _re.sub(r'[-_ .]', '', cn_lower)
+
+    # ── Per-device async checks ───────────────────────────────────────────────
     async with get_client() as client:
         results = await asyncio.gather(
             _check_grapheneos(client, codename),
@@ -458,12 +400,59 @@ async def get_roms_for_device(codename: str) -> list[dict]:
             _check_divestos(client, codename),
             _check_calyxos(client, codename),
             _check_eos(client, codename),
+            return_exceptions=True,
+        )
+    roms = [r for r in results if r and not isinstance(r, Exception)]
+
+    # ── Cached global indexes (no extra HTTP after first warm-up) ─────────────
+    # SourceForge — 26 ROM projects, normalised codename match
+    try:
+        from app.scrapers.sourceforge_roms import get_sourceforge_roms
+        seen = set()
+        for r in await get_sourceforge_roms():
+            r_cn   = (r.get("codename") or "").lower()
+            r_norm = _re.sub(r'[-_ .]', '', r_cn)
+            if r_cn == cn_lower or (cn_norm and r_norm == cn_norm):
+                key = (r.get("name"), r_cn)
+                if key not in seen:
+                    seen.add(key)
+                    roms.append(r)
+    except Exception:
+        pass
+
+    # unofficialTWRP — WordPress API index
+    try:
+        from app.scrapers.unofficialtwrp import get_unofficialtwrp_devices
+        for r in await get_unofficialtwrp_devices():
+            r_cn   = (r.get("codename") or "").lower()
+            r_norm = _re.sub(r'[-_ .]', '', r_cn)
+            if r_cn == cn_lower or (cn_norm and r_norm == cn_norm):
+                roms.append(r)
+    except Exception:
+        pass
+
+    # Pixel Experience — GitHub JSON index
+    try:
+        from app.scrapers.pixelexperience import get_pixelexperience_roms
+        for r in await get_pixelexperience_roms():
+            r_cn   = (r.get("codename") or "").lower()
+            r_norm = _re.sub(r'[-_ .]', '', r_cn)
+            if r_cn == cn_lower or (cn_norm and r_norm == cn_norm):
+                roms.append(r)
+    except Exception:
+        pass
+
+    # Ubuntu Touch, NetHunter, postmarketOS
+    try:
+        extra = await asyncio.gather(
             _check_ubports(codename),
             _check_nethunter(codename),
             _check_postmarketos(codename),
-            _check_pixelexperience(codename),
+            return_exceptions=True,
         )
+        roms += [r for r in extra if r and not isinstance(r, Exception)]
+    except Exception:
+        pass
 
-    roms = [r for r in results if r]
     await cache_set(ck, roms, ttl=1800)
     return roms
