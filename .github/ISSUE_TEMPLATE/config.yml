@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Hosted version (no Docker needed)
+    url: https://eliekh05-droidify.hf.space
+    about: Use the live hosted version if Docker is blocked on your network.
