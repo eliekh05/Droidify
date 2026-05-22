@@ -147,6 +147,21 @@ async def serve_favicon():
 
 
 @router.get("/icons/icon-192.png", include_in_schema=False)
+def _head_response(content_length: int, media_type: str, etag: str) -> Response:
+    """Correct HEAD response — headers only, no body, no Content-Length mismatch."""
+    return Response(
+        content=b"",
+        status_code=200,
+        media_type=media_type,
+        headers={
+            "ETag": etag,
+            "Cache-Control": "public, max-age=86400",
+            "Content-Length": str(content_length),
+            "X-Content-Type-Options": "nosniff",
+        },
+    )
+
+
 async def serve_icon_192():
     return _binary_response(assets.icon_192_b64, "image/png")
 
@@ -235,3 +250,98 @@ async def privacy_page():
 async def serve_404():
     from fastapi.responses import HTMLResponse
     return HTMLResponse(content=pages.page_404, status_code=404)
+
+
+# ── HEAD routes for all static assets ───────────────────────────────────────
+# Required because FastAPI doesn't auto-support HEAD on GET routes (issue #1773)
+# BaseHTTPMiddleware approach causes Content-Length mismatch crash
+# Explicit routes are the only correct fix
+
+@router.head("/css/style.css", include_in_schema=False)
+async def head_style():
+    return _head_response(48136, "text/css", "b83ee84fc705538c")
+
+@router.head("/js/api.js", include_in_schema=False)
+async def head_api_js():
+    return _head_response(11983, "application/javascript", "7355be8533a24e8b")
+
+@router.head("/js/home.js", include_in_schema=False)
+async def head_home_js():
+    return _head_response(8594, "application/javascript", "89532eb9c5ebc57e")
+
+@router.head("/js/devices.js", include_in_schema=False)
+async def head_devices_js():
+    return _head_response(3277, "application/javascript", "0a8adce0b731f774")
+
+@router.head("/js/device-detail.js", include_in_schema=False)
+async def head_device_detail_js():
+    return _head_response(5569, "application/javascript", "bb5633c4b63d27a9")
+
+@router.head("/js/roms.js", include_in_schema=False)
+async def head_roms_js():
+    return _head_response(3391, "application/javascript", "564d7f2fd6120668")
+
+@router.head("/js/recoveries.js", include_in_schema=False)
+async def head_recoveries_js():
+    return _head_response(3348, "application/javascript", "e1569b3062510723")
+
+@router.head("/js/tools.js", include_in_schema=False)
+async def head_tools_js():
+    return _head_response(3120, "application/javascript", "bb6a10e5877d19b5")
+
+@router.head("/js/android.js", include_in_schema=False)
+async def head_android_js():
+    return _head_response(3342, "application/javascript", "d7946b948de5e433")
+
+@router.head("/js/guides.js", include_in_schema=False)
+async def head_guides_js():
+    return _head_response(6197, "application/javascript", "969823a926e6921f")
+
+@router.head("/manifest.json", include_in_schema=False)
+async def head_manifest():
+    return _head_response(4259, "application/manifest+json", "dc2ca8cba08837e2")
+
+@router.head("/sw.js", include_in_schema=False)
+async def head_sw():
+    return _head_response(1854, "application/javascript", "571b131ccadd6eec")
+
+@router.head("/robots.txt", include_in_schema=False)
+async def head_robots():
+    return _head_response(152, "text/plain", "a6d4626541b6e8db")
+
+@router.head("/favicon.svg", include_in_schema=False)
+async def head_favicon_svg():
+    return _head_response(1038, "image/svg+xml", "b729d0176f3e030b")
+
+@router.head("/icons/icon-192.png", include_in_schema=False)
+async def head_icon_192():
+    return _head_response(7507, "image/png", "433934e66890920a")
+
+@router.head("/icons/icon-512.png", include_in_schema=False)
+async def head_icon_512():
+    return _head_response(21218, "image/png", "925bd126dea7177a")
+
+@router.head("/favicon.ico", include_in_schema=False)
+async def head_favicon_ico():
+    return _head_response(774, "image/x-icon", "113e6f0207a6d1e7")
+
+@router.head("/apple-touch-icon.png", include_in_schema=False)
+@router.head("/apple-touch-icon-precomposed.png", include_in_schema=False)
+@router.head("/apple-touch-icon-120x120.png", include_in_schema=False)
+@router.head("/apple-touch-icon-120x120-precomposed.png", include_in_schema=False)
+async def head_apple_touch():
+    return _head_response(12251, "image/png", "ec9ca45fa405bec8")
+
+@router.head("/", include_in_schema=False)
+@router.head("/index.html", include_in_schema=False)
+@router.head("/devices.html", include_in_schema=False)
+@router.head("/device.html", include_in_schema=False)
+@router.head("/roms.html", include_in_schema=False)
+@router.head("/recoveries.html", include_in_schema=False)
+@router.head("/tools.html", include_in_schema=False)
+@router.head("/android.html", include_in_schema=False)
+@router.head("/guides.html", include_in_schema=False)
+@router.head("/privacy.html", include_in_schema=False)
+async def head_html_pages():
+    """HEAD for HTML pages — return 200 with no body."""
+    return Response(status_code=200, headers={"Content-Type": "text/html; charset=utf-8"})
