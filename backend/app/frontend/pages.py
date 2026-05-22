@@ -245,7 +245,26 @@ index = """<!DOCTYPE html>
 <script src="/js/api.js"></script>
 <script src="/js/home.js"></script>
 <script>
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js").then(reg => {
+    // Background Sync — retry failed searches when back online
+    if ("sync" in reg) {
+      navigator.serviceWorker.addEventListener("message", e => {
+        if (e.data?.type === "SYNC_COMPLETE") {
+          // Re-run last search if page has a search input
+          const q = document.getElementById("global-search") ||
+                    document.getElementById("search-input");
+          if (q && q.value) q.dispatchEvent(new Event("input"));
+        }
+      });
+    }
+    // Periodic Background Sync — refresh data in background
+    if ("periodicSync" in reg) {
+      reg.periodicSync.register("droidify-refresh", { minInterval: 24 * 60 * 60 * 1000 })
+        .catch(() => {}); // Permission may be denied — silent fail is correct
+    }
+  }).catch(() => {});
+}
 </script>
 <script>
 // ── Hamburger menu ──────────────────────────────────────────────────────────
@@ -468,7 +487,26 @@ devices = """<!DOCTYPE html>
 <script src="/js/api.js"></script>
 <script src="/js/devices.js"></script>
 <script>
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js").then(reg => {
+    // Background Sync — retry failed searches when back online
+    if ("sync" in reg) {
+      navigator.serviceWorker.addEventListener("message", e => {
+        if (e.data?.type === "SYNC_COMPLETE") {
+          // Re-run last search if page has a search input
+          const q = document.getElementById("global-search") ||
+                    document.getElementById("search-input");
+          if (q && q.value) q.dispatchEvent(new Event("input"));
+        }
+      });
+    }
+    // Periodic Background Sync — refresh data in background
+    if ("periodicSync" in reg) {
+      reg.periodicSync.register("droidify-refresh", { minInterval: 24 * 60 * 60 * 1000 })
+        .catch(() => {}); // Permission may be denied — silent fail is correct
+    }
+  }).catch(() => {});
+}
 </script>
 <script>
 // ── Hamburger menu ──────────────────────────────────────────────────────────
@@ -657,7 +695,26 @@ device = """<!DOCTYPE html>
 <script src="/js/api.js"></script>
 <script src="/js/device-detail.js"></script>
 <script>
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js").then(reg => {
+    // Background Sync — retry failed searches when back online
+    if ("sync" in reg) {
+      navigator.serviceWorker.addEventListener("message", e => {
+        if (e.data?.type === "SYNC_COMPLETE") {
+          // Re-run last search if page has a search input
+          const q = document.getElementById("global-search") ||
+                    document.getElementById("search-input");
+          if (q && q.value) q.dispatchEvent(new Event("input"));
+        }
+      });
+    }
+    // Periodic Background Sync — refresh data in background
+    if ("periodicSync" in reg) {
+      reg.periodicSync.register("droidify-refresh", { minInterval: 24 * 60 * 60 * 1000 })
+        .catch(() => {}); // Permission may be denied — silent fail is correct
+    }
+  }).catch(() => {});
+}
 </script>
 <script>
 // ── Hamburger menu ──────────────────────────────────────────────────────────
@@ -843,7 +900,26 @@ roms = """<!DOCTYPE html>
 <script src="/js/api.js"></script>
 <script src="/js/roms.js"></script>
 <script>
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js").then(reg => {
+    // Background Sync — retry failed searches when back online
+    if ("sync" in reg) {
+      navigator.serviceWorker.addEventListener("message", e => {
+        if (e.data?.type === "SYNC_COMPLETE") {
+          // Re-run last search if page has a search input
+          const q = document.getElementById("global-search") ||
+                    document.getElementById("search-input");
+          if (q && q.value) q.dispatchEvent(new Event("input"));
+        }
+      });
+    }
+    // Periodic Background Sync — refresh data in background
+    if ("periodicSync" in reg) {
+      reg.periodicSync.register("droidify-refresh", { minInterval: 24 * 60 * 60 * 1000 })
+        .catch(() => {}); // Permission may be denied — silent fail is correct
+    }
+  }).catch(() => {});
+}
 </script>
 <script>
 // ── Hamburger menu ──────────────────────────────────────────────────────────
@@ -1034,7 +1110,26 @@ recoveries = """<!DOCTYPE html>
 <script src="/js/api.js"></script>
 <script src="/js/recoveries.js"></script>
 <script>
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js").then(reg => {
+    // Background Sync — retry failed searches when back online
+    if ("sync" in reg) {
+      navigator.serviceWorker.addEventListener("message", e => {
+        if (e.data?.type === "SYNC_COMPLETE") {
+          // Re-run last search if page has a search input
+          const q = document.getElementById("global-search") ||
+                    document.getElementById("search-input");
+          if (q && q.value) q.dispatchEvent(new Event("input"));
+        }
+      });
+    }
+    // Periodic Background Sync — refresh data in background
+    if ("periodicSync" in reg) {
+      reg.periodicSync.register("droidify-refresh", { minInterval: 24 * 60 * 60 * 1000 })
+        .catch(() => {}); // Permission may be denied — silent fail is correct
+    }
+  }).catch(() => {});
+}
 </script>
 <script>
 // ── Hamburger menu ──────────────────────────────────────────────────────────
@@ -1226,7 +1321,26 @@ tools = """<!DOCTYPE html>
 <script src="/js/api.js"></script>
 <script src="/js/tools.js"></script>
 <script>
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js").then(reg => {
+    // Background Sync — retry failed searches when back online
+    if ("sync" in reg) {
+      navigator.serviceWorker.addEventListener("message", e => {
+        if (e.data?.type === "SYNC_COMPLETE") {
+          // Re-run last search if page has a search input
+          const q = document.getElementById("global-search") ||
+                    document.getElementById("search-input");
+          if (q && q.value) q.dispatchEvent(new Event("input"));
+        }
+      });
+    }
+    // Periodic Background Sync — refresh data in background
+    if ("periodicSync" in reg) {
+      reg.periodicSync.register("droidify-refresh", { minInterval: 24 * 60 * 60 * 1000 })
+        .catch(() => {}); // Permission may be denied — silent fail is correct
+    }
+  }).catch(() => {});
+}
 </script>
 <script>
 // ── Hamburger menu ──────────────────────────────────────────────────────────
@@ -1443,7 +1557,26 @@ android = """<!DOCTYPE html>
 <script src="/js/api.js"></script>
 <script src="/js/android.js"></script>
 <script>
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js").then(reg => {
+    // Background Sync — retry failed searches when back online
+    if ("sync" in reg) {
+      navigator.serviceWorker.addEventListener("message", e => {
+        if (e.data?.type === "SYNC_COMPLETE") {
+          // Re-run last search if page has a search input
+          const q = document.getElementById("global-search") ||
+                    document.getElementById("search-input");
+          if (q && q.value) q.dispatchEvent(new Event("input"));
+        }
+      });
+    }
+    // Periodic Background Sync — refresh data in background
+    if ("periodicSync" in reg) {
+      reg.periodicSync.register("droidify-refresh", { minInterval: 24 * 60 * 60 * 1000 })
+        .catch(() => {}); // Permission may be denied — silent fail is correct
+    }
+  }).catch(() => {});
+}
 </script>
 <script>
 // ── Hamburger menu ──────────────────────────────────────────────────────────
@@ -1683,7 +1816,26 @@ guides = """<!DOCTYPE html>
 <script src="/js/api.js"></script>
 <script src="/js/guides.js"></script>
 <script>
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js").then(reg => {
+    // Background Sync — retry failed searches when back online
+    if ("sync" in reg) {
+      navigator.serviceWorker.addEventListener("message", e => {
+        if (e.data?.type === "SYNC_COMPLETE") {
+          // Re-run last search if page has a search input
+          const q = document.getElementById("global-search") ||
+                    document.getElementById("search-input");
+          if (q && q.value) q.dispatchEvent(new Event("input"));
+        }
+      });
+    }
+    // Periodic Background Sync — refresh data in background
+    if ("periodicSync" in reg) {
+      reg.periodicSync.register("droidify-refresh", { minInterval: 24 * 60 * 60 * 1000 })
+        .catch(() => {}); // Permission may be denied — silent fail is correct
+    }
+  }).catch(() => {});
+}
 </script>
 <script>
 // ── Hamburger menu ──────────────────────────────────────────────────────────
@@ -1866,7 +2018,26 @@ page_404 = """<!DOCTYPE html>
   <div class="container"><p>Droidify — Android Ecosystem Indexer</p></div>
 </footer>
 <script>
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js").then(reg => {
+    // Background Sync — retry failed searches when back online
+    if ("sync" in reg) {
+      navigator.serviceWorker.addEventListener("message", e => {
+        if (e.data?.type === "SYNC_COMPLETE") {
+          // Re-run last search if page has a search input
+          const q = document.getElementById("global-search") ||
+                    document.getElementById("search-input");
+          if (q && q.value) q.dispatchEvent(new Event("input"));
+        }
+      });
+    }
+    // Periodic Background Sync — refresh data in background
+    if ("periodicSync" in reg) {
+      reg.periodicSync.register("droidify-refresh", { minInterval: 24 * 60 * 60 * 1000 })
+        .catch(() => {}); // Permission may be denied — silent fail is correct
+    }
+  }).catch(() => {});
+}
 </script>
 <script>
 // ── Hamburger menu ──────────────────────────────────────────────────────────

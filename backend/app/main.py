@@ -13,6 +13,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response as _StarletteResponse
 from fastapi.responses import HTMLResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -55,6 +57,26 @@ async def lifespan(app: FastAPI):
     yield
 
 
+class _HeadToGet(BaseHTTPMiddleware):
+    """Answers HEAD requests for static asset routes.
+    FastAPI doesn't auto-handle HEAD on GET routes (issue #1773).
+    This middleware converts HEAD→GET, runs the handler, strips the body."""
+    _STATIC_PREFIXES = ("/css/", "/js/", "/icons/", "/favicon", "/apple-touch",
+                        "/manifest.json", "/sw.js", "/robots.txt")
+
+    async def dispatch(self, request, call_next):
+        if request.method == "HEAD" and any(
+            request.url.path.startswith(p) for p in self._STATIC_PREFIXES
+        ):
+            request.scope["method"] = "GET"
+            response = await call_next(request)
+            return _StarletteResponse(
+                status_code=response.status_code,
+                headers=dict(response.headers),
+            )
+        return await call_next(request)
+
+
 app = FastAPI(
     lifespan=lifespan,
     title="Droidify API",
@@ -72,6 +94,7 @@ app = FastAPI(
 _cors_origins = [
     o.strip() for o in os.environ.get("CORS_ORIGINS", "*").split(",") if o.strip()
 ]
+app.add_middleware(_HeadToGet)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_origins,
