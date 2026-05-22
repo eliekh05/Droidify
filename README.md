@@ -4,7 +4,7 @@ emoji: 💻
 colorFrom: green
 colorTo: gray
 sdk: docker
-app_port: 7860
+app_port: 8000
 pinned: false
 license: mit
 short_description: Live Android ROM & device indexer. No signin. No payment.
