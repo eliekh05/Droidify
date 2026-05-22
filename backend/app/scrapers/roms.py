@@ -454,5 +454,19 @@ async def get_roms_for_device(codename: str) -> list[dict]:
     except Exception:
         pass
 
+    # Community ROMs — Evolution X, DerpFest, Project Elixir, ArrowOS, PixelOS,
+    # HavocOS, VoltageOS, AncientOS, AlphaDroid, StagOS, DotOS, LMODroid,
+    # BlissROMs, CarbonROM, ProtonAOSP
+    try:
+        from app.scrapers.community_roms import get_all_community_roms
+        community = await get_all_community_roms()
+        for r in community:
+            r_cn   = (r.get("codename") or "").lower()
+            r_norm = _re.sub(r'[-_ .]', '', r_cn)
+            if r_cn == cn_lower or (cn_norm and r_norm == cn_norm):
+                roms.append(r)
+    except Exception:
+        pass
+
     await cache_set(ck, roms, ttl=1800)
     return roms
