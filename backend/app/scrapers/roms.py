@@ -1,3 +1,5 @@
+import logging
+_log = logging.getLogger(__name__)
 """ROM scraper — fetches live ROM data from free public sources.
 
 Download URL policy (verified May 2026):
@@ -333,32 +335,31 @@ async def get_all_roms(
             pass
 
         # SourceForge ROM projects — one request per project, no per-device loops
-        # crDroid(307) + EvoX(106) + HavocOS(191) + CorvusOS(33) + others = ~665
         try:
             from app.scrapers.sourceforge_roms import get_sourceforge_roms
             sf_roms = await get_sourceforge_roms()
             all_roms.extend(sf_roms)
-        except Exception:
-            pass
+            _log.info("SF roms: %d", len(sf_roms))
+        except Exception as e:
+            _log.warning("SF roms failed: %s", e)
 
         # Unofficial TWRP — 6,204 posts via WordPress REST API
-        # Covers Tecno, Oppo, Infinix, Xiaomi, Samsung, Motorola + 70 more brands
         try:
             from app.scrapers.unofficialtwrp import get_unofficialtwrp_devices
             utwrp = await get_unofficialtwrp_devices()
             all_roms.extend(utwrp)
-        except Exception:
-            pass
+            _log.info("uTWRP roms: %d", len(utwrp))
+        except Exception as e:
+            _log.warning("uTWRP roms failed: %s", e)
 
-        # Community ROMs — Evolution X, DerpFest, Project Elixir, ArrowOS,
-        # PixelOS, HavocOS, VoltageOS, AncientOS, AlphaDroid, StagOS, DotOS,
-        # LMODroid, BlissROMs, CarbonROM, ProtonAOSP
+        # Community ROMs — Evolution X, DerpFest, Project Elixir, ArrowOS, etc.
         try:
             from app.scrapers.community_roms import get_all_community_roms
             community = await get_all_community_roms()
             all_roms.extend(community)
-        except Exception:
-            pass
+            _log.info("Community roms: %d", len(community))
+        except Exception as e:
+            _log.warning("Community roms failed: %s", e)
 
         await cache_set(ck, all_roms, ttl=600)
         cached = all_roms

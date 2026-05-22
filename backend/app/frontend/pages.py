@@ -2276,6 +2276,36 @@ def privacy():
 </footer>
 
 <script src="/js/api.js"></script>
+<script>
+// ── Loading screen ──────────────────────────────────────────────────────────
+(function() {
+  const screen = document.getElementById('ls');
+  if (!screen) return;
+  let _hidden = false;
+  const hide = () => {
+    if (_hidden) return;
+    _hidden = true;
+    screen.classList.add('ls-hide');
+    setTimeout(() => screen.remove(), 450);
+  };
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => setTimeout(hide, 800));
+  } else {
+    setTimeout(hide, 800);
+  }
+  if (window.location.protocol === 'file:') { hide(); }
+  setTimeout(hide, 4000);
+})();
 
+// ── Nav toggle ────────────────────────────────────────────────────────────
+const _nt = document.getElementById('nav-toggle');
+const _nm = document.getElementById('main-nav');
+if (_nt && _nm) {
+  _nt.addEventListener('click', () => {
+    const open = _nm.classList.toggle('nav-open');
+    _nt.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+}
+</script>
 </body>
 </html>"""
