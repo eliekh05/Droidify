@@ -2238,7 +2238,7 @@ def privacy():
 
     <section>
       <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:.6rem">What the server sees</h2>
-      <p style="color:var(--muted);line-height:1.7">Like any web server, Droidify's host (Hugging Face Spaces) receives your IP address and User-Agent string as part of the HTTP request. These are standard web logs retained by the hosting provider under their own <a href="https://huggingface.co/privacy" target="_blank" rel="noopener">privacy policy</a>. Droidify itself does not store, process, or analyse these logs.</p>
+      <p style="color:var(--muted);line-height:1.7">Like any web server, Like any web server, Droidify's host receives your IP address and User-Agent string as part of the HTTP request. These are standard web logs retained by the hosting provider. Droidify itself does not store, process, or analyse these logs.</p>
     </section>
 
     <section>

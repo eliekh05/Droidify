@@ -24,5 +24,5 @@ labels: bug
 
 ## Checklist
 
-- [ ] Tried [eliekh05-droidify.hf.space](https://eliekh05-droidify.hf.space)
+- [ ] Tried [eliekh05-droidify.hf.space](https://droidify.app)
 - [ ] Checked `docker compose logs` for errors

@@ -467,6 +467,7 @@ async def get_all_community_roms() -> list[dict]:
     if c := await cache_get(ck): return c
 
     scrapers = [
+        # Established sources
         get_evolution_x_roms(),
         get_derpfest_roms(),
         get_project_elixir_roms(),
@@ -482,6 +483,18 @@ async def get_all_community_roms() -> list[dict]:
         get_blissroms_roms(),
         get_carbonrom_roms(),
         get_protonaosp_roms(),
+        # New from Awesome-CustomROM list
+        get_project_matrixx_roms(),
+        get_axionos_roms(),
+        get_infinity_x_roms(),
+        get_risingos_roms(),
+        get_paranoid_android_roms(),
+        get_nusantara_roms(),
+        get_cherish_roms(),
+        get_cipheros_roms(),
+        get_aosp_extended_roms(),
+        get_droidx_ui_roms(),
+        get_euclidos_roms(),
     ]
 
     results_nested = await asyncio.gather(*scrapers, return_exceptions=True)
@@ -492,3 +505,224 @@ async def get_all_community_roms() -> list[dict]:
 
     await cache_set(ck, all_roms, ttl=1800)
     return all_roms
+
+
+# ── NEW SCRAPERS FROM Awesome-CustomROM ──────────────────────────────────────
+
+async def get_project_matrixx_roms() -> list[dict]:
+    ck = "roms:project_matrixx"
+    if c := await cache_get(ck): return c
+    results = []
+    try:
+        async with get_client() as client:
+            files = await _gh_contents(client, "ProjectMatrixx", "OTA", "")
+            for f in (files or []):
+                name = f.get("name", "")
+                if not name.endswith(".json"): continue
+                codename = name.replace(".json", "")
+                if re.match(r'^[a-zA-Z0-9_-]+$', codename):
+                    results.append(_make_rom(codename, codename, "project_matrixx"))
+    except Exception:
+        pass
+    await cache_set(ck, results, ttl=3600)
+    return results
+
+
+async def get_axionos_roms() -> list[dict]:
+    ck = "roms:axionos"
+    if c := await cache_get(ck): return c
+    results = []
+    try:
+        async with get_client() as client:
+            files = await _gh_contents(client, "AxionAOSP", "OTA", "")
+            for f in (files or []):
+                name = f.get("name", "")
+                if not name.endswith(".json"): continue
+                codename = name.replace(".json", "")
+                if re.match(r'^[a-zA-Z0-9_-]+$', codename):
+                    results.append(_make_rom(codename, codename, "axionos", download=f"https://sourceforge.net/projects/axionaosp/files/{codename}/"))
+    except Exception:
+        pass
+    await cache_set(ck, results, ttl=3600)
+    return results
+
+
+async def get_infinity_x_roms() -> list[dict]:
+    ck = "roms:infinity_x"
+    if c := await cache_get(ck): return c
+    results = []
+    try:
+        async with get_client() as client:
+            files = await _gh_contents(client, "ProjectInfinity-X", "OTA", "")
+            for f in (files or []):
+                name = f.get("name", "")
+                if not name.endswith(".json"): continue
+                codename = name.replace(".json", "")
+                if re.match(r'^[a-zA-Z0-9_-]+$', codename):
+                    results.append(_make_rom(codename, codename, "infinity_x", download=f"https://sourceforge.net/projects/infinity-x/files/{codename}/"))
+    except Exception:
+        pass
+    await cache_set(ck, results, ttl=3600)
+    return results
+
+
+async def get_risingos_roms() -> list[dict]:
+    ck = "roms:risingos"
+    if c := await cache_get(ck): return c
+    results = []
+    try:
+        async with get_client() as client:
+            for org in ["RisingOS-Revived", "RisingTechOSS"]:
+                files = await _gh_contents(client, org, "OTA", "")
+                for f in (files or []):
+                    name = f.get("name", "")
+                    if not name.endswith(".json"): continue
+                    codename = name.replace(".json", "")
+                    if re.match(r'^[a-zA-Z0-9_-]+$', codename):
+                        results.append(_make_rom(codename, codename, "risingos"))
+                if results:
+                    break
+    except Exception:
+        pass
+    await cache_set(ck, results, ttl=3600)
+    return results
+
+
+async def get_paranoid_android_roms() -> list[dict]:
+    ck = "roms:paranoid_android"
+    if c := await cache_get(ck): return c
+    results = []
+    try:
+        async with get_client() as client:
+            files = await _gh_contents(client, "AOSPA", "OTA", "")
+            for f in (files or []):
+                name = f.get("name", "")
+                if not name.endswith(".json"): continue
+                codename = name.replace(".json", "")
+                if re.match(r'^[a-zA-Z0-9_-]+$', codename):
+                    results.append(_make_rom(codename, codename, "paranoid_android"))
+    except Exception:
+        pass
+    await cache_set(ck, results, ttl=3600)
+    return results
+
+
+async def get_nusantara_roms() -> list[dict]:
+    ck = "roms:nusantara"
+    if c := await cache_get(ck): return c
+    results = []
+    try:
+        async with get_client() as client:
+            r = await client.get("https://nusantararom.org/wp-json/wp/v2/posts?per_page=100&categories=3",
+                                 headers={"User-Agent": _UA}, timeout=10)
+            if r.status_code == 200:
+                for post in r.json():
+                    title = post.get("title", {}).get("rendered", "")
+                    slug  = post.get("slug", "")
+                    if slug and re.match(r'^[a-zA-Z0-9_-]+$', slug):
+                        results.append(_make_rom(slug, title or slug, "nusantara",
+                                                 download=f"https://nusantararom.org/device/{slug}/"))
+    except Exception:
+        pass
+    await cache_set(ck, results, ttl=3600)
+    return results
+
+
+async def get_cherish_roms() -> list[dict]:
+    ck = "roms:cherishos"
+    if c := await cache_get(ck): return c
+    results = []
+    try:
+        async with get_client() as client:
+            files = await _gh_contents(client, "CherishOS", "OTA", "")
+            for f in (files or []):
+                name = f.get("name", "")
+                if not name.endswith(".json"): continue
+                codename = name.replace(".json", "")
+                if re.match(r'^[a-zA-Z0-9_-]+$', codename):
+                    results.append(_make_rom(codename, codename, "cherishos"))
+    except Exception:
+        pass
+    await cache_set(ck, results, ttl=3600)
+    return results
+
+
+async def get_cipheros_roms() -> list[dict]:
+    ck = "roms:cipheros"
+    if c := await cache_get(ck): return c
+    results = []
+    try:
+        async with get_client() as client:
+            r = await client.get("https://sourceforge.net/projects/cipheros/files?limit=200",
+                                 headers={"User-Agent": _UA, "Accept": "application/json"}, timeout=10)
+            if r.status_code == 200:
+                data = r.json()
+                for d in data.get("files", {}).get("dirs", []):
+                    codename = d.get("name", "")
+                    if codename and re.match(r'^[a-zA-Z0-9_-]+$', codename):
+                        results.append(_make_rom(codename, codename, "cipheros",
+                                                 download=f"https://sourceforge.net/projects/cipheros/files/{codename}/"))
+    except Exception:
+        pass
+    await cache_set(ck, results, ttl=3600)
+    return results
+
+
+async def get_aosp_extended_roms() -> list[dict]:
+    ck = "roms:aospextended"
+    if c := await cache_get(ck): return c
+    results = []
+    try:
+        async with get_client() as client:
+            files = await _gh_contents(client, "AospExtended", "OTA_AB", "")
+            if not files:
+                files = await _gh_contents(client, "AospExtended", "OTA", "")
+            for f in (files or []):
+                name = f.get("name", "")
+                if not name.endswith(".json"): continue
+                codename = name.replace(".json", "")
+                if re.match(r'^[a-zA-Z0-9_-]+$', codename):
+                    results.append(_make_rom(codename, codename, "aospextended",
+                                             download=f"https://sourceforge.net/projects/aospextended-rom/files/{codename}/"))
+    except Exception:
+        pass
+    await cache_set(ck, results, ttl=3600)
+    return results
+
+
+async def get_droidx_ui_roms() -> list[dict]:
+    ck = "roms:droidx_ui"
+    if c := await cache_get(ck): return c
+    results = []
+    try:
+        async with get_client() as client:
+            files = await _gh_contents(client, "DroidX-UI", "OTA", "")
+            for f in (files or []):
+                name = f.get("name", "")
+                if not name.endswith(".json"): continue
+                codename = name.replace(".json", "")
+                if re.match(r'^[a-zA-Z0-9_-]+$', codename):
+                    results.append(_make_rom(codename, codename, "droidx_ui"))
+    except Exception:
+        pass
+    await cache_set(ck, results, ttl=3600)
+    return results
+
+
+async def get_euclidos_roms() -> list[dict]:
+    ck = "roms:euclidos"
+    if c := await cache_get(ck): return c
+    results = []
+    try:
+        async with get_client() as client:
+            files = await _gh_contents(client, "euclidTeam", "OTA", "")
+            for f in (files or []):
+                name = f.get("name", "")
+                if not name.endswith(".json"): continue
+                codename = name.replace(".json", "")
+                if re.match(r'^[a-zA-Z0-9_-]+$', codename):
+                    results.append(_make_rom(codename, codename, "euclidos"))
+    except Exception:
+        pass
+    await cache_set(ck, results, ttl=3600)
+    return results
