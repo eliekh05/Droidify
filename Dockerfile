@@ -5,7 +5,7 @@ RUN adduser -D -u 1000 -g "" user
 
 ENV HOME=/home/user \
     PATH=/home/user/.local/bin:$PATH \
-    PORT=7860 \
+    PORT=8000 \
     CORS_ORIGINS="*" \
     SCRAPER_USER_AGENT="DroidifyBot/2.0" \
     SCRAPER_CONCURRENCY="10" \
@@ -15,9 +15,9 @@ ENV HOME=/home/user \
 WORKDIR /home/user/app
 
 # Build deps needed by lxml on Alpine (cached — rarely changes)
-RUN apk add --no-cache gcc musl-dev libxml2-dev libxslt-dev
+RUN apk add gcc musl-dev libxml2-dev libxslt-dev
 
-RUN pip install --no-cache-dir --upgrade pip wheel
+RUN pip install --upgrade pip wheel
 
 # ── Cache bust point ─────────────────────────────────────────────────────────
 # BUILDTIME is injected by publish.yml as a Unix timestamp on every push.
@@ -27,7 +27,7 @@ ARG BUILDTIME=0
 RUN echo "Build timestamp: ${BUILDTIME}"
 
 COPY --chown=user:user backend/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install -r requirements.txt
 
 RUN apk del gcc musl-dev
 
@@ -36,9 +36,9 @@ COPY --chown=user:user backend/app ./app
 
 USER user
 
-EXPOSE 7860
+EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=5 \
-    CMD python3 -c "import urllib.request,sys,os; urllib.request.urlopen('http://localhost:'+os.environ.get('PORT','7860')+'/api/health',timeout=8); sys.exit(0)"
+    CMD ["sh", "-c", "python3 -c \"import urllib.request,sys,os; urllib.request.urlopen('http://localhost:' + os.environ.get('PORT','8000') + '/api/health',timeout=8); sys.exit(0)\""]
 
-CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-7860} --workers 1
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
