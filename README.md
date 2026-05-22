@@ -77,7 +77,7 @@ Droidify/
 ```bash
 git clone https://github.com/eliekh05/Droidify
 cd Droidify
-./install.sh          # builds and runs at http://localhost:7860
+./install.sh          # builds and runs at http://localhost:8000
 
 # or dev mode with hot reload:
 make dev

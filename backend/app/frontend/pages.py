@@ -269,6 +269,7 @@ def _index_body() -> str:
       <h2>Android versions</h2>
       <a href="/android.html" class="section-link">Full history &rarr;</a>
     </div>
+    <div id="android-pills" class="android-pills reveal"></div>
     <div class="reveal-grid" id="android-versions"></div>
   </section>
 </main>"""
