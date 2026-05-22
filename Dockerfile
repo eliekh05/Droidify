@@ -4,7 +4,7 @@ RUN adduser -D -u 1000 -g "" user
 
 ENV HOME=/home/user \
     PATH=/home/user/.local/bin:$PATH \
-    PORT=7860 \
+    PORT=8000 \
     CORS_ORIGINS="*" \
     SCRAPER_USER_AGENT="DroidifyBot/2.0" \
     SCRAPER_CONCURRENCY="10" \
@@ -29,7 +29,7 @@ COPY --chown=user:user backend/app ./app
 
 USER user
 
-EXPOSE 7860
+EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=5 \
     CMD python3 -c "import urllib.request,os; urllib.request.urlopen('http://localhost:'+os.environ.get('PORT','8000')+'/api/health',timeout=8)"
