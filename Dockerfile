@@ -34,4 +34,4 @@ EXPOSE 7860
 HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=5 \
     CMD python3 -c "import urllib.request,os; urllib.request.urlopen('http://localhost:'+os.environ.get('PORT','7860')+'/api/health',timeout=8)"
 
-CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-7860} --workers 1
+CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-7860} --workers 2
