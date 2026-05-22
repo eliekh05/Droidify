@@ -220,6 +220,34 @@ async def _check_eos(client, codename: str) -> dict | None:
 
 
 # ── Global ROM index ──────────────────────────────────────────────────────────
+async def _fetch_grapheneos_devices() -> list[str]:
+    """Fetch supported GrapheneOS devices from their live releases.json — no hardcoding."""
+    import re as _re
+    ck = "grapheneos:devices"
+    cached = await cache_get(ck)
+    if cached:
+        return cached
+    try:
+        async with get_client() as client:
+            r = await client.get(
+                "https://grapheneos.org/releases.json",
+                headers={"User-Agent": "DroidifyBot/2.0"},
+                timeout=10,
+            )
+            if r.status_code == 200:
+                data = r.json()
+                devices = [k for k in data.keys() if _re.match(r'^[a-z][a-z0-9_]+$', k)]
+                if devices:
+                    await cache_set(ck, devices, ttl=7200)
+                    return devices
+    except Exception:
+        pass
+    # Minimal fallback only if fetch fails completely
+    return ["shiba", "felix", "husky", "akita", "caiman", "tokay", "komodo",
+            "comet", "lynx", "cheetah", "panther", "bluejay", "oriole", "raven"]
+
+
+
 async def get_all_roms(
     q: str | None = None,
     rom_type: str | None = None,
