@@ -1,20 +1,23 @@
 """
 unofficialtwrp.com scraper — WordPress REST API
-6,204 posts covering unofficial TWRP builds for devices not in official TWRP.
+6,200+ posts covering unofficial TWRP builds for devices not in official TWRP.
 Covers: Tecno (985), Oppo/Realme (784), Xiaomi (437), Infinix (521),
         Samsung (213), Motorola (81), Huawei (81), ZTE (79), and 70+ more brands.
 
 Each post = one device unofficial TWRP build.
 Uses WordPress REST API — no SourceForge, no scraping HTML.
+Fetches ALL pages concurrently (63 pages × 100 posts = ~6,200 entries).
 """
 import re
+import asyncio
 import httpx
 from bs4 import BeautifulSoup
 from ..services.cache import get as cache_get, set as cache_set
 
-_API_BASE   = "https://unofficialtwrp.com/wp-json/wp/v2/posts"
-_PER_PAGE   = 100
-_MAX_PAGES  = 63  # X-WP-TotalPages = 63 (6,204 posts)
+_API_BASE  = "https://unofficialtwrp.com/wp-json/wp/v2/posts"
+_PER_PAGE  = 100
+_TIMEOUT   = 20
+_HEADERS   = {"User-Agent": "DroidifyBot/2.0 (+https://github.com/eliekh05/Droidify)"}
 
 # Category ID → manufacturer name
 _CAT_NAMES = {
@@ -35,63 +38,102 @@ _CAT_NAMES = {
     4365: "Mediatek", 3956: "Maze", 3407: "Inoi",
 }
 
+# Words to strip from slugs before treating remainder as codename
+_SLUG_STRIP = re.compile(
+    r'(?:unofficial[-_]?)?(?:twrp|orangefox|ofox|shrp|pbrp|recovery)[-_]?'
+    r'[\d.]*[-_]?(?:root|install|how[-_]to|update|guide|for[-_])?',
+    re.IGNORECASE,
+)
+_KNOWN_BRANDS = re.compile(
+    r'^(?:samsung|xiaomi|redmi|poco|realme|oppo|vivo|oneplus|motorola|moto|'
+    r'huawei|nokia|asus|rog|lg|sony|tecno|infinix|itel|htc|lenovo|zte|'
+    r'alcatel|wiko|umidigi|oukitel|doogee|blackview|ulefone|blu|coolpad|'
+    r'symphony|walton|honor|meizu|sharp|fujitsu|panasonic|google|pixel)[-_]',
+    re.IGNORECASE,
+)
+
 
 def _extract_codename(title: str, slug: str) -> str | None:
-    """Extract device codename from post title or slug."""
-    # Title often has codename in parentheses: "TWRP 3.4.0 Root Moto G9 Plus (odessa)"
-    m = re.search(r'\(([a-z][a-z0-9_]{2,15})\)', title, re.IGNORECASE)
+    """
+    Extract device codename from post title or slug.
+    Priority:
+      1. Parenthesised token in title: "TWRP for Galaxy A52 (a52q)"
+      2. Bracket token in title: "TWRP [a52q] ..."
+      3. Slug after stripping TWRP/version/brand noise
+    """
+    # 1. Parentheses — most reliable
+    m = re.search(r'\(([a-z][a-z0-9_]{2,20})\)', title, re.IGNORECASE)
     if m:
         return m.group(1).lower()
 
-    # Slug: "twrp-3-6-2-root-samsung-galaxy-a42-5g" → clean it
-    # Remove version numbers and common words
-    clean = re.sub(r'(?:unofficial[-_]?)?twrp[-_][\d.]+[-_]?', '', slug)
-    clean = re.sub(r'(?:root|update|for|install|how[-_]to)[-_]?', '', clean)
-    clean = clean.strip('-').replace('-', '_')
-    if 3 <= len(clean) <= 20 and re.match(r'^[a-z][a-z0-9_]+$', clean):
+    # 2. Square brackets
+    m = re.search(r'\[([a-z][a-z0-9_]{2,20})\]', title, re.IGNORECASE)
+    if m:
+        return m.group(1).lower()
+
+    # 3. Slug processing — strip TWRP/version/install noise
+    clean = _SLUG_STRIP.sub('', slug)
+    # Strip leading brand names
+    clean = _KNOWN_BRANDS.sub('', clean)
+    # Clean separators
+    clean = clean.strip('-_').replace('-', '_')
+    # Must look like a codename: lowercase letters+digits+underscore, 3-20 chars
+    if re.match(r'^[a-z][a-z0-9_]{2,19}$', clean) and '_' not in clean[:2]:
         return clean
 
     return None
 
 
 def _extract_manufacturer(categories: list[int], title: str) -> str:
-    """Get manufacturer from category IDs or title."""
     for cat_id in categories:
         if cat_id in _CAT_NAMES:
             return _CAT_NAMES[cat_id]
-
-    # Fallback: first word of title that's a brand
     brands = [
         "Samsung", "Xiaomi", "Redmi", "Poco", "Realme", "Oppo", "Vivo",
         "OnePlus", "Motorola", "Huawei", "Nokia", "Asus", "LG", "Sony",
         "Tecno", "Infinix", "Itel", "HTC", "Lenovo", "ZTE", "Alcatel",
     ]
-    title_lower = title.lower()
+    tl = title.lower()
     for brand in brands:
-        if brand.lower() in title_lower:
+        if brand.lower() in tl:
             return brand
-
     return "Unknown"
 
 
+async def _fetch_page(client: httpx.AsyncClient, page: int) -> list[dict]:
+    try:
+        r = await client.get(
+            _API_BASE,
+            params={
+                "per_page": _PER_PAGE,
+                "page": page,
+                "_fields": "id,title,slug,link,categories",
+                "status": "publish",
+            },
+        )
+        if r.status_code == 200:
+            return r.json()
+    except Exception:
+        pass
+    return []
+
+
 async def get_unofficialtwrp_devices() -> list[dict]:
-    """Fetch all unofficial TWRP posts — 6,204 across 63 pages."""
+    """Fetch ALL unofficial TWRP posts concurrently — all ~6,200 entries."""
     ck = "roms:unofficialtwrp"
     if c := await cache_get(ck):
         return c
 
-    results = []
-    seen_slugs: set[str] = set()
+    results: list[dict] = []
+    seen: set[str] = set()
 
     try:
         async with httpx.AsyncClient(
-            timeout=20,
-            headers={"User-Agent": "Mozilla/5.0"},
+            timeout=_TIMEOUT,
+            headers=_HEADERS,
             follow_redirects=True,
         ) as client:
-            # Fetch first page to get total, then fetch remaining concurrently
-            # But to avoid hammering server, fetch sequentially with small batches
-            # First page only — gives 100 entries quickly for initial load
+            # Fetch page 1 to discover total page count
             resp = await client.get(
                 _API_BASE,
                 params={
@@ -103,49 +145,55 @@ async def get_unofficialtwrp_devices() -> list[dict]:
             )
             resp.raise_for_status()
             total_pages = int(resp.headers.get("X-WP-TotalPages", 1))
-            posts = resp.json()
+            all_posts = list(resp.json())
 
-            # Fetch remaining pages (up to 10 pages = 1000 devices max to avoid timeout)
-            max_pages = min(total_pages, 10)
-            for page in range(2, max_pages + 1):
-                try:
-                    r = await client.get(
-                        _API_BASE,
-                        params={
-                            "per_page": _PER_PAGE,
-                            "page": page,
-                            "_fields": "id,title,slug,link,categories",
-                            "status": "publish",
-                        },
-                    )
-                    if r.status_code == 200:
-                        posts.extend(r.json())
-                except Exception:
-                    break
+            # Fetch ALL remaining pages concurrently in batches of 10
+            # to avoid overwhelming the server
+            remaining = list(range(2, total_pages + 1))
+            batch_size = 10
+            for i in range(0, len(remaining), batch_size):
+                batch = remaining[i : i + batch_size]
+                pages = await asyncio.gather(
+                    *[_fetch_page(client, p) for p in batch],
+                    return_exceptions=True,
+                )
+                for page_data in pages:
+                    if isinstance(page_data, list):
+                        all_posts.extend(page_data)
+                # Small delay between batches — be polite
+                if i + batch_size < len(remaining):
+                    await asyncio.sleep(0.3)
 
     except Exception:
         return []
 
-    for post in posts:
+    skip_kw = {"how to", "guide", "tutorial", "firmware flash file", "firmware file"}
+
+    for post in all_posts:
         slug  = post.get("slug", "")
-        title = BeautifulSoup(post.get("title", {}).get("rendered", ""), "lxml").get_text()
+        title = BeautifulSoup(
+            post.get("title", {}).get("rendered", ""), "lxml"
+        ).get_text().strip()
         link  = post.get("link", "")
         cats  = post.get("categories", [])
 
-        if slug in seen_slugs:
+        if slug in seen:
             continue
-        seen_slugs.add(slug)
+        seen.add(slug)
 
-        # Skip non-device posts
-        if any(kw in title.lower() for kw in ["how to", "guide", "tutorial", "firmware flash file"]):
+        if not title or any(kw in title.lower() for kw in skip_kw):
             continue
 
-        codename = _extract_codename(title, slug)
+        codename     = _extract_codename(title, slug)
         manufacturer = _extract_manufacturer(cats, title)
 
+        # Only include entries where we extracted a real codename
+        if not codename:
+            continue
+
         results.append({
-            "name":         title.strip(),
-            "codename":     codename or slug[:20],
+            "name":         title,
+            "codename":     codename,
             "manufacturer": manufacturer,
             "android_base": None,
             "rom_type":     "recovery",
@@ -156,7 +204,7 @@ async def get_unofficialtwrp_devices() -> list[dict]:
             "download_url": link,
             "data_source":  "unofficialtwrp",
             "rom_name":     "Unofficial TWRP",
-            "description":  f"Unofficial TWRP recovery build — {title.strip()}",
+            "description":  f"Unofficial TWRP recovery build — {title}",
         })
 
     await cache_set(ck, results, ttl=7200)

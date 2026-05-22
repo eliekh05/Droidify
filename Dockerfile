@@ -14,10 +14,18 @@ ENV HOME=/home/user \
 
 WORKDIR /home/user/app
 
-# Build deps needed by lxml on Alpine
+# Build deps needed by lxml on Alpine (cached — rarely changes)
 RUN apk add --no-cache gcc musl-dev libxml2-dev libxslt-dev
 
 RUN pip install --no-cache-dir --upgrade pip wheel
+
+# ── Cache bust point ─────────────────────────────────────────────────────────
+# BUILDTIME is injected by publish.yml as a Unix timestamp on every push.
+# Changing it invalidates this layer and everything below — forcing a fresh
+# pip install and code copy on every deployment, with no stale HF cache.
+ARG BUILDTIME=0
+RUN echo "Build timestamp: ${BUILDTIME}"
+
 COPY --chown=user:user backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 

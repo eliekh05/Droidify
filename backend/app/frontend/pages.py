@@ -832,13 +832,6 @@ roms = """<!DOCTYPE html>
     <input id="rom-search" type="search" placeholder="Search ROM name or device codename…" autocomplete="off" />
     <select id="android-filter">
       <option value="">All Android versions</option>
-      <option value="16">Android 16</option>
-      <option value="15">Android 15</option>
-      <option value="14">Android 14</option>
-      <option value="13">Android 13</option>
-      <option value="12">Android 12</option>
-      <option value="11">Android 11</option>
-      <option value="10">Android 10</option>
     </select>
     <button id="search-btn">Search</button>
   </div>

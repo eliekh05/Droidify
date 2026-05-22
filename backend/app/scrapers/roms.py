@@ -318,6 +318,16 @@ async def get_all_roms(
         except Exception:
             pass
 
+        # Community ROMs — Evolution X, DerpFest, Project Elixir, ArrowOS,
+        # PixelOS, HavocOS, VoltageOS, AncientOS, AlphaDroid, StagOS, DotOS,
+        # LMODroid, BlissROMs, CarbonROM, ProtonAOSP
+        try:
+            from app.scrapers.community_roms import get_all_community_roms
+            community = await get_all_community_roms()
+            all_roms.extend(community)
+        except Exception:
+            pass
+
         await cache_set(ck, all_roms, ttl=600)
         cached = all_roms
 
