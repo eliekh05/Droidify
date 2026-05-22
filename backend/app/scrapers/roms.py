@@ -52,7 +52,10 @@ EOS_DEVICE_URL       = "https://doc.e.foundation/devices/{codename}"
 
 # ── GrapheneOS ────────────────────────────────────────────────────────────────
 async def _check_grapheneos(client, codename: str) -> dict | None:
-    if codename not in GRAPHENEOS_PIXELS:
+    # GrapheneOS device check is now handled by the dynamic list
+    # Just try to build the URL; if invalid, it returns None
+    pass
+    if not re.match(r'^[a-z][a-z0-9_]+$', codename):
         return None
     ck = f"grapheneos:{codename}"
     cached = await cache_get(ck)
@@ -252,8 +255,9 @@ async def get_all_roms(
                         "source":        "lineageos_api",
                     })
 
-        # GrapheneOS — factory image direct downloads
-        for codename in GRAPHENEOS_PIXELS:
+        # GrapheneOS — factory image direct downloads (live device list)
+        grapheneos_devices = await _fetch_grapheneos_devices()
+        for codename in grapheneos_devices:
             all_roms.append({
                 "name":          "GrapheneOS",
                 "slug":          "grapheneos",

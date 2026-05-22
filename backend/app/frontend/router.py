@@ -225,6 +225,12 @@ async def serve_guides():
     return _html(pages.guides)
 
 
+@router.get("/privacy.html", include_in_schema=False)
+async def privacy_page():
+    from .pages import privacy
+    return HTMLResponse(privacy())
+
+
 @router.get("/404.html", include_in_schema=False)
 async def serve_404():
     from fastapi.responses import HTMLResponse

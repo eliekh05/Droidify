@@ -237,7 +237,7 @@ index = """<!DOCTYPE html>
 
 <footer class="site-footer">
   <div class="container">
-    <p>Droidify — Live Android ecosystem indexer · Free &amp; open sources only · No signin required</p>
+    <p>Droidify — Live Android ecosystem indexer · Free &amp; open sources only · No signin required · <a href="/privacy.html" style="color:var(--muted);text-decoration:underline">Privacy</a></p>
     <p class="footer-note">Data sourced from: LineageOS · OrangeFox · TWRP · GrapheneOS · GitHub · crDroid · Evolution X · HavocOS · DerpFest · 20+ ROM projects via SourceForge · PitchBlack · SkyHawk · unofficialTWRP · DivestOS · CalyxOS · /e/OS</p>
   </div>
 </footer>
@@ -1913,3 +1913,198 @@ if (_navToggle && _mainNav) {
 </html>
 """
 
+
+
+def privacy():
+    return """<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Droidify privacy policy — no tracking, no cookies, no user data collected." />
+  <title>Privacy Policy — Droidify</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="theme-color" content="#3dd68c" />
+  <script>
+    // Safari "Request Desktop Site" fix
+    // In desktop mode Safari reports a wider viewport — detect and force desktop layout
+    (function() {
+      var vp = document.querySelector('meta[name=viewport]');
+      if (!vp) return;
+      // If not iOS/iPadOS skip
+      if (!/iphone|ipad|ipod/i.test(navigator.userAgent) &&
+          !(navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) return;
+      // Desktop mode: innerWidth will be ~980px or more (Safari default desktop width)
+      // Mobile mode: innerWidth matches device CSS width (usually 390px or similar)
+      if (window.innerWidth >= 960) {
+        // Already in desktop mode — keep it that way
+        vp.setAttribute('content', 'width=' + window.innerWidth + ', initial-scale=1.0');
+      }
+    })();
+  </script>
+<style>
+  /* ── Loading splash screen (inline — runs before style.css) ── */
+  #ls{position:fixed;inset:0;background:#0b0f14;display:flex;align-items:center;justify-content:center;z-index:99999;transition:opacity 400ms ease,visibility 400ms ease;overflow:hidden}
+  #ls.ls-hide{opacity:0;visibility:hidden;pointer-events:none}
+  .ls-bg{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+  .ls-ring{position:absolute;border-radius:50%;border:1px solid rgba(61,214,140,.08);animation:lsRP 3s ease-in-out infinite}
+  .ls-ring:nth-child(1){width:220px;height:220px;top:50%;left:50%;transform:translate(-50%,-50%);animation-delay:0s}
+  .ls-ring:nth-child(2){width:340px;height:340px;top:50%;left:50%;transform:translate(-50%,-50%);animation-delay:.4s}
+  .ls-ring:nth-child(3){width:460px;height:460px;top:50%;left:50%;transform:translate(-50%,-50%);animation-delay:.8s}
+  @keyframes lsRP{0%,100%{opacity:.3;transform:translate(-50%,-50%) scale(1)}50%{opacity:.7;transform:translate(-50%,-50%) scale(1.04)}}
+  .ls-particle{position:absolute;width:3px;height:3px;background:#3dd68c;border-radius:50%;opacity:0;animation:lsFL var(--d,4s) ease-in-out var(--delay,0s) infinite}
+  @keyframes lsFL{0%{opacity:0;transform:translateY(0) scale(.5)}20%{opacity:.7}80%{opacity:.3}100%{opacity:0;transform:translateY(-80px) scale(1.5)}}
+  .ls-inner{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;z-index:1}
+  .ls-icon-bg{width:72px;height:72px;background:#121820;border:1.5px solid #1e2a3a;border-radius:18px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;margin-bottom:20px;animation:lsIP 600ms cubic-bezier(.34,1.56,.64,1) both}
+  @keyframes lsIP{from{opacity:0;transform:scale(.5) rotate(-8deg)}to{opacity:1;transform:scale(1) rotate(0)}}
+  .ls-icon-shine{position:absolute;inset:0;background:linear-gradient(135deg,rgba(61,214,140,.15) 0%,transparent 60%);border-radius:inherit}
+  .ls-icon-d{font-size:32px;font-weight:800;color:#3dd68c;font-family:system-ui,-apple-system,sans-serif;letter-spacing:-.04em;line-height:1;position:relative;z-index:1}
+  .ls-logo{font-size:2.1rem;font-weight:800;letter-spacing:-.04em;color:#e8eef5;font-family:system-ui,-apple-system,sans-serif;animation:lsFU 500ms cubic-bezier(.22,1,.36,1) 200ms both;margin-bottom:6px}
+  .ls-logo .accent{color:#3dd68c}
+  .ls-tag{font-size:.72rem;color:#4a6080;font-family:system-ui,-apple-system,sans-serif;letter-spacing:.12em;text-transform:uppercase;animation:lsFU 500ms cubic-bezier(.22,1,.36,1) 320ms both;margin-bottom:28px}
+  @keyframes lsFU{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  .ls-bar-wrap{width:140px;height:2px;background:#1a2535;border-radius:2px;overflow:hidden;animation:lsFU 400ms ease 420ms both;margin-bottom:14px}
+  .ls-bar{height:100%;width:0%;background:#3dd68c;border-radius:2px;animation:lsBAR 1800ms cubic-bezier(.4,0,.2,1) 500ms forwards;box-shadow:0 0 8px rgba(61,214,140,.5)}
+  @keyframes lsBAR{0%{width:0%}30%{width:45%}60%{width:72%}85%{width:88%}100%{width:100%}}
+  .ls-dots{display:flex;gap:5px;animation:lsFU 400ms ease 520ms both}
+  .ls-dot{width:4px;height:4px;background:#3dd68c;border-radius:50%;opacity:.3;animation:lsDT 1.2s ease-in-out infinite}
+  .ls-dot:nth-child(2){animation-delay:.2s}
+  .ls-dot:nth-child(3){animation-delay:.4s}
+  @keyframes lsDT{0%,80%,100%{opacity:.2;transform:scale(1)}40%{opacity:1;transform:scale(1.4)}}
+</style>
+</head>
+<body>
+<div id="ls" aria-hidden="true" role="presentation">
+  <div class="ls-bg">
+    <div class="ls-ring"></div><div class="ls-ring"></div><div class="ls-ring"></div>
+  </div>
+  <div class="ls-inner">
+    <div class="ls-icon-bg">
+      <div class="ls-icon-shine"></div>
+      <div class="ls-icon-d">D</div>
+    </div>
+    <div class="ls-logo"><span class="accent">Droid</span>ify</div>
+    <div class="ls-tag">Android ecosystem</div>
+    <div class="ls-bar-wrap"><div class="ls-bar"></div></div>
+    <div class="ls-dots"><div class="ls-dot"></div><div class="ls-dot"></div><div class="ls-dot"></div></div>
+  </div>
+</div>
+<script>
+(function(){
+  var bg=document.querySelector('.ls-bg');
+  for(var i=0;i<12;i++){
+    var p=document.createElement('div');
+    p.className='ls-particle';
+    p.style.cssText='left:'+(20+Math.random()*60)+'%;bottom:'+(10+Math.random()*40)+'%;--d:'+(3+Math.random()*3)+'s;--delay:'+(Math.random()*2)+'s';
+    bg.appendChild(p);
+  }
+})();
+</script>
+
+
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="/" class="logo"><span class="accent">Droid</span>ify</a>
+    <button type="button" class="nav-toggle" id="nav-toggle" aria-label="Menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <nav id="main-nav">
+      <a href="/" class="nav-link" data-page="home">Home</a>
+      <a href="/devices.html" class="nav-link" data-page="devices">Devices</a>
+      <a href="/roms.html" class="nav-link" data-page="roms">ROMs</a>
+      <a href="/recoveries.html" class="nav-link" data-page="recoveries">Recoveries</a>
+      <a href="/tools.html" class="nav-link" data-page="tools">Tools</a>
+      <a href="/android.html" class="nav-link" data-page="android">Android</a>
+      <a href="/guides.html" class="nav-link" data-page="guides">Guides</a>
+    </nav>
+    <div class="nav-actions">
+      <div id="pwa-install-wrap" style="display:none">
+        <button id="pwa-install-btn" type="button" class="btn btn-install btn-sm">
+          ⬇ Install
+        </button>
+      </div>
+      <a href="https://github.com/eliekh05/Droidify" target="_blank" rel="noopener" class="btn btn-github btn-sm">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/>
+        </svg>
+        GitHub
+      </a>
+    </div>
+  </div>
+</header>
+<main class="container">
+  <div class="page-header" style="margin-bottom:2rem">
+    <h1>Privacy Policy</h1>
+    <p class="page-sub">Last updated: May 2026</p>
+  </div>
+
+  <div style="max-width:720px;display:flex;flex-direction:column;gap:1.5rem">
+
+    <section>
+      <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:.6rem">What Droidify is</h2>
+      <p style="color:var(--muted);line-height:1.7">Droidify is a read-only Android ROM and device indexer. It fetches public data from upstream sources (LineageOS, OrangeFox, TWRP, GrapheneOS, GitHub, SourceForge, and others) and serves it through a web interface. It does not have user accounts, authentication, or any form of user-generated content.</p>
+    </section>
+
+    <section>
+      <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:.6rem">Data we do not collect</h2>
+      <ul style="color:var(--muted);line-height:1.9;padding-left:1.25rem">
+        <li>No personal information</li>
+        <li>No account registration or login</li>
+        <li>No cookies — session or persistent</li>
+        <li>No analytics or tracking scripts</li>
+        <li>No advertising</li>
+        <li>No device fingerprinting</li>
+        <li>No location data</li>
+        <li>No payment information</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:.6rem">What the server sees</h2>
+      <p style="color:var(--muted);line-height:1.7">Like any web server, Droidify's host (Hugging Face Spaces) receives your IP address and User-Agent string as part of the HTTP request. These are standard web logs retained by the hosting provider under their own <a href="https://huggingface.co/privacy" target="_blank" rel="noopener">privacy policy</a>. Droidify itself does not store, process, or analyse these logs.</p>
+    </section>
+
+    <section>
+      <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:.6rem">Cookies</h2>
+      <p style="color:var(--muted);line-height:1.7">Droidify sets no cookies. The Service Worker used for PWA installability stores no data and caches nothing — it passes all requests directly to the network.</p>
+    </section>
+
+    <section>
+      <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:.6rem">Third-party links</h2>
+      <p style="color:var(--muted);line-height:1.7">Device and ROM pages link out to external sources (LineageOS wiki, SourceForge, GitHub, TWRP, OrangeFox, etc.). These sites have their own privacy policies. Droidify has no control over and no affiliation with them.</p>
+    </section>
+
+    <section>
+      <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:.6rem">Local storage</h2>
+      <p style="color:var(--muted);line-height:1.7">Droidify uses no <code style="font-family:monospace;font-size:.85em;background:var(--card2);padding:.1rem .35rem;border-radius:4px">localStorage</code>, <code style="font-family:monospace;font-size:.85em;background:var(--card2);padding:.1rem .35rem;border-radius:4px">sessionStorage</code>, or IndexedDB. Nothing is written to your device beyond what the browser itself caches for standard page loads.</p>
+    </section>
+
+    <section>
+      <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:.6rem">Contact</h2>
+      <p style="color:var(--muted);line-height:1.7">Questions about this policy can be raised via <a href="https://github.com/eliekh05/Droidify/issues" target="_blank" rel="noopener">GitHub Issues</a>.</p>
+    </section>
+
+    <div style="margin-top:1rem;padding:.85rem 1rem;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);font-size:.82rem;color:var(--muted)">
+      Short version: Droidify collects nothing about you. It reads public Android ROM data and shows it to you. That's it.
+    </div>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <p>Droidify — Live Android ecosystem indexer · Free &amp; open sources only · No signin required · <a href="/privacy.html" style="color:var(--muted);text-decoration:underline">Privacy</a></p>
+    <p class="footer-note">Data sourced from: LineageOS · OrangeFox · TWRP · GrapheneOS · GitHub · crDroid · Evolution X · HavocOS · DerpFest · 20+ ROM projects via SourceForge · PitchBlack · SkyHawk · unofficialTWRP · DivestOS · CalyxOS · /e/OS</p>
+  </div>
+</footer>
+
+<script src="/js/api.js"></script>
+
+</body>
+</html>"""
