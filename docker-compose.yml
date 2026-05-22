@@ -7,7 +7,7 @@ services:
     ports:
       - "7860:7860"
     environment:
-      - PORT=8000
+      - PORT=7860
       - CORS_ORIGINS=*
       - SCRAPER_TIMEOUT=20
       - CACHE_DEFAULT_TTL=300
