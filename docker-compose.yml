@@ -6,14 +6,14 @@ services:
     container_name: droidify
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "7860:7860"
     environment:
-      - PORT=8000
+      - PORT=7860
       - CORS_ORIGINS=*
       - SCRAPER_TIMEOUT=20
       - CACHE_DEFAULT_TTL=300
     healthcheck:
-      test: ["CMD", "python3", "-c", "import urllib.request,os; urllib.request.urlopen('http://localhost:'+os.environ.get('PORT','8000')+'/api/health',timeout=8)"]
+      test: ["CMD", "python3", "-c", "import urllib.request,os; urllib.request.urlopen('http://localhost:'+os.environ.get('PORT','$PORT')+'/api/health',timeout=8)"]
       interval: 30s
       timeout: 10s
       start_period: 120s
