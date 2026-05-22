@@ -1,7 +1,7 @@
 .PHONY: dev build up down logs clean lint
 
 dev:
-	cd backend && uvicorn app.main:app --host 0.0.0.0 --port 7860 --reload
+	cd backend && uvicorn app.main:app --host localhost --port 8000 --reload
 
 build:
 	docker compose build

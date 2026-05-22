@@ -5,14 +5,14 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     ports:
-      - "7860:7860"
+      - "8000:8000"
     environment:
-      - PORT=7860
+      - PORT=8000
       - CORS_ORIGINS=*
       - SCRAPER_TIMEOUT=20
       - CACHE_DEFAULT_TTL=300
     healthcheck:
-      test: ["CMD", "python3", "-c", "import urllib.request,os; urllib.request.urlopen('http://0.0.0.0:'+os.environ.get('PORT')+'/api/health',timeout=8)"]
+      test: ["CMD", "python3", "-c", "import urllib.request,os; urllib.request.urlopen('http://localhost:'+os.environ.get('PORT')+'/api/health',timeout=8)"]
       interval: 30s
       timeout: 10s
       start_period: 120s

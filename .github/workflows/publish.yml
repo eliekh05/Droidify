@@ -30,18 +30,3 @@ jobs:
           platforms: linux/amd64,linux/arm64
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-  huggingface:
-    name: Sync to Hugging Face Space
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6.0.2
-
-      - name: Sync to Hugging Face Space
-        uses: huggingface/hub-sync@v0.1.0
-        with:
-          github_repo_id: ${{ github.repository }}
-          huggingface_repo_id: ${{ secrets.HF_USERNAME }}/Droidify
-          hf_token: ${{ secrets.HF_TOKEN }}
-          repo_type: space
-          space_sdk: docker

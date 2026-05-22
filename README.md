@@ -1,20 +1,8 @@
----
-title: Droidify
-emoji: 💻
-colorFrom: green
-colorTo: gray
-sdk: docker
-app_port: 7860
-pinned: false
-license: mit
-short_description: Live Android ROM & device indexer. No signin. No payment.
----
-
 # Droidify — Android ROM & Device Index
 
 Live Android ecosystem indexer. Devices, ROMs, recoveries, tools, and guides — fetched in real time from 20+ free public sources. Zero hardcoded data. No signin. No payment.
 
-🌐 **Live**: [eliekh05-droidify.hf.space](https://eliekh05-droidify.hf.space)  
+🌐 **Live**:
 📦 **GitHub**: [eliekh05/Droidify](https://github.com/eliekh05/Droidify)
 
 ---
