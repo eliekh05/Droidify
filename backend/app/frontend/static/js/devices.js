@@ -51,7 +51,10 @@ async function loadDevices(params = {}, offset = 0) {
   }
 }
 
-);
+async function populateMfrFilter() {
+  // Load a larger sample to get unique manufacturers
+  try {
+    const data = await api.devices({ limit: 200 });
     const mfrs = [...new Set(data.devices.map(d => d.manufacturer).filter(Boolean))].sort();
     const sel  = document.getElementById('mfr-filter');
     const current = sel.value;

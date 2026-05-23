@@ -51,19 +51,20 @@ async function loadRoms(params = {}, offset = 0) {
 function getParams() {
   return {
     q:            document.getElementById('rom-search').value.trim() || undefined,
-    android_base: 
+    android_base: document.getElementById('android-filter').value || undefined,
+  };
 }
 
 document.getElementById('search-btn').addEventListener('click', () => loadRoms(getParams(), 0));
 document.getElementById('rom-search').addEventListener('keydown', e => { if (e.key === 'Enter') loadRoms(getParams(), 0); });
-
+document.getElementById('android-filter').addEventListener('change', () => loadRoms(getParams(), 0));
 document.getElementById('rom-search').addEventListener('input', debounce(() => loadRoms(getParams(), 0), 400));
 
 // Populate Android version filter from live data
 (async () => {
   try {
     const data = await api.androidVersions();
-    const sel = 
+    const sel = document.getElementById('android-filter');
     // Sort versions descending by version number
     const versions = [...(data.versions || [])]
       .sort((a, b) => parseFloat(b.version_number) - parseFloat(a.version_number));
