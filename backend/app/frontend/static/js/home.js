@@ -14,8 +14,8 @@ function _roll(id, val) {
   const el = document.getElementById(id);
   if (!el || (val == null && val !== 0)) return;
   el.classList.remove('skeleton');
-  const v = el.querySelector('.stat-value');
-  if (v) window._rollNumber ? window._rollNumber(v, Number(val), 1600) : (v.textContent = Number(val).toLocaleString());
+  // The id is directly on the .stat-value element itself
+  window._rollNumber ? window._rollNumber(el, Number(val), 1600) : (el.textContent = Number(val).toLocaleString());
 }
 
 async function loadHome() {
