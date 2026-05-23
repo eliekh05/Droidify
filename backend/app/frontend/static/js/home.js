@@ -100,7 +100,7 @@ async function loadRomFamilies() {
   try {
     const colorMap = { LineageOS:'green', GrapheneOS:'blue', crDroid:'orange', '/e/OS':'gray',
       'PixelExperience':'blue', 'Evolution X':'orange', 'DerpFest':'gray', 'Project Elixir':'green' };
-    const romData = await api.roms({ limit: 300 });
+    const romData = await api.roms({ limit: 50 });
     const counts = {};
     for (const r of romData.roms || []) {
       const n = r.name || 'Unknown';

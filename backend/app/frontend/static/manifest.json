@@ -1,6 +1,6 @@
 {
   "id": "droidify-android-rom-index",
-  "name": "Droidify — Android ROM & Device Index",
+  "name": "Droidify \u2014 Android ROM & Device Index",
   "short_name": "Droidify",
   "description": "Live Android ROM, device, recovery and tool indexer. Browse 1000+ ROMs, 1100+ devices. No signin. No payment.",
   "start_url": "/",
@@ -59,14 +59,14 @@
       "sizes": "512x512",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "Droidify — Android ROM & Device Index desktop view"
+      "label": "Droidify \u2014 Android ROM & Device Index desktop view"
     },
     {
       "src": "/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Droidify on mobile — browse 1100+ devices"
+      "label": "Droidify on mobile \u2014 browse 1100+ devices"
     }
   ],
   "prefer_related_applications": false,
@@ -163,7 +163,8 @@
       "title": "q",
       "text": "q",
       "url": "q"
-    }
+    },
+    "enctype": "application/x-www-form-urlencoded"
   },
   "file_handlers": [
     {
