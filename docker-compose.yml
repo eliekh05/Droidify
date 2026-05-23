@@ -3,6 +3,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    image: droidify:latest
+    container_name: droidify
     restart: unless-stopped
     ports:
       - "8000:8000"

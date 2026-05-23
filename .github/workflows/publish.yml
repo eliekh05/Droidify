@@ -8,6 +8,10 @@ jobs:
   docker:
     name: Push to Docker Hub
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+
     steps:
       - uses: actions/checkout@v4
 
@@ -29,5 +33,40 @@ jobs:
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/droidify:latest
           platforms: linux/amd64,linux/arm64
           build-args: BUILDTIME=${{ github.run_id }}_${{ github.sha }}
+          provenance: true
+          sbom: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Docker Scout CVE scan
+        uses: docker/scout-action@v1
+        with:
+          command: cves
+          image: ${{ secrets.DOCKERHUB_USERNAME }}/droidify:latest
+          only-severities: critical,high
+          exit-code: false
+          summary: true
+
+      - name: Delete old tags from Docker Hub
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          TOKEN=$(curl -s -X POST \
+            -H "Content-Type: application/json" \
+            -d '{"username":"'"$DOCKERHUB_USERNAME"'","password":"'"$DOCKERHUB_TOKEN"'"}' \
+            https://hub.docker.com/v2/users/login | jq -r .token)
+
+          TAGS=$(curl -s -H "Authorization: JWT $TOKEN" \
+            "https://hub.docker.com/v2/repositories/$DOCKERHUB_USERNAME/droidify/tags/?page_size=100" \
+            | jq -r '.results[].name')
+
+          for tag in $TAGS; do
+            if [ "$tag" != "latest" ]; then
+              echo "Deleting tag: $tag"
+              curl -s -X DELETE \
+                -H "Authorization: JWT $TOKEN" \
+                "https://hub.docker.com/v2/repositories/$DOCKERHUB_USERNAME/droidify/tags/$tag/"
+            fi
+          done
+          echo "Cleanup done"
