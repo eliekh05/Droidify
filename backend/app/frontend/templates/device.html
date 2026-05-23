@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Custom ROMs, recoveries and guides for your Android device." />
+  <title>Device — Droidify</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <meta name="theme-color" content="#3dd68c" />
+<style>
+  #ls{position:fixed;inset:0;background:#0b0f14;display:flex;align-items:center;justify-content:center;z-index:99999;transition:opacity 400ms ease,visibility 400ms ease}
+  #ls.ls-hide{opacity:0;visibility:hidden;pointer-events:none}
+  .ls-bg{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+  .ls-ring{position:absolute;border-radius:50%;border:1px solid rgba(61,214,140,.08);animation:lsRP 3s ease-in-out infinite}
+  .ls-ring:nth-child(1){width:220px;height:220px;top:50%;left:50%;transform:translate(-50%,-50%)}
+  .ls-ring:nth-child(2){width:340px;height:340px;top:50%;left:50%;transform:translate(-50%,-50%);animation-delay:.4s}
+  .ls-ring:nth-child(3){width:460px;height:460px;top:50%;left:50%;transform:translate(-50%,-50%);animation-delay:.8s}
+  @keyframes lsRP{0%,100%{opacity:.3;transform:translate(-50%,-50%) scale(1)}50%{opacity:.7;transform:translate(-50%,-50%) scale(1.04)}}
+  .ls-inner{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;z-index:1}
+  .ls-icon-bg{width:72px;height:72px;background:#121820;border:1.5px solid #1e2a3a;border-radius:18px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;animation:lsIP 600ms cubic-bezier(.34,1.56,.64,1) both}
+  @keyframes lsIP{from{opacity:0;transform:scale(.5)}to{opacity:1;transform:scale(1)}}
+  .ls-icon-d{font-size:32px;font-weight:800;color:#3dd68c;font-family:system-ui,sans-serif}
+  .ls-logo{font-size:2.1rem;font-weight:800;letter-spacing:-.04em;color:#e8eef5;font-family:system-ui,sans-serif;animation:lsFU 500ms cubic-bezier(.22,1,.36,1) 200ms both;margin-bottom:6px}
+  .ls-logo .accent{color:#3dd68c}
+  .ls-tag{font-size:.72rem;color:#4a6080;font-family:system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;animation:lsFU 500ms cubic-bezier(.22,1,.36,1) 320ms both;margin-bottom:28px}
+  @keyframes lsFU{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  .ls-bar-wrap{width:140px;height:2px;background:#1a2535;border-radius:2px;overflow:hidden;animation:lsFU 400ms ease 420ms both;margin-bottom:14px}
+  .ls-bar{height:100%;width:0%;background:#3dd68c;border-radius:2px;animation:lsBAR 1800ms cubic-bezier(.4,0,.2,1) 500ms forwards}
+  @keyframes lsBAR{0%{width:0%}30%{width:45%}60%{width:72%}85%{width:88%}100%{width:100%}}
+  .ls-dots{display:flex;gap:5px;animation:lsFU 400ms ease 520ms both}
+  .ls-dot{width:4px;height:4px;background:#3dd68c;border-radius:50%;opacity:.3;animation:lsDT 1.2s ease-in-out infinite}
+  .ls-dot:nth-child(2){animation-delay:.2s}
+  .ls-dot:nth-child(3){animation-delay:.4s}
+  @keyframes lsDT{0%,80%,100%{opacity:.2;transform:scale(1)}40%{opacity:1;transform:scale(1.4)}}
+</style>
+</head>
+<body>
+<div id="ls" aria-hidden="true">
+  <div class="ls-bg">
+    <div class="ls-ring"></div><div class="ls-ring"></div><div class="ls-ring"></div>
+  </div>
+  <div class="ls-inner">
+    <div class="ls-icon-bg"><div class="ls-icon-d">D</div></div>
+    <div class="ls-logo"><span class="accent">Droid</span>ify</div>
+    <div class="ls-tag">Android ecosystem</div>
+    <div class="ls-bar-wrap"><div class="ls-bar"></div></div>
+    <div class="ls-dots"><div class="ls-dot"></div><div class="ls-dot"></div><div class="ls-dot"></div></div>
+  </div>
+</div>
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="/" class="logo"><span class="accent">Droid</span>ify</a>
+    <button type="button" class="nav-toggle" id="nav-toggle" aria-label="Menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <nav id="main-nav">
+      <a href="/" class="nav-link" data-page="home">Home</a>
+      <a href="/devices.html" class="nav-link active" data-page="devices">Devices</a>
+      <a href="/roms.html" class="nav-link" data-page="roms">ROMs</a>
+      <a href="/recoveries.html" class="nav-link" data-page="recoveries">Recoveries</a>
+      <a href="/tools.html" class="nav-link" data-page="tools">Tools</a>
+      <a href="/android.html" class="nav-link" data-page="android">Android</a>
+      <a href="/guides.html" class="nav-link" data-page="guides">Guides</a>
+      <div id="pwa-install-wrap" style="display:none"></div>
+      <a href="https://github.com/eliekh05/Droidify" class="btn-github" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub
+      </a>
+    </nav>
+  </div>
+</header>
+<main class="container">
+  <div id="device-detail">
+    <div class="card skeleton" style="height:200px"></div>
+  </div>
+</main>
+<footer class="site-footer">
+  <div class="container">
+    <p>Droidify &mdash; Live Android ecosystem indexer &middot; Free &amp; open sources only &middot; No signin required &middot; <a href="/privacy.html" style="color:var(--muted);text-decoration:underline">Privacy</a></p>
+  </div>
+</footer>
+<script src="/js/api.js"></script>
+<script src="/js/device-detail.js"></script>
+<script>
+(function(){
+  var s=document.getElementById('ls');
+  if(!s)return;
+  var h=false;
+  var hide=function(){if(h)return;h=true;s.classList.add('ls-hide');setTimeout(function(){s.remove()},450);};
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',function(){setTimeout(hide,800)});}
+  else{setTimeout(hide,800);}
+  setTimeout(hide,4000);
+  var nt=document.getElementById('nav-toggle');
+  var nm=document.getElementById('main-nav');
+  if(nt&&nm){nt.addEventListener('click',function(){var o=nm.classList.toggle('nav-open');nt.setAttribute('aria-expanded',o?'true':'false');});}
+  if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(function(){});}
+})();
+</script>
+</body>
+</html>

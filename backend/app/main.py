@@ -134,6 +134,15 @@ app.include_router(guides_router,     prefix="/api/guides",           tags=["gui
 # Must be included AFTER all /api/* routers so API paths take priority.
 app.include_router(frontend_router)
 
+# ── Static files — CSS, JS, icons served directly from disk ──────────────────
+# Must be mounted AFTER all explicit routes so /api/* routes take priority.
+from pathlib import Path
+from fastapi.staticfiles import StaticFiles as _SF
+_static = Path(__file__).parent / "frontend" / "static"
+app.mount("/css",    _SF(directory=str(_static / "css"),   html=False), name="css")
+app.mount("/js",     _SF(directory=str(_static / "js"),    html=False), name="js")
+app.mount("/icons",  _SF(directory=str(_static / "icons"), html=False), name="icons")
+
 
 # ── 404 fallback — serve embedded 404 page ────────────────────────────────────
 @app.exception_handler(StarletteHTTPException)
