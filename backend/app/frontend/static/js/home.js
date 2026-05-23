@@ -14,8 +14,15 @@ function _roll(id, val) {
   const el = document.getElementById(id);
   if (!el || (val == null && val !== 0)) return;
   el.classList.remove('skeleton');
-  // The id is directly on the .stat-value element itself
-  window._rollNumber ? window._rollNumber(el, Number(val), 1600) : (el.textContent = Number(val).toLocaleString());
+  const num = Number(val);
+  // Skip animation if already showing the correct number (page reload)
+  if (el.textContent === num.toLocaleString()) return;
+  // Skip animation if user prefers reduced motion
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    el.textContent = num.toLocaleString();
+    return;
+  }
+  window._rollNumber ? window._rollNumber(el, num, 1200) : (el.textContent = num.toLocaleString());
 }
 
 async function loadHome() {

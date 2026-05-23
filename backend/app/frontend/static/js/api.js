@@ -122,6 +122,47 @@ function renderPagination(containerId, total, offset, limit, onPage) {
   const prefersMotion = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (prefersMotion) document.documentElement.classList.add('js-anim');
 
+  // ── Scroll reveal via IntersectionObserver ──────────────────────────────
+  // Works in all browsers — no animation-timeline needed
+  if ('IntersectionObserver' in window) {
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    const observe = () => {
+      document.querySelectorAll('.reveal, .reveal-grid').forEach(el => {
+        revealObserver.observe(el);
+      });
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', observe);
+    } else {
+      observe();
+    }
+
+    // Re-observe after dynamic content is added (grid updates)
+    window._reObserve = () => {
+      document.querySelectorAll('.reveal, .reveal-grid').forEach(el => {
+        if (!el.classList.contains('visible')) {
+          revealObserver.observe(el);
+        }
+      });
+    };
+  } else {
+    // Fallback: show everything immediately
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.reveal, .reveal-grid').forEach(el => {
+        el.classList.add('visible');
+      });
+    });
+  }
+
   function showAll() {
     document.querySelectorAll('.reveal, .reveal-grid').forEach(el => el.classList.add('visible'));
   }

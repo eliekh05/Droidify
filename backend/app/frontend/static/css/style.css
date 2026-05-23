@@ -1237,11 +1237,7 @@ textarea::placeholder {
       transform: none;
     }
     .reveal-grid > * {
-      opacity: 0;
-      transform: translateY(16px);
-      animation: revealNative linear forwards;
-      animation-timeline: view();
-      animation-range: entry 0% entry 50%;
+      /* Cards visible by default — JS IntersectionObserver handles the animation */
     }
     @keyframes revealNative {
       from { opacity: 0; transform: translateY(20px); }
