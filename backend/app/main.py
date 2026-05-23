@@ -35,24 +35,52 @@ logging.basicConfig(
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Warm critical caches on startup so first device page requests are fast."""
+    _log = logging.getLogger("droidify.startup")
+
     async def _warm():
+        """Pre-warm all caches on startup so first user request is instant.
+        Runs concurrently in the background — never blocks startup."""
+        _log.warning("Warming caches...")
         try:
+            from app.scrapers.devices import get_devices
+            from app.scrapers.android_versions import get_android_versions
+            from app.scrapers.tools import get_tools
+            from app.scrapers.recoveries import get_recoveries
             from app.scrapers.sourceforge_roms import get_sourceforge_roms
-            from app.scrapers.unofficialtwrp import get_unofficialtwrp_devices
             from app.scrapers.pixelexperience import get_pixelexperience_roms
+            from app.scrapers.unofficialtwrp import get_unofficialtwrp_devices
+            from app.scrapers.roms import get_all_roms
+
+            # Phase 1: fast scrapers — devices, tools, android versions (< 2s)
             await asyncio.gather(
-                get_sourceforge_roms(),
-                get_pixelexperience_roms(),
-                get_unofficialtwrp_devices(),
+                get_devices(limit=50),
+                get_android_versions(),
+                get_tools(),
                 return_exceptions=True,
             )
-        except Exception:
-            pass
+            _log.warning("Phase 1 warm complete (devices, tools, versions)")
 
-    try:
-        asyncio.get_event_loop().create_task(_warm())
-    except RuntimeError:
-        pass
+            # Phase 2: recoveries + ROM sources (5-15s)
+            await asyncio.gather(
+                get_recoveries(limit=1),
+                get_sourceforge_roms(),
+                get_pixelexperience_roms(),
+                return_exceptions=True,
+            )
+            _log.warning("Phase 2 warm complete (recoveries, SF, PE)")
+
+            # Phase 3: heavy scrapers in background (uTWRP, full ROM index)
+            await asyncio.gather(
+                get_unofficialtwrp_devices(),
+                get_all_roms(limit=1),
+                return_exceptions=True,
+            )
+            _log.warning("Phase 3 warm complete — all caches hot")
+
+        except Exception as e:
+            _log.warning("Warmup error (non-fatal): %s", e)
+
+    asyncio.get_event_loop().create_task(_warm())
     yield
 
 
