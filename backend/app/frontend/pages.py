@@ -237,14 +237,6 @@ def _index_body() -> str:
 
   <section class="section">
     <div class="section-header">
-      <h2>Featured devices</h2>
-      <a href="/devices.html" class="section-link">Browse all &rarr;</a>
-    </div>
-    <div class="reveal-grid" id="featured-devices"></div>
-  </section>
-
-  <section class="section">
-    <div class="section-header">
       <h2>Stats</h2>
     </div>
     <div class="stats-box reveal" id="stats-box">
@@ -254,6 +246,14 @@ def _index_body() -> str:
       <div class="stat-item"><div class="stat-value" id="stat-tools">—</div><div class="stat-label">Tools listed</div></div>
       <div class="stat-item"><div class="stat-value" id="stat-android">—</div><div class="stat-label">Android versions</div></div>
     </div>
+  </section>
+
+  <section class="section">
+    <div class="section-header">
+      <h2>Featured devices</h2>
+      <a href="/devices.html" class="section-link">Browse all &rarr;</a>
+    </div>
+    <div class="reveal-grid" id="featured-devices"></div>
   </section>
 
   <section class="section">
