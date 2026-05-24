@@ -14,20 +14,57 @@
 
   let deferred = null;
   let installed = false;
+  let showInstall = false;
+
+  // Platform detection
+  const ua = typeof navigator !== 'undefined' ? navigator.userAgent.toLowerCase() : '';
+  const isIOS  = /iphone|ipad|ipod/.test(ua) || (navigator?.platform === 'MacIntel' && navigator?.maxTouchPoints > 1);
+  const isMac  = /macintosh/.test(ua) && !isIOS;
+  const isSafari = /safari/.test(ua) && !/chrome|crios|chromium/.test(ua);
+
+  // Determine install label per platform
+  $: installLabel = isIOS
+    ? '⬇ Add to Home Screen'
+    : isMac && isSafari
+    ? '⬇ Install on Mac'
+    : '⬇ Install';
 
   if (typeof window !== 'undefined') {
+    // Chrome/Edge: capture the native prompt
     window.addEventListener('beforeinstallprompt', e => {
       e.preventDefault();
       deferred = e;
+      showInstall = true;
     });
-    window.addEventListener('appinstalled', () => { installed = true; deferred = null; });
+
+    window.addEventListener('appinstalled', () => {
+      installed = true;
+      showInstall = false;
+      deferred = null;
+    });
+
+    // Safari (iOS + macOS): always show install button since beforeinstallprompt never fires
+    if (isSafari || isIOS) {
+      // Only show if not already in standalone mode
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+        || window.navigator.standalone === true;
+      if (!isStandalone) showInstall = true;
+    }
   }
 
   async function install() {
-    if (!deferred) return;
-    deferred.prompt();
-    const { outcome } = await deferred.userChoice;
-    if (outcome === 'accepted') { installed = true; deferred = null; }
+    if (deferred) {
+      // Chrome/Edge — use native prompt
+      deferred.prompt();
+      const { outcome } = await deferred.userChoice;
+      if (outcome === 'accepted') { installed = true; showInstall = false; deferred = null; }
+    } else if (isIOS) {
+      alert('To install: tap the Share button (□↑) then "Add to Home Screen".');
+    } else if (isMac && isSafari) {
+      alert('To install: click File menu → "Add to Dock…" or use the Share button.');
+    } else {
+      alert('To install: open your browser menu and choose "Install app" or "Add to Home Screen".');
+    }
   }
 
   function handleNav(e, href) {
@@ -51,8 +88,8 @@
       {/each}
     </nav>
     <div class="nav-end">
-      {#if deferred && !installed}
-        <button class="btn-install" on:click={install}>⬇ Install</button>
+      {#if showInstall && !installed}
+        <button class="btn-install" on:click={install}>{installLabel}</button>
       {/if}
       <a
         href="https://github.com/eliekh05/Droidify"

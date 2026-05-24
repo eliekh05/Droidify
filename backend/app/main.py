@@ -136,7 +136,17 @@ async def static_file(request: Request):
 async def sw():
     return FileResponse(STATIC / "sw.js", headers={"Cache-Control": "no-store"})
 
-# ── SPA fallback — all other routes serve index.html ─────────────────────────
+# ── SPA catch-all — serves index.html for all non-API routes ─────────────────
+@app.get("/{full_path:path}", include_in_schema=False)
+async def spa_fallback(full_path: str, request: Request):
+    # Never intercept API routes
+    if full_path.startswith("api/"):
+        return JSONResponse(status_code=404, content={"detail": "Not found"})
+    index = STATIC / "index.html"
+    if index.exists():
+        return FileResponse(index)
+    return JSONResponse(status_code=503, content={"detail": "Frontend not built yet"})
+
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     if exc.status_code == 404 and not request.url.path.startswith("/api/"):
