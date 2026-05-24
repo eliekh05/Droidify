@@ -3,7 +3,7 @@ FROM node:22-alpine AS frontend-builder
 
 WORKDIR /frontend
 COPY frontend/package*.json ./
-RUN npm ci --quiet
+RUN npm ci
 COPY frontend/ ./
 RUN npm run build
 # Output: /frontend/dist/
@@ -13,7 +13,6 @@ FROM python:3.12-alpine AS py-builder
 
 # gcc + musl-dev: required to compile lxml's C extensions
 # libxml2-dev + libxslt-dev: lxml links against these at compile time
-# libxml2 + libxslt (no -dev): runtime shared libraries for the final image
 RUN apk add --no-cache gcc musl-dev libxml2-dev libxslt-dev
 
 WORKDIR /build
@@ -57,4 +56,4 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=5 \
     CMD python3 -c "import urllib.request,os; urllib.request.urlopen('http://localhost:'+os.environ.get('PORT','8000')+'/api/health',timeout=8)"
 
-CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
