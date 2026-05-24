@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { currentRoute, navigate } from '../lib/router.js';
   import { api } from '../lib/api.js';
+  import { reveal } from '../lib/reveal.js';
   import Pagination from '../components/Pagination.svelte';
 
   const LIMIT = 24;
@@ -18,12 +19,11 @@
   }
 
   onMount(() => { query = $currentRoute.query.get('q') || ''; load(query, 0); });
-
   function search() { navigate(query.trim() ? `/roms?q=${encodeURIComponent(query.trim())}` : '/roms'); }
 </script>
 
 <main class="container">
-  <div class="page-header"><h1>ROMs</h1><p class="page-sub">Browse custom Android ROMs across all supported devices</p></div>
+  <div class="page-header" use:reveal><h1>ROMs</h1><p class="page-sub">Browse custom Android ROMs across all supported devices</p></div>
   <div class="filters-bar">
     <input class="search-input" type="search" placeholder="Search ROM name..." bind:value={query}
       on:keydown={e => e.key === 'Enter' && search()} />
@@ -38,18 +38,19 @@
     <div class="empty-state">No ROMs found.</div>
   {:else}
     <div class="device-grid">
-      {#each roms as rom}
-        <div class="card">
-          <div class="card-mfr">{rom.source || 'custom'}</div>
-          <div class="card-title">{rom.name}</div>
-          <div class="card-codename">{rom.codename}</div>
-          {#if rom.android_base}<div style="font-size:.78rem;color:var(--muted);margin-top:.3rem">Android {rom.android_base}</div>{/if}
-          {#if rom.download_url}
-            <div style="margin-top:.5rem">
-              <a href={rom.download_url} target="_blank" rel="noopener"
-                style="font-size:.78rem;color:var(--accent)">Download →</a>
-            </div>
-          {/if}
+      {#each roms as rom, i}
+        <div use:reveal={{ delay: i * 40 }}>
+          <div class="card">
+            <div class="card-mfr">{rom.source || 'custom'}</div>
+            <div class="card-title">{rom.name}</div>
+            <div class="card-codename">{rom.codename}</div>
+            {#if rom.android_base}<div style="font-size:.78rem;color:var(--muted);margin-top:.3rem">Android {rom.android_base}</div>{/if}
+            {#if rom.download_url}
+              <div style="margin-top:.5rem">
+                <a href={rom.download_url} target="_blank" rel="noopener" style="font-size:.78rem;color:var(--accent)">Download →</a>
+              </div>
+            {/if}
+          </div>
         </div>
       {/each}
     </div>

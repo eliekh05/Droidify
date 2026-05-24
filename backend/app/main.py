@@ -111,41 +111,30 @@ app.include_router(roms_router,       prefix="/api/roms",             tags=["rom
 app.include_router(recoveries_router, prefix="/api/recoveries",       tags=["recoveries"])
 app.include_router(guides_router,     prefix="/api/guides",           tags=["guides"])
 
-# ── Static assets (Vite output) ───────────────────────────────────────────────
-if (STATIC / "assets").exists():
-    app.mount("/assets", StaticFiles(directory=str(STATIC / "assets")), name="assets")
-if (STATIC / "icons").exists():
-    app.mount("/icons", StaticFiles(directory=str(STATIC / "icons")), name="icons")
-
-# ── Root-level static files ───────────────────────────────────────────────────
-@app.get("/favicon.svg",     include_in_schema=False)
-@app.get("/favicon.ico",     include_in_schema=False)
-@app.get("/manifest.json",   include_in_schema=False)
-@app.get("/robots.txt",      include_in_schema=False)
-@app.get("/apple-touch-icon.png", include_in_schema=False)
-@app.get("/apple-touch-icon-precomposed.png", include_in_schema=False)
-async def static_file(request: Request):
-    name = request.url.path.lstrip("/")
-    f = STATIC / name
-    if f.exists():
-        return FileResponse(f)
-    return FileResponse(STATIC / "index.html")
-
+# ── SW — no-cache header ─────────────────────────────────────────────────────
 @app.get("/sw.js", include_in_schema=False)
 async def sw():
     return FileResponse(STATIC / "sw.js", headers={"Cache-Control": "no-store"})
 
-# ── SPA catch-all — serves index.html for all non-API routes ─────────────────
+# ── SPA + static file handler ─────────────────────────────────────────────────
+# Serves real files from STATIC dir, falls back to index.html for SPA routes.
+# No StaticFiles mount — avoids 404 conflicts with catch-all route.
 @app.get("/{full_path:path}", include_in_schema=False)
 async def spa_fallback(full_path: str, request: Request):
-    # Never intercept API routes
     if full_path.startswith("api/"):
         return JSONResponse(status_code=404, content={"detail": "Not found"})
+
+    file_path = STATIC / full_path
+    if file_path.exists() and file_path.is_file():
+        return FileResponse(file_path)
+
     index = STATIC / "index.html"
     if index.exists():
         return FileResponse(index)
-    return JSONResponse(status_code=503, content={"detail": "Frontend not built yet"})
 
+    return JSONResponse(status_code=503, content={"detail": "Frontend not built"})
+
+# ── Exception handler ─────────────────────────────────────────────────────────
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     if exc.status_code == 404 and not request.url.path.startswith("/api/"):

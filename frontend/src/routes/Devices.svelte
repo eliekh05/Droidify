@@ -4,6 +4,7 @@
   import { api } from '../lib/api.js';
   import DeviceCard from '../components/DeviceCard.svelte';
   import Pagination from '../components/Pagination.svelte';
+  import { reveal } from '../lib/reveal.js';
 
   const LIMIT = 24;
   let devices = [], total = 0, offset = 0, loading = true, error = '';
@@ -56,7 +57,9 @@
     <div class="empty-state">No devices found. Try a different search.</div>
   {:else}
     <div class="device-grid">
-      {#each devices as device}<DeviceCard {device} />{/each}
+      {#each devices as device, i}
+        <div use:reveal={{ delay: i * 40 }}><DeviceCard {device} /></div>
+      {/each}
     </div>
     <Pagination {total} {offset} limit={LIMIT} onPage={off => load(query, off)} />
   {/if}

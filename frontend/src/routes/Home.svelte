@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { navigate } from '../lib/router.js';
   import { api } from '../lib/api.js';
+  import { reveal } from '../lib/reveal.js';
   import DeviceCard from '../components/DeviceCard.svelte';
 
   let stats = { devices: null, roms: null, recoveries: null, tools: null, android: null };
@@ -16,7 +17,6 @@
   }
 
   onMount(() => {
-    // Load each independently so nothing blocks
     api.devices({ limit: 50 }).then(d => {
       stats.devices = d.total;
       featured = [...d.devices].sort(() => Math.random() - .5).slice(0, 6);
@@ -52,7 +52,7 @@
     </div>
   </section>
 
-  <div class="sources-banner">
+  <div class="sources-banner" use:reveal>
     <div class="badges">
       {#each SOURCES as s}<span class="badge">{s}</span>{/each}
     </div>
@@ -60,8 +60,8 @@
   </div>
 
   <section class="section" style="margin-top:2rem">
-    <div class="section-header"><h2>Stats</h2></div>
-    <div class="stats-box">
+    <div class="section-header" use:reveal><h2>Stats</h2></div>
+    <div class="stats-box" use:reveal={{ delay: 100 }}>
       {#each [
         ['stat-devices',   stats.devices,    'Devices indexed'],
         ['stat-roms',      stats.roms,       'ROM builds'],
@@ -78,14 +78,16 @@
   </section>
 
   <section class="section">
-    <div class="section-header">
+    <div class="section-header" use:reveal>
       <h2>Featured devices</h2>
       <a href="/devices" class="section-link" on:click|preventDefault={() => navigate('/devices')}>Browse all →</a>
     </div>
     {#if featured.length}
       <div class="device-grid">
-        {#each featured as device}
-          <DeviceCard {device} />
+        {#each featured as device, i}
+          <div use:reveal={{ delay: i * 60 }}>
+            <DeviceCard {device} />
+          </div>
         {/each}
       </div>
     {:else}
@@ -99,17 +101,19 @@
 
   {#if romFamilies.length}
     <section class="section">
-      <div class="section-header">
+      <div class="section-header" use:reveal>
         <h2>ROM families</h2>
         <a href="/roms" class="section-link" on:click|preventDefault={() => navigate('/roms')}>Browse all →</a>
       </div>
       <div class="device-grid">
-        {#each romFamilies as { name, count }}
-          <div class="card" style="cursor:pointer" role="button" tabindex="0"
-            on:click={() => navigate(`/roms?q=${encodeURIComponent(name)}`)}
-            on:keydown={e => e.key === 'Enter' && navigate(`/roms?q=${encodeURIComponent(name)}`)}>
-            <div class="card-title">{name}</div>
-            <div class="card-sub" style="color:var(--muted);font-size:.8rem">{count} build{count !== 1 ? 's' : ''}</div>
+        {#each romFamilies as { name, count }, i}
+          <div use:reveal={{ delay: i * 50 }}>
+            <div class="card" style="cursor:pointer" role="button" tabindex="0"
+              on:click={() => navigate(`/roms?q=${encodeURIComponent(name)}`)}
+              on:keydown={e => e.key === 'Enter' && navigate(`/roms?q=${encodeURIComponent(name)}`)}>
+              <div class="card-title">{name}</div>
+              <div class="card-sub" style="color:var(--muted);font-size:.8rem">{count} build{count !== 1 ? 's' : ''}</div>
+            </div>
           </div>
         {/each}
       </div>
@@ -118,11 +122,11 @@
 
   {#if androidPills.length}
     <section class="section">
-      <div class="section-header">
+      <div class="section-header" use:reveal>
         <h2>Android versions</h2>
         <a href="/android" class="section-link" on:click|preventDefault={() => navigate('/android')}>Full history →</a>
       </div>
-      <div class="android-pills">
+      <div class="android-pills" use:reveal={{ delay: 80 }}>
         {#each androidPills as v}
           <div class="v-pill" role="button" tabindex="0"
             on:click={() => navigate('/android')}
