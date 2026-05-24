@@ -79,10 +79,12 @@
     <p class="page-sub">Root, flash, and Android development tools</p>
   </div>
   <div class="filters-bar">
-    <input type="search" id="search-input" placeholder="Search tools..." autocomplete="off" />
-    <button class="btn-primary" id="search-btn">Search</button>
+    <input type="search" id="tool-search" placeholder="Search tools..." autocomplete="off" />
+    <button class="btn-primary" id="filter-btn">Search</button>
+    <span id="cat-filter" style="display:none"></span>
+    <span id="status-filter" style="display:none"></span>
   </div>
-  <div class="reveal-grid" id="tools-grid"></div>
+  <div class="reveal-grid" id="tools-container"></div>
 </main>
 <footer class="site-footer">
   <div class="container">

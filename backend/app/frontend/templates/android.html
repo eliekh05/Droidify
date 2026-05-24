@@ -78,7 +78,17 @@
     <h1>Android versions</h1>
     <p class="page-sub">Complete Android release history</p>
   </div>
-  <div class="reveal-grid" id="android-grid"></div>
+  <div class="filters-bar">
+    <button class="btn-primary" id="filter-btn">Filter</button>
+    <span id="status-filter" style="display:none"></span>
+    <span id="api-min" style="display:none"></span>
+    <span id="source-label" style="display:none"></span>
+  </div>
+  <div id="android-grid">
+    <table class="android-table">
+      <tbody id="android-tbody"></tbody>
+    </table>
+  </div>
 </main>
 <footer class="site-footer">
   <div class="container">

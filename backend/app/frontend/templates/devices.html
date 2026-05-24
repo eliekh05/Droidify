@@ -79,8 +79,10 @@
     <p class="page-sub">Browse and search over 1,100 Android devices</p>
   </div>
   <div class="filters-bar">
-    <input type="search" id="search-input" placeholder="Search device, codename or manufacturer..." autocomplete="off" />
+    <input type="search" id="device-search" placeholder="Search device, codename or manufacturer..." autocomplete="off" />
     <button class="btn-primary" id="search-btn">Search</button>
+    <span id="mfr-filter" style="display:none"></span>
+    <span id="source-filter" style="display:none"></span>
   </div>
   <div id="results-meta"></div>
   <div class="reveal-grid" id="device-grid"></div>
