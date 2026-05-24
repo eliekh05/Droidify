@@ -1,7 +1,17 @@
-fastapi
-uvicorn[standard]
-httpx
-beautifulsoup4
-lxml
-pydantic
-aiofiles
+# Web framework
+fastapi>=0.100.0
+uvicorn[standard]>=0.23.0
+
+# HTTP client (async)
+httpx>=0.25.0
+
+# HTML parsing — lxml is faster than html.parser for large pages
+# Requires: gcc musl-dev libxml2-dev libxslt-dev (Alpine builder stage)
+beautifulsoup4>=4.12.0
+lxml>=5.0.0
+
+# Data validation
+pydantic>=2.0.0
+
+# Async file I/O
+aiofiles>=23.0.0

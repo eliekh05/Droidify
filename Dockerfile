@@ -11,6 +11,9 @@ RUN npm run build
 # ── Stage 2: Build Python dependencies ───────────────────────────────────────
 FROM python:3.12-alpine AS py-builder
 
+# gcc + musl-dev: required to compile lxml's C extensions
+# libxml2-dev + libxslt-dev: lxml links against these at compile time
+# libxml2 + libxslt (no -dev): runtime shared libraries for the final image
 RUN apk add --no-cache gcc musl-dev libxml2-dev libxslt-dev
 
 WORKDIR /build
@@ -21,6 +24,7 @@ RUN pip install --no-cache-dir --upgrade pip wheel \
 # ── Stage 3: Final image ──────────────────────────────────────────────────────
 FROM python:3.12-alpine
 
+# Only runtime libs needed — no build tools in final image
 RUN adduser -D -u 1000 -g "" user \
  && apk add --no-cache libxml2 libxslt
 

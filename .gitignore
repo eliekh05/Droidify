@@ -31,11 +31,3 @@ Thumbs.db
 # Svelte / Vite — build artifacts, never commit
 frontend/node_modules/
 frontend/dist/
-
-# Logs
-*.log
-
-# Generated / runtime
-*.sqlite
-*.db
-/tmp/
