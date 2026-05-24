@@ -17,7 +17,7 @@
   }
 
   onMount(() => {
-    api.devices({ limit: 50 }).then(d => {
+    api.devices({ limit: 24 }).then(d => {
       stats.devices = d.total;
       featured = [...d.devices].sort(() => Math.random() - .5).slice(0, 6);
     }).catch(() => {});
@@ -30,7 +30,7 @@
       androidPills = [...d.versions].reverse().slice(0, 8);
     }).catch(() => {});
 
-    api.roms({ limit: 50 }).then(d => {
+    api.roms({ limit: 20 }).then(d => {
       const counts = {};
       for (const r of d.roms) counts[r.name] = (counts[r.name] || 0) + 1;
       romFamilies = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 8)

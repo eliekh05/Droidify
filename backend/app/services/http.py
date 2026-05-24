@@ -22,7 +22,7 @@ def get_client() -> httpx.AsyncClient:
     """Return a configured async HTTP client."""
     return httpx.AsyncClient(
         headers=HEADERS,
-        timeout=15.0,
+        timeout=8.0,
         follow_redirects=True,
         limits=httpx.Limits(max_connections=20, max_keepalive_connections=10),
     )

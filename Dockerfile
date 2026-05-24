@@ -41,13 +41,14 @@ WORKDIR /home/user/app
 COPY --from=py-builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
 COPY --from=py-builder /usr/local/bin /usr/local/bin
 
-ARG BUILDTIME=0
-RUN echo "Build: ${BUILDTIME}"
+# Build timestamp — forces rebuild of this layer on every build
+ARG BUILDTIME=unknown
+RUN echo "Built: ${BUILDTIME}"
 
 # Copy Python backend
 COPY --chown=user:user backend/app ./app
 
-# Copy Svelte build output into the static directory FastAPI serves
+# Copy Svelte build output — always fresh from frontend-builder stage
 COPY --from=frontend-builder --chown=user:user /frontend/dist ./app/frontend/static
 
 USER user

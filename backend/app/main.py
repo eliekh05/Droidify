@@ -119,7 +119,7 @@ async def sw():
 # ── SPA + static file handler ─────────────────────────────────────────────────
 # Serves real files from STATIC dir, falls back to index.html for SPA routes.
 # No StaticFiles mount — avoids 404 conflicts with catch-all route.
-@app.get("/{full_path:path}", include_in_schema=False)
+@app.api_route("/{full_path:path}", methods=["GET", "HEAD"], include_in_schema=False)
 async def spa_fallback(full_path: str, request: Request):
     if full_path.startswith("api/"):
         return JSONResponse(status_code=404, content={"detail": "Not found"})

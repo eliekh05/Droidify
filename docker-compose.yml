@@ -3,6 +3,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        BUILDTIME: ${BUILDTIME:-}
     image: droidify:latest
     container_name: droidify
     restart: unless-stopped
