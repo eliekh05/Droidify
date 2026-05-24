@@ -17,7 +17,7 @@
   function applyFilter() {
     filtered = versions.filter(v => {
       if (statusFilter && v.status !== statusFilter) return false;
-      if (minApi && v.api_level < parseInt(minApi)) return false;
+      if (minApi && Number(v.api_level) < Number(minApi)) return false;
       return true;
     });
   }

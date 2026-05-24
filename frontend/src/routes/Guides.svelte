@@ -1,38 +1,44 @@
 <script>
-  import { onMount } from 'svelte';
   import { api } from '../lib/api.js';
 
   let guides = [], loading = false, error = '', query = '';
 
   async function search() {
-    if (!query.trim()) return;
+    const q = query.trim();
+    if (!q) return;
     loading = true; error = '';
     try {
-      const data = await api.guides({ codename: query.trim() });
-      guides = data.guides || data;
-    } catch(e) { error = e.message; guides = []; }
+      const data = await api.guides(q);
+      guides = data.guides || [];
+    } catch(e) {
+      error = e.message.includes('404') ? `No guides found for "${q}"` : e.message;
+      guides = [];
+    }
     loading = false;
   }
 </script>
 
 <main class="container">
-  <div class="page-header"><h1>Guides</h1><p class="page-sub">Flashing, rooting, and Android modding guides</p></div>
+  <div class="page-header">
+    <h1>Guides</h1>
+    <p class="page-sub">Flashing, rooting, and Android modding guides</p>
+  </div>
   <div class="filters-bar">
-    <input class="search-input" type="search" placeholder="Enter device codename (e.g. beryllium)..."
+    <input class="search-input" type="search" placeholder="Enter device codename (e.g. beryllium, j7xelte)..."
       bind:value={query} on:keydown={e => e.key === 'Enter' && search()} />
     <button class="btn-primary" on:click={search}>Search</button>
   </div>
   {#if loading}
     <div class="skeleton" style="height:200px"></div>
   {:else if error}
-    <div class="error-state">{error}</div>
+    <div class="empty-state">{error}</div>
   {:else if guides.length === 0 && query}
     <div class="empty-state">No guides found for "{query}".</div>
   {:else}
     <div class="device-grid">
       {#each guides as g}
         <div class="card">
-          <div class="card-mfr">{g.category || 'guide'}</div>
+          <div class="card-mfr">{g.guide_type || g.category || 'guide'}</div>
           <div class="card-title">{g.title}</div>
           {#if g.description}<div style="font-size:.82rem;color:var(--muted);margin-top:.3rem">{g.description}</div>{/if}
           {#if g.url}

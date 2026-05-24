@@ -323,3 +323,45 @@ nav { display: flex; align-items: center; gap: .15rem; flex: 1; }
   nav .nav-link { display: none; }
   nav .nav-link.active { display: block; }
 }
+
+/* ── Mobile nav ──────────────────────────────────────────────── */
+.nav-toggle {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  padding: .4rem;
+  cursor: pointer;
+  margin-left: auto;
+}
+.nav-toggle span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--text);
+  border-radius: 2px;
+  transition: all 200ms ease;
+}
+
+@media (max-width: 768px) {
+  .nav-toggle { display: flex; }
+
+  nav {
+    display: none;
+    position: absolute;
+    top: 54px;
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-direction: column;
+    padding: .5rem 1rem;
+    gap: .25rem;
+    z-index: 99;
+  }
+  nav.open { display: flex; }
+
+  .nav-link { display: block !important; padding: .6rem .75rem; }
+  .nav-end { display: none; }
+}

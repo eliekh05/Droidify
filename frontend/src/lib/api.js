@@ -20,5 +20,5 @@ export const api = {
   recoveries:      (p = {}) => get('/recoveries', p),
   tools:           ()       => get('/tools'),
   androidVersions: ()       => get('/android-versions'),
-  guides:          (p = {}) => get('/guides', p),
+  guides:          (codename) => get(`/guides/${codename}`),
 };

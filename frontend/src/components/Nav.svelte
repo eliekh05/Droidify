@@ -67,8 +67,11 @@
     }
   }
 
+  let menuOpen = false;
+
   function handleNav(e, href) {
     e.preventDefault();
+    menuOpen = false;
     navigate(href);
   }
 </script>
@@ -78,7 +81,10 @@
     <a href="/" class="logo" on:click={e => handleNav(e, '/')}>
       <span class="accent">Droid</span>ify
     </a>
-    <nav>
+    <button class="nav-toggle" on:click={() => menuOpen = !menuOpen} aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class={menuOpen ? 'open' : ''}>
       {#each links as { key, href, label }}
         <a
           {href}
