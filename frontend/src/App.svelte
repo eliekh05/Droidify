@@ -3,13 +3,13 @@
   import Nav from './components/Nav.svelte';
   import Home from './routes/Home.svelte';
   import Devices from './routes/Devices.svelte';
+  import Device from './routes/Device.svelte';
   import Roms from './routes/Roms.svelte';
   import Recoveries from './routes/Recoveries.svelte';
   import Tools from './routes/Tools.svelte';
   import Android from './routes/Android.svelte';
   import Guides from './routes/Guides.svelte';
   import Privacy from './routes/Privacy.svelte';
-  import NotFound from './routes/NotFound.svelte';
 
   $: path = $currentRoute.path.replace(/\/$/, '') || '/';
 
@@ -30,6 +30,8 @@
   <Home />
 {:else if path === '/devices'}
   <Devices />
+{:else if path.startsWith('/device/')}
+  <Device />
 {:else if path === '/roms'}
   <Roms />
 {:else if path === '/recoveries'}
@@ -43,7 +45,7 @@
 {:else if path === '/privacy'}
   <Privacy />
 {:else}
-  <NotFound />
+  <Home />
 {/if}
 
 <footer class="site-footer">
