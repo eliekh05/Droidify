@@ -1,20 +1,19 @@
-"""Droidify — FastAPI backend + embedded frontend.
+"""Droidify — FastAPI backend + Svelte frontend.
 
-Single process: serves REST API at /api/* and the entire frontend from
-Python string literals embedded in app/frontend/assets.py and pages.py.
-
-No filesystem reads at runtime — the /frontend directory is gone.
+Single process: serves REST API at /api/* and the Svelte SPA at /*.
+Frontend built with Vite during Docker build — output copied to app/frontend/static/.
 All data fetched live from free public sources — zero hardcoded content.
 """
 import asyncio
 import logging
 import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-
-from fastapi.responses import HTMLResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api.devices import router as devices_router
@@ -23,23 +22,21 @@ from app.api.tools import router as tools_router
 from app.api.roms import router as roms_router
 from app.api.recoveries import router as recoveries_router
 from app.api.guides import router as guides_router
-from app.frontend.router import router as frontend_router
-from app.frontend import pages
 
 logging.basicConfig(
     level=logging.WARNING,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
 
+# Docker copies Vite build output here: frontend/dist/ -> /home/user/app/frontend/static/
+STATIC = Path(__file__).parent / "frontend" / "static"
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Warm critical caches on startup so first device page requests are fast."""
     _log = logging.getLogger("droidify.startup")
 
     async def _warm():
-        """Pre-warm all caches on startup so first user request is instant.
-        Runs concurrently in the background — never blocks startup."""
         _log.warning("Warming caches...")
         try:
             from app.scrapers.devices import get_devices
@@ -51,28 +48,20 @@ async def lifespan(app: FastAPI):
             from app.scrapers.unofficialtwrp import get_unofficialtwrp_devices
             from app.scrapers.roms import get_all_roms
 
-            # Phase 1: fast scrapers — devices, tools, android versions (< 2s)
             await asyncio.gather(
-                get_devices(limit=50),
-                get_android_versions(),
-                get_tools(),
+                get_devices(limit=50), get_android_versions(), get_tools(),
                 return_exceptions=True,
             )
-            _log.warning("Phase 1 warm complete (devices, tools, versions)")
+            _log.warning("Phase 1 warm complete")
 
-            # Phase 2: recoveries + ROM sources (5-15s)
             await asyncio.gather(
-                get_recoveries(limit=1),
-                get_sourceforge_roms(),
-                get_pixelexperience_roms(),
+                get_recoveries(limit=1), get_sourceforge_roms(), get_pixelexperience_roms(),
                 return_exceptions=True,
             )
-            _log.warning("Phase 2 warm complete (recoveries, SF, PE)")
+            _log.warning("Phase 2 warm complete")
 
-            # Phase 3: heavy scrapers in background (uTWRP, full ROM index)
             await asyncio.gather(
-                get_unofficialtwrp_devices(),
-                get_all_roms(limit=1),
+                get_unofficialtwrp_devices(), get_all_roms(limit=1),
                 return_exceptions=True,
             )
             _log.warning("Phase 3 warm complete — all caches hot")
@@ -87,11 +76,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     lifespan=lifespan,
     title="Droidify API",
-    description=(
-        "Live Android ecosystem indexer. "
-        "No hardcoded data — all fetched from free public sources. "
-        "No authentication required."
-    ),
+    description="Live Android ecosystem indexer. No hardcoded data. No authentication required.",
     version="2.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
@@ -108,7 +93,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 # ── Health ────────────────────────────────────────────────────────────────────
 @app.get("/api/health", tags=["meta"])
 async def health():
@@ -117,9 +101,8 @@ async def health():
         "version": "2.0.0",
         "hardcoded_data": False,
         "auth_required": False,
-        "frontend": "embedded",
+        "frontend": "svelte",
     }
-
 
 # ── API routers ───────────────────────────────────────────────────────────────
 app.include_router(devices_router,    prefix="/api/devices",          tags=["devices"])
@@ -129,29 +112,35 @@ app.include_router(roms_router,       prefix="/api/roms",             tags=["rom
 app.include_router(recoveries_router, prefix="/api/recoveries",       tags=["recoveries"])
 app.include_router(guides_router,     prefix="/api/guides",           tags=["guides"])
 
+# ── Static assets (Vite output) ───────────────────────────────────────────────
+if (STATIC / "assets").exists():
+    app.mount("/assets", StaticFiles(directory=str(STATIC / "assets")), name="assets")
+if (STATIC / "icons").exists():
+    app.mount("/icons", StaticFiles(directory=str(STATIC / "icons")), name="icons")
 
-# ── Frontend router (embedded assets + HTML pages) ────────────────────────────
-# Must be included AFTER all /api/* routers so API paths take priority.
-app.include_router(frontend_router)
+# ── Root-level static files ───────────────────────────────────────────────────
+@app.get("/favicon.svg",     include_in_schema=False)
+@app.get("/favicon.ico",     include_in_schema=False)
+@app.get("/manifest.json",   include_in_schema=False)
+@app.get("/robots.txt",      include_in_schema=False)
+@app.get("/apple-touch-icon.png", include_in_schema=False)
+@app.get("/apple-touch-icon-precomposed.png", include_in_schema=False)
+async def static_file(request: Request):
+    name = request.url.path.lstrip("/")
+    f = STATIC / name
+    if f.exists():
+        return FileResponse(f)
+    return FileResponse(STATIC / "index.html")
 
-# ── Static files — CSS, JS, icons served directly from disk ──────────────────
-# Must be mounted AFTER all explicit routes so /api/* routes take priority.
-from pathlib import Path
-from fastapi.staticfiles import StaticFiles as _SF
-_static = Path(__file__).parent / "frontend" / "static"
-app.mount("/css",    _SF(directory=str(_static / "css"),   html=False), name="css")
-app.mount("/js",     _SF(directory=str(_static / "js"),    html=False), name="js")
-app.mount("/icons",  _SF(directory=str(_static / "icons"), html=False), name="icons")
+@app.get("/sw.js", include_in_schema=False)
+async def sw():
+    return FileResponse(STATIC / "sw.js", headers={"Cache-Control": "no-store"})
 
-
-# ── 404 fallback — serve embedded 404 page ────────────────────────────────────
+# ── SPA fallback — all other routes serve index.html ─────────────────────────
 @app.exception_handler(StarletteHTTPException)
-async def _http_exception_handler(request: Request, exc: StarletteHTTPException):
-    if exc.status_code == 404:
-        return HTMLResponse(content=pages.page_404, status_code=404)
-    # Re-raise everything else as a plain JSON error
-    from fastapi.responses import JSONResponse
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={"detail": exc.detail},
-    )
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    if exc.status_code == 404 and not request.url.path.startswith("/api/"):
+        index = STATIC / "index.html"
+        if index.exists():
+            return FileResponse(index)
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})

@@ -1,4 +1,15 @@
-FROM python:3.12-alpine AS builder
+# ── Stage 1: Build Svelte frontend ───────────────────────────────────────────
+FROM node:22-alpine AS frontend-builder
+
+WORKDIR /frontend
+COPY frontend/package*.json ./
+RUN npm ci --quiet
+COPY frontend/ ./
+RUN npm run build
+# Output: /frontend/dist/
+
+# ── Stage 2: Build Python dependencies ───────────────────────────────────────
+FROM python:3.12-alpine AS py-builder
 
 RUN apk add --no-cache gcc musl-dev libxml2-dev libxslt-dev
 
@@ -7,7 +18,7 @@ COPY backend/requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip wheel \
  && pip install --no-cache-dir -r requirements.txt
 
-# ── Final image ───────────────────────────────────────────────────────────────
+# ── Stage 3: Final image ──────────────────────────────────────────────────────
 FROM python:3.12-alpine
 
 RUN adduser -D -u 1000 -g "" user \
@@ -24,17 +35,19 @@ ENV HOME=/home/user \
 
 WORKDIR /home/user/app
 
-# Copy installed packages from builder — no gcc in final image
-COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
-COPY --from=builder /usr/local/bin /usr/local/bin
+COPY --from=py-builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
+COPY --from=py-builder /usr/local/bin /usr/local/bin
 
 ARG BUILDTIME=0
 RUN echo "Build: ${BUILDTIME}"
 
+# Copy Python backend
 COPY --chown=user:user backend/app ./app
 
-USER user
+# Copy Svelte build output into the static directory FastAPI serves
+COPY --from=frontend-builder --chown=user:user /frontend/dist ./app/frontend/static
 
+USER user
 EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=5 \
