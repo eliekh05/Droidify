@@ -60,7 +60,7 @@ async def _check_grapheneos(client, codename: str) -> dict | None:
     if not re.match(r'^[a-z][a-z0-9_]+$', codename):
         return None
     ck = f"grapheneos:{codename}"
-    cached = await cache_get(ck)
+    cached = await get(ck)
     if cached is not None:
         return cached if cached else None
 
@@ -83,7 +83,7 @@ async def _check_grapheneos(client, codename: str) -> dict | None:
             "source":        "grapheneos_official",
             "description":   "Privacy-focused OS. Direct factory image download.",
         }
-    await cache_set(ck, result or {}, ttl=1800)
+    await set(ck, result or {}, ttl=1800)
     return result
 
 
@@ -95,7 +95,7 @@ async def _check_crdroid(client, codename: str) -> dict | None:
     Avoids 7 sequential HTTP requests per device.
     """
     ck = f"crdroid:{codename}"
-    cached = await cache_get(ck)
+    cached = await get(ck)
     if cached is not None:
         return cached if cached else None
 
@@ -119,23 +119,23 @@ async def _check_crdroid(client, codename: str) -> dict | None:
                     "source":        "crdroid_sf",
                     "description":   "crDroid — feature-rich AOSP ROM with deep customization.",
                 }
-                await cache_set(ck, result, ttl=3600)
+                await set(ck, result, ttl=3600)
                 return result
     except Exception:
         pass
 
-    await cache_set(ck, {}, ttl=3600)
+    await set(ck, {}, ttl=3600)
     return None
 
 
 # ── DivestOS ──────────────────────────────────────────────────────────────────
 async def _check_divestos(client, codename: str) -> dict | None:
     ck = "divestos_page"
-    cached = await cache_get(ck)
+    cached = await get(ck)
     if cached is None:
         resp = await fetch(client, DIVESTOS_DEVICES_URL)
         page = resp.text.lower() if resp and resp.status_code == 200 else ""
-        await cache_set(ck, page, ttl=3600)
+        await set(ck, page, ttl=3600)
         cached = page
 
     if codename.lower() not in cached:
@@ -161,11 +161,11 @@ async def _check_divestos(client, codename: str) -> dict | None:
 # ── CalyxOS ───────────────────────────────────────────────────────────────────
 async def _check_calyxos(client, codename: str) -> dict | None:
     ck = "calyxos_page"
-    cached = await cache_get(ck)
+    cached = await get(ck)
     if cached is None:
         resp = await fetch(client, CALYXOS_URL)
         page = resp.text.lower() if resp and resp.status_code == 200 else ""
-        await cache_set(ck, page, ttl=3600)
+        await set(ck, page, ttl=3600)
         cached = page
 
     if codename.lower() not in cached:
@@ -190,7 +190,7 @@ async def _check_calyxos(client, codename: str) -> dict | None:
 # ── /e/OS ─────────────────────────────────────────────────────────────────────
 async def _check_eos(client, codename: str) -> dict | None:
     ck = f"eos:{codename}"
-    cached = await cache_get(ck)
+    cached = await get(ck)
     if cached is not None:
         return cached if cached else None
 
@@ -213,7 +213,7 @@ async def _check_eos(client, codename: str) -> dict | None:
             "source":        "eos_official",
             "description":   "De-Googled Android with microG. Privacy by default.",
         }
-    await cache_set(ck, result or {}, ttl=3600)
+    await set(ck, result or {}, ttl=3600)
     return result
 
 
@@ -226,7 +226,7 @@ async def _fetch_grapheneos_devices() -> list[str]:
     """Fetch supported GrapheneOS devices from their live releases.json — no hardcoding."""
     import re as _re
     ck = "grapheneos:devices"
-    cached = await cache_get(ck)
+    cached = await get(ck)
     if cached:
         return cached
     try:
@@ -240,7 +240,7 @@ async def _fetch_grapheneos_devices() -> list[str]:
                 data = r.json()
                 devices = [k for k in data.keys() if _re.match(r'^[a-z][a-z0-9_]+$', k)]
                 if devices:
-                    await cache_set(ck, devices, ttl=7200)
+                    await set(ck, devices, ttl=7200)
                     return devices
     except Exception:
         pass
@@ -258,7 +258,7 @@ async def get_all_roms(
     offset: int = 0,
 ) -> dict:
     ck = "all_roms_index"
-    cached = await cache_get(ck)
+    cached = await get(ck)
 
     if cached is None:
         async with get_client() as client:
@@ -361,7 +361,7 @@ async def get_all_roms(
         except Exception as e:
             _log.warning("Community roms failed: %s", e)
 
-        await cache_set(ck, all_roms, ttl=600)
+        await set(ck, all_roms, ttl=600)
         cached = all_roms
 
     roms = list(cached or [])
@@ -428,12 +428,15 @@ async def get_roms_for_device(codename: str) -> list[dict]:
     import re as _re
 
     ck = f"roms:{codename}"
-    cached = await cache_get(ck)
+    cached = await get(ck)
     if cached is not None:
         return cached
     # Pre-check: if global indexes are not yet warmed, return empty list
     # rather than making 5+ slow HTTP requests that will time out
-    
+    sf_cached = await cache_get("roms:sourceforge")
+    if sf_cached is None:
+        # Indexes not warmed yet — return empty, client will retry
+        return []
 
     cn_lower = codename.lower()
     cn_norm  = _re.sub(r'[-_ .]', '', cn_lower)
@@ -514,5 +517,5 @@ async def get_roms_for_device(codename: str) -> list[dict]:
     except Exception:
         pass
 
-    await cache_set(ck, roms, ttl=1800)
+    await set(ck, roms, ttl=1800)
     return roms

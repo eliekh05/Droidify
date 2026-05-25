@@ -79,9 +79,17 @@
 
   async function load(retry = false) {
     if (!retry) {
-      main.innerHTML = `<div class="loading-state"><div class="spinner"></div>
-        <p style="color:var(--muted)">Loading device data…</p>
-        <p style="color:var(--muted);font-size:.78rem;margin-top:.3rem">Fetching ROMs from live sources</p>
+      main.innerHTML = `
+      <div class="page-header">
+        <div style="margin-bottom:.5rem">
+          <a href="/devices.html" class="btn-ghost" style="text-decoration:none;font-size:.82rem">← Back</a>
+        </div>
+        <div class="skeleton" style="height:1.5rem;width:200px;margin-bottom:.5rem"></div>
+        <div class="skeleton" style="height:2.5rem;width:320px;margin-bottom:.5rem"></div>
+        <div class="skeleton" style="height:1rem;width:120px"></div>
+      </div>
+      <div class="device-grid" style="margin-top:1.5rem">
+        ${Array(6).fill('<div class="skeleton" style="height:120px"></div>').join('')}
       </div>`;
     }
     try {

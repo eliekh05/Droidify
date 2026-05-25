@@ -1,8 +1,14 @@
 /**
- * Droidify nav — mobile hamburger + PWA install
+ * Droidify nav.js
+ * - Mobile hamburger
+ * - PWA install
+ * - Connection checking overlay
+ * - Offline banner
  */
 (function () {
-  // Mobile hamburger
+  'use strict';
+
+  // ── Mobile hamburger ──────────────────────────────────────────
   const toggle = document.getElementById('nav-toggle');
   const nav    = document.getElementById('main-nav');
   if (toggle && nav) {
@@ -10,7 +16,6 @@
       const open = nav.classList.toggle('open');
       toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
     });
-    // Close nav when a link is clicked
     nav.addEventListener('click', e => {
       if (e.target.classList.contains('nav-link')) {
         nav.classList.remove('open');
@@ -19,7 +24,53 @@
     });
   }
 
-  // PWA install
+  // ── Connection checking overlay ───────────────────────────────
+  const overlay = document.getElementById('connection-overlay');
+  const offlineBanner = document.getElementById('offline-banner');
+
+  function checkConnection() {
+    if (!navigator.onLine) {
+      if (overlay) overlay.classList.remove('show');
+      if (offlineBanner) offlineBanner.classList.add('show');
+      return;
+    }
+    // Verify API is actually reachable (not just network is up)
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 5000);
+    fetch('/api/health', { signal: ctrl.signal })
+      .then(r => {
+        clearTimeout(timer);
+        if (overlay) overlay.classList.remove('show');
+        if (offlineBanner) offlineBanner.classList.remove('show');
+      })
+      .catch(() => {
+        clearTimeout(timer);
+        if (overlay) overlay.classList.remove('show');
+        // Don't show offline banner if navigator.onLine is true
+        // — could be a server warmup issue
+      });
+  }
+
+  // Show overlay briefly on page load to verify connection
+  if (overlay) {
+    overlay.classList.add('show');
+    // Give the backend 3 seconds to respond before hiding
+    setTimeout(() => {
+      overlay.classList.remove('show');
+    }, 3000);
+    checkConnection();
+  }
+
+  // Listen for online/offline events
+  window.addEventListener('offline', () => {
+    if (offlineBanner) offlineBanner.classList.add('show');
+  });
+  window.addEventListener('online', () => {
+    if (offlineBanner) offlineBanner.classList.remove('show');
+    checkConnection();
+  });
+
+  // ── PWA install ───────────────────────────────────────────────
   const ua        = navigator.userAgent.toLowerCase();
   const isIOS     = /iphone|ipad|ipod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const isMacSaf  = /macintosh/.test(ua) && /safari/.test(ua) && !/chrome|crios|chromium/.test(ua);
@@ -46,24 +97,19 @@
     });
   }
 
-  // Chrome/Edge — wait for beforeinstallprompt
   window.addEventListener('beforeinstallprompt', e => {
     e.preventDefault();
     deferred = e;
     showInstallBtn('⬇ Install');
   });
-
   window.addEventListener('appinstalled', () => {
     if (wrap) wrap.style.display = 'none';
   });
-
-  // Safari — always show since beforeinstallprompt never fires
   if ((isIOS || isMacSaf) && !isStandalone) {
-    const label = isIOS ? '⬇ Add to Home Screen' : '⬇ Install on Mac';
-    showInstallBtn(label);
+    showInstallBtn(isIOS ? '⬇ Add to Home Screen' : '⬇ Install on Mac');
   }
 
-  // Service worker
+  // ── Service worker ────────────────────────────────────────────
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js').catch(() => {});
   }

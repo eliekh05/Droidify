@@ -19,6 +19,7 @@
       const p = Math.min((now - start) / duration, 1);
       const ease = 1 - Math.pow(1 - p, 3); // ease-out-cubic
       el.textContent = Math.round(from + (target - from) * ease).toLocaleString();
+      if (p >= 1) { el.classList.add("popped"); setTimeout(() => el.classList.remove("popped"), 400); }
       if (p < 1) requestAnimationFrame(step);
     }
     requestAnimationFrame(step);

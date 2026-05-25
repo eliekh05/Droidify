@@ -13,6 +13,9 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 </head>
 <body>
+<div id="connection-overlay"><div class="conn-spinner"></div><p>Checking connection…</p></div>
+<div id="offline-banner">⚠ You are offline — showing cached data</div>
+
 <header class="site-header">
   <div class="container header-inner">
     <a href="/" class="logo"><span class="accent">Droid</span>ify</a>
@@ -37,32 +40,22 @@
     </div>
   </div>
 </header>
+
 <main class="container">
   <div class="page-header reveal">
     <h1>Android versions</h1>
     <p class="page-sub">Complete Android release history</p>
   </div>
-  <div class="filters-bar">
-    <select id="status-filter" class="search-input" style="flex:0;width:auto">
-      <option value="">All statuses</option>
-      <option value="active">Active</option>
-      <option value="partial">Preview</option>
-      <option value="eol">EOL</option>
-    </select>
-    <input type="number" id="api-min" placeholder="Min API level" min="1" max="99"
-      class="search-input" style="flex:0;width:130px" />
-    <button class="btn-primary" id="filter-btn">Filter</button>
-  </div>
   <div style="overflow-x:auto">
     <table class="data-table">
       <thead><tr>
-        <th>Version</th><th>Codename</th><th>API</th>
-        <th>Year</th><th>Status</th>
+        <th>Version</th><th>Codename</th><th>API</th><th>Year</th><th>Status</th>
       </tr></thead>
       <tbody id="android-tbody"></tbody>
     </table>
   </div>
 </main>
+
 <footer class="site-footer">
   <div class="container">
     <p>Droidify &mdash; Live Android ecosystem indexer &middot; Free &amp; open sources only &middot; No signin required &middot; <a href="/privacy.html">Privacy</a></p>

@@ -13,6 +13,9 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 </head>
 <body>
+<div id="connection-overlay"><div class="conn-spinner"></div><p>Checking connection…</p></div>
+<div id="offline-banner">⚠ You are offline — showing cached data</div>
+
 <header class="site-header">
   <div class="container header-inner">
     <a href="/" class="logo"><span class="accent">Droid</span>ify</a>
@@ -46,7 +49,7 @@
     <input class="search-input" type="search" id="search-input" placeholder="Search tools..." autocomplete="off" />
     <button class="btn-primary" id="search-btn">Search</button>
   </div>
-  <div class="device-grid stagger-grid" id="tools-grid"></div>
+  <div class="device-grid stagger" id="tools-grid"></div>
 </main>
 <footer class="site-footer">
   <div class="container">

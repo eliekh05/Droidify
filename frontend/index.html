@@ -13,6 +13,9 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 </head>
 <body>
+<div id="connection-overlay"><div class="conn-spinner"></div><p>Checking connection…</p></div>
+<div id="offline-banner">⚠ You are offline — showing cached data</div>
+
 <header class="site-header">
   <div class="container header-inner">
     <a href="/" class="logo"><span class="accent">Droid</span>ify</a>
@@ -74,7 +77,7 @@
       <h2>Featured devices</h2>
       <a href="/devices.html" class="section-link">Browse all &rarr;</a>
     </div>
-    <div class="device-grid stagger-grid" id="featured-devices"></div>
+    <div class="device-grid stagger" id="featured-devices"></div>
   </section>
 
   <section class="section">
@@ -82,7 +85,7 @@
       <h2>ROM families</h2>
       <a href="/roms.html" class="section-link">Browse all &rarr;</a>
     </div>
-    <div class="device-grid stagger-grid" id="rom-families"></div>
+    <div class="device-grid stagger" id="rom-families"></div>
   </section>
 
   <section class="section">
