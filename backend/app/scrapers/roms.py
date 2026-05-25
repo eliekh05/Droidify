@@ -431,6 +431,13 @@ async def get_roms_for_device(codename: str) -> list[dict]:
     cached = await cache_get(ck)
     if cached is not None:
         return cached
+    # Pre-check: if global indexes are not yet warmed, return empty list
+    # rather than making 5+ slow HTTP requests that will time out
+    from app.services.cache import cache_get as _cg
+    sf_cached = await _cg("roms:sourceforge")
+    if sf_cached is None:
+        # Indexes not warmed yet — return empty, client will retry
+        return []
 
     cn_lower = codename.lower()
     cn_norm  = _re.sub(r'[-_ .]', '', cn_lower)

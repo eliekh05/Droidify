@@ -15,32 +15,37 @@ cd Droidify
 ./install.sh
 ```
 
-Then open **http://localhost:8000**
+Opens at **http://localhost**
 
-Or pull directly from Docker Hub:
+---
 
-```bash
-docker run -d --name droidify --restart unless-stopped -p 8000:8000 eliekh05/droidify:latest
+## Architecture
+
 ```
+nginx:alpine  (port 80)
+├── /          → serves frontend/  (HTML, CSS, JS, PWA)
+├── /api/*     → proxy → FastAPI (port 8000, internal)
+└── /*         → try_files → /index.html
+
+python:alpine  (port 8000, internal)
+└── FastAPI — REST API, scrapers, cache
+```
+
+No build step for the frontend. Edit HTML/CSS/JS directly — refresh browser to see changes. No Node.js, no npm, no bundler.
 
 ---
 
 ## Development
 
-**Requirements:** Docker, Node.js 22+, Python 3.12+
-
 ```bash
-# Install frontend dependencies
-cd frontend && npm install && cd ..
+# Backend with hot reload
+make dev   # http://localhost:8000/api
 
-# Run backend with hot reload
-make dev-backend   # http://localhost:8000
-
-# Run frontend with hot module replacement (separate terminal)
-make dev-frontend  # http://localhost:5173
+# Frontend — just open frontend/ files in browser
+# Point browser to http://localhost after starting backend
 ```
 
-The Vite dev server proxies `/api/*` to the backend automatically.
+Edit `frontend/css/style.css`, `frontend/js/*.js`, or `frontend/*.html` directly. No build step needed.
 
 ---
 
@@ -48,10 +53,12 @@ The Vite dev server proxies `/api/*` to the backend automatically.
 
 | Layer | Technology |
 |---|---|
+| Frontend | Plain HTML + CSS + Vanilla JS |
+| Animations | IntersectionObserver + CSS transitions (GPU-accelerated) |
+| PWA | Web App Manifest + Service Worker |
+| Web server | nginx:alpine |
 | Backend | FastAPI + Python 3.12 |
-| Frontend | Svelte + Vite |
-| Container | Docker (multi-stage Alpine, ~40MB) |
-| Tunnel | Cloudflare Tunnel |
+| Container | Docker multi-stage Alpine |
 
 ---
 
@@ -59,32 +66,15 @@ The Vite dev server proxies `/api/*` to the backend automatically.
 
 | Endpoint | Description |
 |---|---|
-| `GET /api/devices` | Search devices by name, codename, or manufacturer |
-| `GET /api/devices/{codename}` | Device detail with ROMs and recoveries |
-| `GET /api/roms` | ROM index with filtering |
+| `GET /api/devices` | Search devices |
+| `GET /api/devices/{codename}` | Device detail with ROMs |
+| `GET /api/roms` | ROM index |
 | `GET /api/recoveries` | Recovery index |
-| `GET /api/tools` | Root tools (Magisk, KernelSU, APatch) |
-| `GET /api/android-versions` | Android version history |
-| `GET /api/guides` | Flashing and rooting guides |
+| `GET /api/tools` | Root tools |
+| `GET /api/android-versions` | Android history |
+| `GET /api/guides/{codename}` | Flashing guides |
 | `GET /api/health` | Health check |
-| `GET /docs` | Interactive Swagger UI |
-
----
-
-## Data Sources
-
-| Source | What it provides |
-|---|---|
-| LineageOS API + Wiki | 281 active codenames |
-| OrangeFox API | 159 recovery devices |
-| TWRP | 896 recovery devices |
-| SourceForge (26 projects) | ~1,600 ROM builds |
-| GrapheneOS | 14 Pixel devices |
-| DivestOS / CalyxOS / /e/OS | Privacy ROM lists |
-| crDroid, Evolution X, HavocOS | Community ROMs |
-| Ubuntu Touch | 110 devices |
-| Kali NetHunter | 113 devices |
-| GitHub API | Magisk, KernelSU, APatch |
+| `GET /docs` | Swagger UI |
 
 ---
 
@@ -92,27 +82,42 @@ The Vite dev server proxies `/api/*` to the backend automatically.
 
 ```
 Droidify/
-├── frontend/               ← Svelte + Vite source
-│   ├── src/
-│   │   ├── app.css         ← Global styles
-│   │   ├── App.svelte      ← Root component + router
-│   │   ├── lib/
-│   │   │   ├── api.js      ← API client
-│   │   │   └── router.js   ← SPA router
-│   │   ├── components/     ← Nav, DeviceCard, Pagination
-│   │   └── routes/         ← Home, Devices, Roms, etc.
-│   └── public/             ← Icons, manifest, sw.js
+├── frontend/               ← Static files (edit directly)
+│   ├── css/style.css       ← All styles
+│   ├── js/
+│   │   ├── api.js          ← API client
+│   │   ├── reveal.js       ← Scroll animations
+│   │   ├── nav.js          ← Nav + PWA install
+│   │   ├── home.js
+│   │   ├── devices.js
+│   │   ├── device.js
+│   │   ├── roms.js
+│   │   ├── recoveries.js
+│   │   ├── tools.js
+│   │   ├── android.js
+│   │   └── guides.js
+│   ├── bak/                ← Svelte source backups
+│   ├── *.html              ← Pages
+│   ├── manifest.json       ← PWA manifest
+│   ├── sw.js               ← Service worker
+│   └── icons/              ← PWA icons
 │
 ├── backend/
-│   └── app/
-│       ├── main.py         ← FastAPI app + SPA serving
-│       ├── api/            ← REST endpoints
-│       ├── scrapers/       ← Live data fetchers
-│       └── services/       ← Cache + HTTP client
+│   ├── app/
+│   │   ├── main.py
+│   │   ├── api/
+│   │   ├── scrapers/
+│   │   └── services/
+│   ├── requirements.txt
+│   └── Dockerfile
 │
-├── Dockerfile              ← Multi-stage: Node → Python → Alpine
+├── nginx/
+│   ├── nginx.conf
+│   └── Dockerfile
+│
 ├── docker-compose.yml
-└── Makefile
+├── Makefile
+└── install.sh
 ```
 
 ---

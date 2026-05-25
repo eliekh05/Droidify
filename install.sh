@@ -12,30 +12,27 @@ echo ""
 echo "  Android ROM & Device Index"
 echo ""
 
-# Check Docker
-if ! command -v docker &>/dev/null; then
-  echo "✗ Docker not found. Install with:"
-  echo "  curl -fsSL https://get.docker.com | sh"
+command -v docker &>/dev/null || {
+  echo "✗ Docker not found. Install with: curl -fsSL https://get.docker.com | sh"
   exit 1
-fi
-
-# Check Docker Compose
-if ! docker compose version &>/dev/null; then
+}
+docker compose version &>/dev/null || {
   echo "✗ Docker Compose not found. Update Docker to a recent version."
   exit 1
-fi
+}
 
-echo "→ Building Droidify (this may take a few minutes on first run)..."
-docker compose build
+echo "→ Building Droidify..."
+BUILDTIME=$(date +%s) docker compose build
 
 echo "→ Starting Droidify..."
 docker compose up -d
 
 echo ""
-echo "✓ Droidify is running at http://localhost:8000"
+echo "✓ Droidify running at http://localhost"
 echo ""
-echo "  Useful commands:"
-echo "    docker logs droidify -f     — view logs"
-echo "    docker compose down         — stop"
-echo "    docker compose restart      — restart"
+echo "  Commands:"
+echo "    make logs          — view all logs"
+echo "    make logs-backend  — backend only"
+echo "    make reset         — full rebuild"
+echo "    make down          — stop"
 echo ""

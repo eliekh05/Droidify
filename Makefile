@@ -1,18 +1,9 @@
-.PHONY: dev dev-backend dev-frontend build up down logs clean reset
+.PHONY: dev build up down logs reset clean
 
 # ── Development ───────────────────────────────────────────────────────────────
-dev-backend:
+# No build step — edit frontend files directly, refresh browser
+dev:
 	cd backend && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-
-dev-frontend:
-	cd frontend && npm run dev
-
-# ── Frontend build ────────────────────────────────────────────────────────────
-frontend-install:
-	cd frontend && npm install
-
-frontend-build:
-	cd frontend && npm run build
 
 # ── Docker ────────────────────────────────────────────────────────────────────
 build:
@@ -28,10 +19,16 @@ down:
 	docker compose down
 
 logs:
-	docker compose logs -f droidify
+	docker compose logs -f
+
+logs-nginx:
+	docker compose logs -f nginx
+
+logs-backend:
+	docker compose logs -f backend
 
 restart:
-	docker compose restart droidify
+	docker compose restart
 
 # ── Full reset ─────────────────────────────────────────────────────────────────
 reset:
@@ -44,4 +41,3 @@ reset:
 clean:
 	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
 	find . -name "*.pyc" -delete 2>/dev/null || true
-	rm -rf frontend/dist

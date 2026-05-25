@@ -4,7 +4,6 @@
 .git
 .gitignore
 *.md
-frontend/node_modules
-frontend/dist
 .env
 .env.*
+frontend/bak

@@ -1,15 +1,28 @@
 services:
-  droidify:
+  nginx:
     build:
       context: .
+      dockerfile: nginx/Dockerfile
+    image: droidify-nginx:latest
+    container_name: droidify-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  backend:
+    build:
+      context: backend
       dockerfile: Dockerfile
       args:
         BUILDTIME: ${BUILDTIME:-}
-    image: droidify:latest
-    container_name: droidify
+    image: droidify-backend:latest
+    container_name: droidify-backend
     restart: unless-stopped
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
     environment:
       - PORT=8000
       - CORS_ORIGINS=*
