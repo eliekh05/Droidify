@@ -18,7 +18,8 @@ Download URL policy (verified May 2026):
 import asyncio
 import re
 
-from app.services.cache import get as cache_get, set as cache_set
+from app.services.cache import get, set as cache_set
+cache_get = get
 from app.services.http import fetch, get_client
 
 # ── Branch → Android version maps ────────────────────────────────────────────
@@ -83,7 +84,7 @@ async def _check_grapheneos(client, codename: str) -> dict | None:
             "source":        "grapheneos_official",
             "description":   "Privacy-focused OS. Direct factory image download.",
         }
-    await set(ck, result or {}, ttl=1800)
+    await cache_set(ck, result or {}, ttl=1800)
     return result
 
 
@@ -119,12 +120,12 @@ async def _check_crdroid(client, codename: str) -> dict | None:
                     "source":        "crdroid_sf",
                     "description":   "crDroid — feature-rich AOSP ROM with deep customization.",
                 }
-                await set(ck, result, ttl=3600)
+                await cache_set(ck, result, ttl=3600)
                 return result
     except Exception:
         pass
 
-    await set(ck, {}, ttl=3600)
+    await cache_set(ck, {}, ttl=3600)
     return None
 
 
@@ -135,7 +136,7 @@ async def _check_divestos(client, codename: str) -> dict | None:
     if cached is None:
         resp = await fetch(client, DIVESTOS_DEVICES_URL)
         page = resp.text.lower() if resp and resp.status_code == 200 else ""
-        await set(ck, page, ttl=3600)
+        await cache_set(ck, page, ttl=3600)
         cached = page
 
     if codename.lower() not in cached:
@@ -165,7 +166,7 @@ async def _check_calyxos(client, codename: str) -> dict | None:
     if cached is None:
         resp = await fetch(client, CALYXOS_URL)
         page = resp.text.lower() if resp and resp.status_code == 200 else ""
-        await set(ck, page, ttl=3600)
+        await cache_set(ck, page, ttl=3600)
         cached = page
 
     if codename.lower() not in cached:
@@ -213,7 +214,7 @@ async def _check_eos(client, codename: str) -> dict | None:
             "source":        "eos_official",
             "description":   "De-Googled Android with microG. Privacy by default.",
         }
-    await set(ck, result or {}, ttl=3600)
+    await cache_set(ck, result or {}, ttl=3600)
     return result
 
 
@@ -240,7 +241,7 @@ async def _fetch_grapheneos_devices() -> list[str]:
                 data = r.json()
                 devices = [k for k in data.keys() if _re.match(r'^[a-z][a-z0-9_]+$', k)]
                 if devices:
-                    await set(ck, devices, ttl=7200)
+                    await cache_set(ck, devices, ttl=7200)
                     return devices
     except Exception:
         pass
@@ -361,7 +362,7 @@ async def get_all_roms(
         except Exception as e:
             _log.warning("Community roms failed: %s", e)
 
-        await set(ck, all_roms, ttl=600)
+        await cache_set(ck, all_roms, ttl=600)
         cached = all_roms
 
     roms = list(cached or [])
@@ -517,5 +518,5 @@ async def get_roms_for_device(codename: str) -> list[dict]:
     except Exception:
         pass
 
-    await set(ck, roms, ttl=1800)
+    await cache_set(ck, roms, ttl=1800)
     return roms
