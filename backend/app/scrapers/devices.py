@@ -1,390 +1,132 @@
-"""Live device scraper — fetches from free public sources only.
-
-Sources (no auth, no payment required):
-  1. LineageOS Download API  — 281 codenames, branch info, download URLs
-  2. LineageOS Wiki search.json — device model names + manufacturer
-  3. LineageOS Wiki device page  — SoC, RAM, CPU, release date (parsed from HTML)
-  4. OrangeFox API           — 159 devices with OEM, model, recovery support
-  5. TWRP search.json        — 896 devices for recovery cross-reference
-"""
 import asyncio
 import re
-from typing import Any
+from fastapi import APIRouter, Query, HTTPException
+from app.scrapers.devices import get_devices, get_device_detail
+from app.scrapers.roms import get_roms_for_device, LOS_BRANCH_TO_ANDROID
+from app.scrapers.recoveries import get_recovery_for_device
+from app.scrapers.samfw import get_samfw_for_device
 
-from bs4 import BeautifulSoup
-
-from app.services.cache import cache_key, get as cache_get, set as cache_set
-from app.services.http import fetch, get_client
-
-
-# ── Source URLs ───────────────────────────────────────────────────────────────
-LOS_DEVICES_API    = "https://download.lineageos.org/api/v1/devices"
-LOS_WIKI_SEARCH    = "https://wiki.lineageos.org/search.json"
-LOS_WIKI_DEVICE    = "https://wiki.lineageos.org/devices/{codename}/"
-LOS_DOWNLOAD       = "https://download.lineageos.org/devices/{codename}"
-ORANGEFOX_API      = "https://api.orangefox.download/v3/devices/?per_page=500"
-TWRP_SEARCH        = "https://twrp.me/search.json"
-
-# Regex to strip HTML tags
-_TAG_RE = re.compile(r"<[^>]+>")
+router = APIRouter()
 
 
-def _clean(text: str) -> str:
-    return _TAG_RE.sub("", text).strip()
+# Only allow safe characters in search — codename/model chars only
+_SAFE_Q  = re.compile(r"[^a-zA-Z0-9 _.+\-]")
+_SAFE_CN = re.compile(r"[^a-zA-Z0-9_\-]")
 
 
-# ── Primary: LineageOS Download API ───────────────────────────────────────────
-async def _fetch_los_devices(client) -> dict[str, dict]:
-    """Returns {codename: {branches: [...], download_url: ...}}"""
-    ck = "los_devices_api"
-    cached = await cache_get(ck)
-    if cached:
-        return cached
+@router.get("")
+async def list_devices(
+    q:            str | None = Query(None, min_length=1, max_length=64,  description="Search by model, codename, or manufacturer"),
+    manufacturer: str | None = Query(None, min_length=1, max_length=64,  description="Filter by manufacturer"),
+    limit:        int        = Query(50,   ge=1, le=200),
+    offset:       int        = Query(0,    ge=0),
+):
+    # Strip any character that has no business being in a device search
+    if q:            q            = _SAFE_Q.sub("", q).strip()[:64]  or None
+    if manufacturer: manufacturer = _SAFE_Q.sub("", manufacturer).strip()[:64] or None
+    """
+    Live device index from:
+    - LineageOS Download API (281 codenames, active ROM branches)
+    - LineageOS Wiki search.json (583 devices with model names)
+    - OrangeFox API (159 devices with OEM/model info)
+    - TWRP search.json (896 devices with manufacturer/codename)
 
-    resp = await fetch(client, LOS_DEVICES_API)
-    if not resp or resp.status_code != 200:
-        return {}
+    All merged and deduplicated. No auth required.
+    """
+    result = await get_devices(q=q, manufacturer=manufacturer, limit=limit, offset=offset)
 
-    data = resp.json()  # {branch: [codename, ...]}
-    result: dict[str, dict] = {}
-    for branch, codenames in data.items():
-        for codename in codenames:
-            if codename not in result:
-                result[codename] = {"codename": codename, "branches": [], "download_urls": []}
-            result[codename]["branches"].append(branch)
-            result[codename]["download_urls"].append(
-                LOS_DOWNLOAD.format(codename=codename)
-            )
+    # Enrich each device with rom_count from the cached SourceForge/PE/uTWRP indexes
+    # Uses only already-cached data — no extra HTTP requests
+    try:
+        from app.scrapers.sourceforge_roms import get_sourceforge_roms
+        from app.scrapers.pixelexperience import get_pixelexperience_roms
+        from app.scrapers.unofficialtwrp import get_unofficialtwrp_devices
+        import re as _re
 
-    await cache_set(ck, result, ttl=600)
-    return result
-
-
-# ── LineageOS Wiki — device model/name mapping ────────────────────────────────
-async def _fetch_los_wiki_names(client) -> dict[str, dict]:
-    """Returns {codename: {model_name, manufacturer}} from wiki search.json"""
-    ck = "los_wiki_names"
-    cached = await cache_get(ck)
-    if cached:
-        return cached
-
-    resp = await fetch(client, LOS_WIKI_SEARCH)
-    if not resp or resp.status_code != 200:
-        return {}
-
-    result: dict[str, dict] = {}
-    for entry in resp.json():
-        url = entry.get("url", "")
-        # URL format: /devices/CODENAME/
-        if not url.startswith("/devices/"):
-            continue
-        parts = url.strip("/").split("/")
-        if len(parts) < 2:
-            continue
-        codename = parts[1]
-        title = entry.get("title", "")  # "panther - Google Pixel 7"
-        if " - " in title:
-            _, model_name = title.split(" - ", 1)
-        elif title:
-            model_name = title
-        else:
-            model_name = ""
-        # Try to infer manufacturer from model name
-        manufacturer = _infer_manufacturer(model_name)
-        result[codename] = {
-            "codename": codename,
-            "model_name": model_name.strip(),
-            "manufacturer": manufacturer,
-            "wiki_url": f"https://wiki.lineageos.org/devices/{codename}/",
-        }
-
-    await cache_set(ck, result, ttl=600)
-    return result
-
-
-def _infer_manufacturer(model_name: str) -> str:
-    """Infer manufacturer from device model name."""
-    m = model_name.lower()
-    for mfr, keywords in {
-        "Google": ["pixel", "nexus", "android one"],
-        "Samsung": ["galaxy", "samsung"],
-        "OnePlus": ["oneplus"],
-        "Xiaomi": ["xiaomi", "poco", "redmi", "mi "],
-        "Motorola": ["moto", "motorola"],
-        "Nokia": ["nokia"],
-        "Sony": ["xperia", "sony"],
-        "Fairphone": ["fairphone"],
-        "Asus": ["asus", "zenfone", "rog phone"],
-        "LG": ["lg ", " lg"],
-        "HTC": ["htc"],
-        "Huawei": ["huawei", "honor"],
-        "OPPO": ["oppo", "find x", "reno"],
-        "Realme": ["realme"],
-        "Vivo": ["vivo"],
-        "Nothing": ["nothing phone"],
-        "Lenovo": ["lenovo"],
-        "BQ": ["bq "],
-        "Yandex": ["yandex"],
-        "Shift": ["shift"],
-        "Essential": ["essential"],
-    }.items():
-        if any(k in m for k in keywords):
-            return mfr
-    # Title-case first word as fallback
-    first = model_name.split()[0] if model_name else ""
-    return first if first else "Unknown"
-
-
-# ── LineageOS Wiki device page — hardware specs ───────────────────────────────
-async def _fetch_los_wiki_specs(client, codename: str) -> dict:
-    """Scrape SoC, RAM, CPU, release date from LineageOS wiki device page."""
-    ck = cache_key("los_wiki_specs", codename)
-    cached = await cache_get(ck)
-    if cached is not None:
-        return cached
-
-    url = LOS_WIKI_DEVICE.format(codename=codename)
-    resp = await fetch(client, url)
-    if not resp or resp.status_code != 200:
-        await cache_set(ck, {}, ttl=3600)
-        return {}
-
-    soup = BeautifulSoup(resp.text, "lxml")
-    specs: dict[str, str] = {}
-
-    # LineageOS wiki uses a <table> with <tr> rows: key cell + value cell
-    for row in soup.find_all("tr"):
-        cells = row.find_all(["td", "th"])
-        if len(cells) >= 2:
-            key = _clean(cells[0].get_text()).rstrip(":")
-            val = _clean(cells[1].get_text())
-            if key and val:
-                specs[key] = val
-
-    # Normalise keys
-    result = {
-        "soc": specs.get("SoC", specs.get("Chipset", "")),
-        "ram": specs.get("RAM", ""),
-        "cpu": specs.get("CPU", ""),
-        "gpu": specs.get("GPU", ""),
-        "released": specs.get("Released", ""),
-        "architecture": specs.get("Architecture", ""),
-        "wiki_url": url,
-    }
-    # Extract release year
-    year_match = re.search(r"\b(20\d{2})\b", result.get("released", ""))
-    result["release_year"] = int(year_match.group(1)) if year_match else None
-
-    await cache_set(ck, result, ttl=3600)
-    return result
-
-
-# ── OrangeFox API ─────────────────────────────────────────────────────────────
-async def _fetch_orangefox_devices(client) -> dict[str, dict]:
-    """Returns {codename: {oem, model, full_name, orangefox_url}}"""
-    ck = "orangefox_devices"
-    cached = await cache_get(ck)
-    if cached:
-        return cached
-
-    resp = await fetch(client, ORANGEFOX_API)
-    if not resp or resp.status_code != 200:
-        return {}
-
-    result: dict[str, dict] = {}
-    for dev in resp.json().get("data", []):
-        codename = dev.get("codename", "")
-        if not codename:
-            continue
-        result[codename] = {
-            "codename": codename,
-            "manufacturer": dev.get("oem_name", ""),
-            "model_name": dev.get("full_name", dev.get("model_name", "")),
-            "orangefox_url": dev.get("url", ""),
-            "orangefox_supported": dev.get("supported", True),
-        }
-        # Also register alternate codenames
-        for alt in dev.get("codenames", []):
-            if alt and alt != codename:
-                result[alt] = result[codename]
-
-    await cache_set(ck, result, ttl=600)
-    return result
-
-
-# ── TWRP search.json ──────────────────────────────────────────────────────────
-async def _fetch_twrp_devices(client) -> dict[str, dict]:
-    """Returns {codename: {title, manufacturer, twrp_url}}"""
-    ck = "twrp_devices"
-    cached = await cache_get(ck)
-    if cached:
-        return cached
-
-    resp = await fetch(client, TWRP_SEARCH)
-    if not resp or resp.status_code != 200:
-        return {}
-
-    result: dict[str, dict] = {}
-    for entry in resp.json():
-        title = entry.get("title", "")  # "Google Pixel 7 (panther)"
-        url   = entry.get("url", "")    # "/google/googlepixel7.html"
-
-        # Extract codename from parentheses
-        code_match = re.search(r"\(([a-zA-Z0-9_]+)\)$", title)
-        if not code_match:
-            continue
-        codename = code_match.group(1)
-
-        # Extract manufacturer from URL path: /google/...
-        url_parts = url.strip("/").split("/")
-        manufacturer = url_parts[0].title() if url_parts else ""
-        # Fix common ones
-        mfr_map = {
-            "Lg": "LG", "Htc": "HTC", "Bq": "BQ",
-            "Oneplus": "OnePlus", "Asus": "ASUS",
-        }
-        manufacturer = mfr_map.get(manufacturer, manufacturer)
-
-        result[codename] = {
-            "codename": codename,
-            "model_name": re.sub(r"\s*\([^)]+\)$", "", title).strip(),
-            "manufacturer": manufacturer,
-            "twrp_url": f"https://twrp.me{url}",
-        }
-
-    await cache_set(ck, result, ttl=600)
-    return result
-
-
-# ── Merge all sources into unified device list ────────────────────────────────
-async def get_devices(
-    q: str | None = None,
-    manufacturer: str | None = None,
-    limit: int = 50,
-    offset: int = 0,
-    codename: str | None = None,
-) -> list[dict]:
-    """Fetch and merge devices from all free sources."""
-    async with get_client() as client:
-        los_devices, los_names, orangefox, twrp = await asyncio.gather(
-            _fetch_los_devices(client),
-            _fetch_los_wiki_names(client),
-            _fetch_orangefox_devices(client),
-            _fetch_twrp_devices(client),
+        # Gather all ROM indexes (all cached after first warm-up)
+        sf_roms, pe_roms, utwrp_roms = await asyncio.gather(
+            get_sourceforge_roms(),
+            get_pixelexperience_roms(),
+            get_unofficialtwrp_devices(),
+            return_exceptions=True,
         )
 
-    # Merge: start with LineageOS (281 devices), enrich with other sources
-    all_codenames: set[str] = set(los_devices.keys())
-    # Add OrangeFox-only and TWRP-only devices
-    all_codenames |= set(orangefox.keys())
-    all_codenames |= set(twrp.keys())
+        # Build codename → count maps
+        def _build_count_map(roms_list):
+            counts: dict[str, int] = {}
+            if not isinstance(roms_list, list):
+                return counts
+            for r in roms_list:
+                cn = _re.sub(r'[-_ .]', '', (r.get("codename") or "").lower())
+                if cn:
+                    counts[cn] = counts.get(cn, 0) + 1
+            return counts
 
-    devices: list[dict] = []
-    for cn in sorted(all_codenames):
-        los   = los_devices.get(cn, {})
-        wiki  = los_names.get(cn, {})
-        fox   = orangefox.get(cn, {})
-        tw    = twrp.get(cn, {})
+        sf_counts   = _build_count_map(sf_roms)
+        pe_counts   = _build_count_map(pe_roms)
+        utwrp_counts = _build_count_map(utwrp_roms)
 
-        # Prefer: wiki > twrp > orangefox for name/manufacturer
-        model = (
-            wiki.get("model_name")
-            or tw.get("model_name")
-            or fox.get("model_name")
-            or cn
+        for d in result["devices"]:
+            cn_n = _re.sub(r'[-_ .]', '', (d.get("codename") or "").lower())
+            # Count from SourceForge + PixelExperience + unofficialTWRP
+            sf_c   = sf_counts.get(cn_n, 0)
+            pe_c   = pe_counts.get(cn_n, 0)
+            utwrp_c = utwrp_counts.get(cn_n, 0)
+            # LineageOS counts from has_lineageos flag
+            los_c  = len(d.get("lineageos_branches", [])) if d.get("has_lineageos") else 0
+            d["rom_count"] = los_c + sf_c + pe_c + utwrp_c
+    except Exception:
+        # Non-fatal — device cards just won't show ROM count chips
+        pass
+
+    return result
+
+
+@router.get("/{codename}")
+async def get_device(codename: str):
+    # Codenames are alphanumeric + underscore/hyphen only — reject anything else
+    if not re.fullmatch(r"[a-zA-Z0-9_\-]{1,64}", codename):
+        raise HTTPException(status_code=400, detail="Invalid codename.")
+    """
+    Full device detail including hardware specs (from LineageOS Wiki),
+    available ROMs, and recovery options. All fetched live.
+    """
+    device, roms, recoveries, samfw = await asyncio.gather(
+        get_device_detail(codename),
+        get_roms_for_device(codename),
+        get_recovery_for_device(codename),
+        get_samfw_for_device(codename),
+    )
+
+    if not device:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Device '{codename}' not found in LineageOS, OrangeFox, or TWRP indexes."
         )
-        mfr = (
-            wiki.get("manufacturer")
-            or tw.get("manufacturer")
-            or fox.get("manufacturer")
-            or _infer_manufacturer(model)
-        )
 
-        device: dict[str, Any] = {
-            "codename":       cn,
-            "model_name":     model,
-            "manufacturer":   mfr,
-            "lineageos_branches": los.get("branches", []),
-            "lineageos_download_url": (
-                LOS_DOWNLOAD.format(codename=cn) if los else None
-            ),
-            "wiki_url": wiki.get("wiki_url"),
-            "twrp_url": tw.get("twrp_url"),
-            "orangefox_url": fox.get("orangefox_url"),
-            "orangefox_supported": fox.get("orangefox_supported"),
-            "has_lineageos": bool(los),
-            "has_twrp":      bool(tw),
-            "has_orangefox": bool(fox),
-            "sources": list({
-                s for s, v in [("lineageos", los), ("orangefox", fox), ("twrp", tw)]
-                if v
-            }),
-        }
-        devices.append(device)
+    # Prepend LineageOS ROM entries from the device's branch info
+    if device.get("has_lineageos"):
+        los_roms = []
+        for branch in device.get("lineageos_branches", []):
+            android = LOS_BRANCH_TO_ANDROID.get(branch, "?")
+            los_roms.append({
+                "name":         "LineageOS",
+                "slug":         "lineageos",
+                "android_base": android,
+                "version_label": branch,
+                "maintainer":   "LineageOS team",
+                "is_official":  True,
+                "status":       "active",
+                "rom_type":     "custom",
+                "source_url":   f"https://wiki.lineageos.org/devices/{codename}/",
+                "download_urls": [f"https://download.lineageos.org/devices/{codename}"],
+                "source":       "lineageos_api",
+                "description":  f"LineageOS {branch} (Android {android}). Official nightly builds.",
+            })
+        roms = los_roms + [r for r in roms if r["name"] != "LineageOS"]
 
-    # Filter
-    if codename:
-        devices = [d for d in devices if d["codename"].lower() == codename.lower()]
-    if q:
-        q_lower = q.lower()
-        # Normalise: strip hyphens/spaces/dots so "j701f" matches "SM-J701F", "sm j701f", etc.
-        q_norm = re.sub(r'[-_ .+]', '', q_lower)
-        def _match(d):
-            cn    = (d.get("codename") or "").lower()
-            mn    = (d.get("model_name") or "").lower()
-            mfr   = (d.get("manufacturer") or "").lower()
-            cn_n  = re.sub(r'[-_ .+]', '', cn)
-            mn_n  = re.sub(r'[-_ .+]', '', mn)
-            # Direct substring matches
-            if q_lower in cn or q_lower in mn or q_lower in mfr:
-                return True
-            # Normalised substring matches (handles SM-J701F → j701f)
-            if q_norm and (q_norm in cn_n or q_norm in mn_n):
-                return True
-            # Prefix match on codename
-            if cn.startswith(q_lower) or cn_n.startswith(q_norm):
-                return True
-            # The search term could be a model number embedded in model_name
-            # e.g. searching "j701f" should match "Galaxy J7 (SM-J701F)" or just the codename "j7xelte"
-            if q_norm and len(q_norm) >= 3:
-                for part in re.split(r'[-_ ()]', mn):
-                    part_n = re.sub(r'[-_ .+]', '', part.lower())
-                    if part_n and q_norm in part_n:
-                        return True
-            return False
-        devices = [d for d in devices if _match(d)]
-    if manufacturer:
-        mfr_lower = manufacturer.lower()
-        devices = [
-            d for d in devices
-            if mfr_lower in d["manufacturer"].lower()
-        ]
-
-    total = len(devices)
-    page  = devices[offset : offset + limit]
-    return {"total": total, "offset": offset, "limit": limit, "devices": page}
-
-
-async def get_device_detail(codename: str) -> dict | None:
-    """Get full detail for a single device including wiki specs."""
-    result = await get_devices(codename=codename, limit=1, offset=0)
-    devices = result.get("devices", [])
-    if not devices:
-        return None
-
-    device = devices[0]
-
-    # Fetch wiki specs (SoC, RAM, etc.)
-    async with get_client() as client:
-        specs = await _fetch_los_wiki_specs(client, codename)
-
-    device.update({
-        "soc":          specs.get("soc", ""),
-        "ram":          specs.get("ram", ""),
-        "cpu":          specs.get("cpu", ""),
-        "gpu":          specs.get("gpu", ""),
-        "release_year": specs.get("release_year"),
-        "architecture": specs.get("architecture", ""),
-        "released":     specs.get("released", ""),
-    })
+    device["roms"]       = roms
+    device["recoveries"] = recoveries
+    device["stock_firmware"] = samfw if not isinstance(samfw, Exception) else []
+    device["rom_count"]  = len(roms)
     return device
