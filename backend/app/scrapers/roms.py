@@ -434,10 +434,7 @@ async def get_roms_for_device(codename: str) -> list[dict]:
         return cached
     # Pre-check: if global indexes are not yet warmed, return empty list
     # rather than making 5+ slow HTTP requests that will time out
-    sf_cached = await cache_get("roms:sourceforge")
-    if sf_cached is None:
-        # Indexes not warmed yet — return empty, client will retry
-        return []
+    # Note: removed early-return check — it used wrong cache key and broke all device ROMs
 
     cn_lower = codename.lower()
     cn_norm  = _re.sub(r'[-_ .]', '', cn_lower)
@@ -452,6 +449,15 @@ async def get_roms_for_device(codename: str) -> list[dict]:
             _check_eos(client, codename),
             return_exceptions=True,
         )
+    # Additional checks with different signatures
+    extra_results = await asyncio.gather(
+        _check_ubports(codename),
+        _check_nethunter(codename),
+        _check_postmarketos(codename),
+        _check_pixelexperience(codename),
+        return_exceptions=True,
+    )
+    results = list(results) + list(extra_results)
     roms = [r for r in results if r and not isinstance(r, Exception)]
 
     # ── Cached global indexes (no extra HTTP after first warm-up) ─────────────

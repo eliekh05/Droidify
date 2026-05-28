@@ -4,6 +4,7 @@ from fastapi import APIRouter, Query, HTTPException
 from app.scrapers.devices import get_devices, get_device_detail
 from app.scrapers.roms import get_roms_for_device, LOS_BRANCH_TO_ANDROID
 from app.scrapers.recoveries import get_recovery_for_device
+from app.scrapers.samfw import get_samfw_for_device
 
 router = APIRouter()
 
@@ -125,5 +126,6 @@ async def get_device(codename: str):
 
     device["roms"]       = roms
     device["recoveries"] = recoveries
+    device["stock_firmware"] = samfw if not isinstance(samfw, Exception) else []
     device["rom_count"]  = len(roms)
     return device

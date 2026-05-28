@@ -59,6 +59,18 @@
       device.orangefox_url ? `<a href="${esc(device.orangefox_url)}" target="_blank" rel="noopener" class="btn-ghost" style="text-decoration:none;font-size:.82rem">OrangeFox</a>` : '',
     ].join('');
 
+    const samfw = (device.stock_firmware || []).map(f =>
+      `<div class="card reveal">
+        <div class="card-mfr">Stock Firmware</div>
+        <div class="card-title">${esc(f.model)}</div>
+        <div style="font-size:.82rem;color:var(--muted);margin:.3rem 0;line-height:1.5">${esc(f.description)}</div>
+        <div style="margin-top:.5rem">
+          <a href="${esc(f.download_url)}" target="_blank" rel="noopener"
+            style="font-size:.78rem;color:var(--accent)">Download on SamFW →</a>
+        </div>
+      </div>`
+    ).join('');
+
     main.innerHTML = `
       <div class="page-header reveal">
         <div style="margin-bottom:.5rem">
@@ -71,6 +83,7 @@
       </div>
       ${roms}
       ${recoveries}
+      ${samfw ? `<section class="section"><div class="section-header reveal"><h2>Stock Firmware</h2></div><div class="device-grid stagger">${samfw}</div></section>` : ''}
       ${links ? `<section class="section reveal"><div class="section-header"><h2>Links</h2></div><div style="display:flex;flex-wrap:wrap;gap:.6rem">${links}</div></section>` : ''}
     `;
     document.title = `${device.model_name || device.codename} — Droidify`;

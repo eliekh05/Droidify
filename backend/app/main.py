@@ -50,6 +50,16 @@ async def lifespan(app: FastAPI):
                 get_recoveries(limit=1), get_sourceforge_roms(), get_pixelexperience_roms(),
                 return_exceptions=True,
             )
+            # Pre-warm new recovery sources
+            from app.scrapers.recoveries import _fetch_pbrp, _fetch_shrp, get_recovery_for_device
+            from app.services.http import get_client as _gc
+            async with _gc() as _cl:
+                await asyncio.gather(
+                    _fetch_pbrp(_cl),
+                    _fetch_shrp(_cl),
+                    return_exceptions=True,
+                )
+            _log.warning("PBRP + SHRP recovery indexes warmed")
             _log.warning("Phase 2 warm complete")
 
             await asyncio.gather(
