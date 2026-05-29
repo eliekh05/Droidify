@@ -30,7 +30,7 @@ async def get_nethunter_devices() -> list[dict]:
     if not resp or resp.status_code != 200:
         return []
 
-    soup = BeautifulSoup(resp.text, "lxml")
+    soup = BeautifulSoup(resp.text, "html.parser")
     devices: list[dict] = []
 
     for row in soup.find_all("tr")[1:]:

@@ -58,7 +58,7 @@ async def _fetch_los_guide(client, codename: str, guide_type: str) -> dict | Non
         resp = await fetch(client, url)
         if not resp or resp.status_code != 200:
             return None
-        soup  = BeautifulSoup(resp.text, "lxml")
+        soup  = BeautifulSoup(resp.text, "html.parser")
         title = soup.find("h1") or soup.find("title")
         steps = _extract_steps(soup)
         notes = _extract_notes(soup)

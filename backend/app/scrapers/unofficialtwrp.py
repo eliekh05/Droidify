@@ -172,7 +172,7 @@ async def get_unofficialtwrp_devices() -> list[dict]:
     for post in all_posts:
         slug  = post.get("slug", "")
         title = BeautifulSoup(
-            post.get("title", {}).get("rendered", ""), "lxml"
+            post.get("title", {}).get("rendered", ""), "html.parser"
         ).get_text().strip()
         link  = post.get("link", "")
         cats  = post.get("categories", [])

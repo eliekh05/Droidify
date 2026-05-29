@@ -68,7 +68,7 @@ async def _roms_from_divestos() -> list[dict]:
             if not r or r.status_code != 200:
                 return []
         from bs4 import BeautifulSoup
-        soup = BeautifulSoup(r.text, "lxml")
+        soup = BeautifulSoup(r.text, "html.parser")
         result = []
         for a in soup.select("a[href*='/devices/']"):
             text = a.get_text(strip=True)
@@ -94,7 +94,7 @@ async def _roms_from_calyxos() -> list[dict]:
             if not r or r.status_code != 200:
                 return []
         from bs4 import BeautifulSoup
-        soup = BeautifulSoup(r.text, "lxml")
+        soup = BeautifulSoup(r.text, "html.parser")
         result = []
         for a in soup.select("a[href*='/install/']"):
             href = a.get("href","")
@@ -119,7 +119,7 @@ async def _roms_from_eos() -> list[dict]:
             if not r or r.status_code != 200:
                 return []
         from bs4 import BeautifulSoup
-        soup = BeautifulSoup(r.text, "lxml")
+        soup = BeautifulSoup(r.text, "html.parser")
         result = []
         seen: set[str] = set()
         for a in soup.select("a[href]"):

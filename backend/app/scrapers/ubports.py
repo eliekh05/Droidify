@@ -31,7 +31,7 @@ async def get_ubports_devices() -> list[dict]:
     if not resp or resp.status_code != 200:
         return []
 
-    soup = BeautifulSoup(resp.text, "lxml")
+    soup = BeautifulSoup(resp.text, "html.parser")
     devices: list[dict] = []
 
     for el in soup.find_all(attrs={"data-codename": True}):

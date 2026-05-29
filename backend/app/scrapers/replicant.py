@@ -26,7 +26,7 @@ async def get_replicant_roms() -> list[dict]:
         async with httpx.AsyncClient(timeout=15, headers={"User-Agent": "Mozilla/5.0"}) as client:
             r = await client.get(_URL)
             r.raise_for_status()
-            soup = BeautifulSoup(r.text, "lxml")
+            soup = BeautifulSoup(r.text, "html.parser")
     except Exception:
         return []
 

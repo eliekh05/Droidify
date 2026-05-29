@@ -216,7 +216,7 @@ def _parse_row(texts: list[str]) -> list[dict] | None:
 def _parse_apilevels(html: str) -> list[dict]:
     """Parse apilevels.com HTML → list of Android version dicts."""
     from bs4 import BeautifulSoup
-    soup  = BeautifulSoup(html, "lxml")
+    soup  = BeautifulSoup(html, "html.parser")
     table = soup.find("table", class_="full-width")
     if not table:
         return []
@@ -326,7 +326,7 @@ def _parse_apilevels(html: str) -> list[dict]:
 def _parse_wikipedia(html: str) -> list[dict]:
     """Wikipedia fallback parser — minimal, just needs to work."""
     from bs4 import BeautifulSoup
-    soup = BeautifulSoup(html, "lxml")
+    soup = BeautifulSoup(html, "html.parser")
     target = None
     for tbl in soup.find_all("table", class_="wikitable"):
         hdr = " ".join(th.get_text(strip=True) for th in tbl.find_all("th")[:8])

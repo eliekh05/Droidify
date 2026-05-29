@@ -25,7 +25,7 @@ async def get_postmarketos_devices() -> list[dict]:
     if not resp or resp.status_code != 200:
         return []
 
-    soup  = BeautifulSoup(resp.text, "lxml")
+    soup  = BeautifulSoup(resp.text, "html.parser")
     # pmOS wiki embeds device data as JSON in a <div data-devices> or in tables
     # Try finding device links in the wiki content
     devices: list[dict] = []
@@ -90,7 +90,7 @@ async def check_postmarketos_device(codename: str) -> dict | None:
         return None
 
     # Find the direct device wiki page link
-    soup   = BeautifulSoup(resp.text, "lxml")
+    soup   = BeautifulSoup(resp.text, "html.parser")
     result = None
 
     for link in soup.find_all("a", href=re.compile(rf"{codename}", re.I)):

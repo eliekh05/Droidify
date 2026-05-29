@@ -75,7 +75,7 @@ _SKIP_NAMES      = frozenset([
 
 
 def _parse_devices(html: str) -> list[str]:
-    soup  = BeautifulSoup(html, "lxml")
+    soup  = BeautifulSoup(html, "html.parser")
     table = soup.find("table", id="files_list")
     if not table:
         return []
