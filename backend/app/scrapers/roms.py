@@ -38,6 +38,46 @@ LOS_BRANCH_TO_ANDROID: dict[str, str] = {
 _NORM = lambda s: re.sub(r'[-_ .]', '', (s or '').lower())
 
 
+async def _roms_from_lineageos() -> list[dict]:
+    """Fetch LineageOS builds from official download API.
+    Returns one entry per device codename with official download link.
+    """
+    ck = "roms:lineageos_downloads"
+    if c := await cache_get(ck): return c
+    try:
+        async with get_client() as client:
+            r = await fetch(client, "https://download.lineageos.org/api/v1/devices")
+            if not r or r.status_code != 200:
+                return []
+        data = r.json()
+        result = []
+        for version, codenames in data.items():
+            if not isinstance(codenames, list):
+                continue
+            android_ver = LOS_BRANCH_TO_ANDROID.get(
+                f"lineage-{version.split('.')[0]}", version
+            )
+            for codename in codenames:
+                cn = codename.lower().strip()
+                result.append({
+                    "name":         "LineageOS",
+                    "codename":     cn,
+                    "android_base": android_ver,
+                    "rom_type":     "custom",
+                    "status":       "active",
+                    "source":       "lineageos_official",
+                    "description":  "Official LineageOS build",
+                    "download_url": f"https://download.lineageos.org/{cn}",
+                    "version_label": f"LineageOS {version}",
+                    "official":     True,
+                    "maintainer":   "LineageOS Team",
+                })
+        await cache_set(ck, result, ttl=3600)
+        return result
+    except Exception:
+        return []
+
+
 # ── Source fetchers ───────────────────────────────────────────────────────────
 
 async def _roms_from_grapheneos() -> list[dict]:
@@ -163,6 +203,7 @@ async def _build_lookup() -> dict[str, list[dict]]:
         get_unofficialtwrp_devices(),
         get_all_community_roms(),
         get_gsi_roms(),
+        _roms_from_lineageos(),
         _roms_from_grapheneos(),
         _roms_from_divestos(),
         _roms_from_calyxos(),
