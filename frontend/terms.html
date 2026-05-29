@@ -16,10 +16,10 @@
 <div id="connection-overlay"><div class="conn-spinner"></div><p>Checking connection…</p></div>
 <div id="offline-banner">⚠ You are offline — showing cached data</div>
 
-<nav class="navbar" role="navigation" aria-label="main navigation">
+<nav class="navbar" role="navigation" aria-label="main navigation" style="position:sticky;top:0;z-index:100">
   <div class="container">
     <div class="navbar-brand">
-      <a href="/" class="navbar-item"><span class="accent">Droid</span>ify</a>
+      <a href="/" class="navbar-item" style="letter-spacing:-.04em;font-weight:800;font-size:1.15rem"><span class="accent" style="color:var(--accent)">Droid</span><span>ify</span></a>
       <a role="button" class="navbar-burger" id="nav-toggle" aria-label="menu" aria-expanded="false" data-target="main-nav">
         <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
       </a>
@@ -47,8 +47,8 @@
   </div>
 </nav>
 
-<main class="container">
-  <div class="page-header" data-aos="fade-up">
+<main class="container" style="padding-bottom:3rem">
+  <div class="page-header" data-aos="fade-up" data-aos-anchor-placement="top-bottom">
     <h1 class="title">Terms of Use</h1>
     <p class="subtitle">Last updated: May 2026</p>
   </div>
@@ -131,6 +131,6 @@
 <script src="/js/reveal.js"></script>
 <script src="/js/nav.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
-<script>AOS.init({ duration: 500, easing: "ease-out-cubic", once: true, offset: 60 });</script>
+<script>AOS.init({ duration: 500, easing: "ease-out-cubic", once: true, offset: 0 });</script>
 </body>
 </html>
