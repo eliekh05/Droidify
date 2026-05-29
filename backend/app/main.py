@@ -62,8 +62,10 @@ async def lifespan(app: FastAPI):
             _log.warning("PBRP + SHRP recovery indexes warmed")
             _log.warning("Phase 2 warm complete")
 
+            from app.scrapers.roms import _build_lookup
             await asyncio.gather(
-                get_unofficialtwrp_devices(), get_all_roms(limit=1),
+                get_unofficialtwrp_devices(),
+                _build_lookup(),
                 return_exceptions=True,
             )
             _log.warning("Phase 3 warm complete — all caches hot")
@@ -71,8 +73,17 @@ async def lifespan(app: FastAPI):
         except Exception as e:
             _log.warning("Warmup error (non-fatal): %s", e)
 
+    # Restore cache from disk (warms up from last run)
+    from app.services.cache import load_from_disk, save_to_disk
+    restored = load_from_disk()
+    _log.warning("Cache restored: %d entries from disk", restored)
+
     asyncio.get_event_loop().create_task(_warm())
     yield
+
+    # Save cache to disk on shutdown
+    save_to_disk()
+    _log.warning("Cache saved to disk on shutdown")
 
 
 app = FastAPI(

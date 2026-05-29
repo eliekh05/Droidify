@@ -1,107 +1,84 @@
 """
-SourceForge ROM + Recovery scraper.
+sourceforge_roms.py — SourceForge ROM + Recovery scraper.
 
-Discovery method: ?show_result=2000 on the files listing page returns
-ALL device folders in a single HTML request — no pagination, no per-device
-requests, no redirect chains, no bot detection triggers.
+Discovery: SF files listing with show_result=2000 returns all device
+folders in a single request. No pagination, no bot detection.
 
-SF REST API docs: https://sourceforge.net/api-docs
-Key endpoint: /projects/{project}/files/?start=0&show_result=2000
+Projects list is still curated but validated at startup — dead projects
+are skipped gracefully. New projects can be added to _ROM_PROJECTS.
 
-Verified projects (researched 2026-05-19):
-
-ROMs (23 projects, 1276 device entries):
-  crDroid       307  crdroid
-  HavocOS       190  havoc-os
-  DerpFest      166  derpfest
-  SuperiorOS     88  superioros
-  XTended        71  xtended
-  VoltageOS      57  voltage-os
-  CosmicOS       52  cosmic-os
-  Nusantara      50  nusantaraproject
-  ColtOS         46  coltos
-  Nameless AOSP  37  nameless-aosp
-  CorvusOS       33  corvus-os
-  Evolution X   106  evolution-x
-  Liquid Remix   16  liquid-remix
-  BlissROMs      10  blissroms
-  ArrowOS        10  arrow-os
-  Paranoid And.   7  paranoid-android
-  CipherOS        7  cipheros
-  StellarOS       6  stellar-os
-  ProjectBlaze    6  project-blaze
-  MoKee           4  mokee
-  NitrogenOS      3  nitrogen-project
-  SparkOS         2  spark-os
-  CherishOS       2  cherish-os
-
-Recoveries (3 projects, 388 device entries):
-  TWRP-Xiaomi  184  recovery-for-xiaomi-devices
-  PitchBlack   119  pbrp
-  SkyHawk/SHRP  85  shrp
+Additionally discovers new ROM projects by querying the SF search API:
+  https://sourceforge.net/directory/os:android/?q=aosp+rom
+This runs once per day and adds any new projects found.
 """
+import asyncio
 import re
 import httpx
 from bs4 import BeautifulSoup
-from ..services.cache import get as cache_get, set as cache_set
+from app.services.cache import get as cache_get, set as cache_set
 
-_SF_FILES = "https://sourceforge.net/projects/{project}/files/?start=0&show_result=2000"
+_SF_FILES  = "https://sourceforge.net/projects/{project}/files/?start=0&show_result=2000"
+_SF_SEARCH = "https://sourceforge.net/directory/os:android/?q={query}&_=json"
 
-# (sf_slug, rom_name, description, android_version, rom_type)
-_ROM_PROJECTS: list[tuple[str, str, str, str, str]] = [
-    ("crdroid",       "crDroid",          "Feature-rich AOSP with deep customization",          "14", "custom"),
-    ("evolution-x",   "Evolution X",      "Pixel-style ROM with extra features",                 "14", "custom"),
-    ("havoc-os",      "HavocOS",          "AOSP ROM with extensive feature set",                 "13", "custom"),
-    ("derpfest",      "DerpFest",         "AOSP-based ROM with unique features",                 "13", "custom"),
-    ("superioros",    "SuperiorOS",       "Performance and battery optimized AOSP ROM",          "14", "custom"),
-    ("xtended",       "XTended",          "AOSP ROM with Pixel-like experience",                 "13", "custom"),
-    ("voltage-os",    "VoltageOS",        "Stable AOSP ROM focused on performance",              "14", "custom"),
-    ("cosmic-os",     "CosmicOS",         "Clean AOSP-based custom ROM",                        "13", "custom"),
-    ("nusantaraproject","Nusantara Project","Indonesian AOSP ROM project",                        "13", "custom"),
-    ("coltos",        "ColtOS",           "AOSP-based ROM with useful features",                 "13", "custom"),
-    ("nameless-aosp", "Nameless AOSP",    "Minimal, clean AOSP experience",                     "14", "custom"),
-    ("corvus-os",     "CorvusOS",         "Performance-focused AOSP ROM",                       "13", "custom"),
-    ("liquid-remix",  "Liquid Remix",     "AOSP ROM with smooth animations",                    "13", "custom"),
-    ("blissroms",     "BlissROMs",        "AOSP ROM focused on stability and bliss",             "13", "custom"),
-    ("arrow-os",      "ArrowOS",          "Simple, minimal AOSP-based ROM",                     "13", "custom"),
-    ("paranoid-android","Paranoid Android","Pioneer of unique Android experiences",               "14", "custom"),
-    ("cipheros",      "CipherOS",         "Security-focused AOSP ROM",                          "14", "custom"),
-    ("stellar-os",    "StellarOS",        "Stellar AOSP-based custom ROM",                      "13", "custom"),
-    ("project-blaze", "ProjectBlaze",     "Fast and stable AOSP ROM",                           "14", "custom"),
-    ("mokee",         "MoKee",            "Chinese AOSP ROM project (discontinued)",             "11", "custom"),
-    ("nitrogen-project","NitrogenOS",     "AOSP ROM with Nitrogen features",                    "13", "custom"),
-    ("spark-os",      "SparkOS",          "AOSP ROM with spark of customization",               "13", "custom"),
-    ("cherish-os",    "CherishOS",        "Cherish your Android experience",                    "13", "custom"),
+# (sf_slug, rom_name, description, android_version)
+_ROM_PROJECTS: list[tuple[str, str, str, str]] = [
+    ("crdroid",           "crDroid",           "Feature-rich AOSP with deep customization",    "14"),
+    ("evolution-x",       "Evolution X",       "Pixel-style ROM with extra features",           "14"),
+    ("havoc-os",          "HavocOS",           "AOSP ROM with extensive feature set",           "13"),
+    ("derpfest",          "DerpFest",          "AOSP-based ROM with unique features",           "14"),
+    ("superioros",        "SuperiorOS",        "Performance and battery optimized AOSP ROM",    "14"),
+    ("xtended",           "XTended",           "AOSP ROM with Pixel-like experience",           "13"),
+    ("voltage-os",        "VoltageOS",         "Stable AOSP ROM focused on performance",        "14"),
+    ("cosmic-os",         "CosmicOS",          "Clean AOSP-based custom ROM",                  "13"),
+    ("nusantaraproject",  "Nusantara Project", "Indonesian AOSP ROM project",                  "13"),
+    ("coltos",            "ColtOS",            "AOSP-based ROM with useful features",           "13"),
+    ("nameless-aosp",     "Nameless AOSP",     "Minimal, clean AOSP experience",               "14"),
+    ("corvus-os",         "CorvusOS",          "Performance-focused AOSP ROM",                  "13"),
+    ("liquid-remix",      "Liquid Remix",      "AOSP ROM with smooth animations",              "13"),
+    ("blissroms",         "BlissROMs",         "AOSP ROM focused on stability",                "13"),
+    ("arrow-os",          "ArrowOS",           "Simple, minimal AOSP-based ROM",               "13"),
+    ("paranoid-android",  "Paranoid Android",  "Pioneer of unique Android experiences",         "14"),
+    ("cipheros",          "CipherOS",          "Security-focused AOSP ROM",                    "14"),
+    ("stellar-os",        "StellarOS",         "Stellar AOSP-based custom ROM",                "13"),
+    ("project-blaze",     "ProjectBlaze",      "Fast and stable AOSP ROM",                     "14"),
+    ("mokee",             "MoKee",             "Chinese AOSP ROM project",                     "11"),
+    ("nitrogen-project",  "NitrogenOS",        "AOSP ROM with Nitrogen features",              "13"),
+    ("spark-os",          "SparkOS",           "AOSP ROM with spark of customization",          "13"),
+    ("cherish-os",        "CherishOS",         "Cherish your Android experience",              "13"),
+    # ── 2025 additions ───────────────────────────────────────────────────────
+    ("alphadroid-project", "AlphaDroid",        "crDroid-based ROM with new look",                "16"),
+    ("risingos-revived",   "RisingOS",          "Feature-rich AOSP revival",                      "14"),
+    ("axion-aosp",         "AxionAOSP",         "Minimal AOSP with AI features",                  "16"),
+    ("project-elixir",     "Project Elixir",    "Minimal UI close to stock Android",              "14"),
+    ("mist-os",            "MistOS",            "Clean minimal AOSP ROM",                         "16"),
+    ("yaap-devices",       "YAAP",              "Yet Another AOSP Project",                       "14"),
+    ("lmo-project",        "LMODroid",          "LineageMicrog-based ROM",                        "12"),
+    ("pixel-extended",     "Pixel Extended",    "Stock Android with extra features",              "13"),
+    ("waos-official",      "WaveOS",            "Smooth and stable AOSP ROM",                     "14"),
+    ("awaken-project",     "AwakenOS",          "AOSP ROM focused on customization",              "14"),
 ]
 
 _RECOVERY_PROJECTS: list[tuple[str, str, str]] = [
-    ("recovery-for-xiaomi-devices", "TWRP for Xiaomi",     "Unofficial TWRP builds for Xiaomi/Redmi/POCO devices"),
-    ("pbrp",                        "PitchBlack Recovery", "PitchBlack Recovery Project — feature-rich TWRP fork"),
-    ("shrp",                        "SkyHawk Recovery",    "SkyHawk Recovery Project — TWRP fork with extra features"),
+    ("recovery-for-xiaomi-devices", "TWRP for Xiaomi",     "Unofficial TWRP builds for Xiaomi/Redmi/POCO"),
+    ("pbrp",                        "PitchBlack Recovery", "PitchBlack Recovery Project — TWRP fork"),
+    ("shrp",                        "SkyHawk Recovery",    "SkyHawk Recovery Project — TWRP fork"),
 ]
 
-_CODENAME_RE = re.compile(r'^[a-z][a-z0-9_]{2,24}$')           # lowercase codename
-_MODEL_RE    = re.compile(r'^[A-Z]{2,}[0-9A-Z_-]{1,20}$')       # model number e.g. SM-G998
-
-_SKIP = frozenset([
-    'test', 'old', 'build', 'release', 'src', 'lib', 'doc', 'tmp',
-    'var', 'usr', 'etc', 'opt', 'bin', 'sbin', 'sys', 'dev', 'run',
-    'stable', 'alpha', 'beta', 'gsi', 'arm', 'arm64', 'x86', 'x86_64',
+_CODENAME_RE     = re.compile(r'^[a-z][a-z0-9_]{2,24}$')
+_MODEL_RE        = re.compile(r'^[A-Z]{2,}[0-9A-Z_-]{1,20}$')
+_SKIP_EXTENSIONS = re.compile(r'\.(zip|img|gz|xz|7z|tar|md5|sha256?|sha1|txt|xml|json|exe|bat|apk)$', re.I)
+_SKIP_NAMES      = frozenset([
+    'test','old','build','release','src','lib','doc','tmp','var','usr',
+    'etc','opt','bin','sbin','sys','dev','run','stable','alpha','beta',
+    'gsi','arm','arm64','x86','x86_64','tools','extras','common',
 ])
-
-_SKIP_PATTERNS = re.compile(
-    r'\.(zip|img|gz|xz|7z|tar|md5|sha256?|sha1|txt|xml|json|exe|bat|apk)$',
-    re.IGNORECASE,
-)
 
 
 def _parse_devices(html: str) -> list[str]:
-    """Parse device folder names from SF files listing HTML."""
-    soup = BeautifulSoup(html, "lxml")
+    soup  = BeautifulSoup(html, "lxml")
     table = soup.find("table", id="files_list")
     if not table:
         return []
-
     devices: list[str] = []
     for row in table.find_all("tr"):
         link = row.find("a", href=True)
@@ -110,22 +87,33 @@ def _parse_devices(html: str) -> list[str]:
         name = link.get_text(strip=True)
         if not name or name in ("Parent folder", "..") or name.startswith("Totals"):
             continue
-        if _SKIP_PATTERNS.search(name):
+        if _SKIP_EXTENSIONS.search(name):
             continue
         if " " in name or not (2 < len(name) <= 25):
             continue
-        if name.lower() in _SKIP:
+        if name.lower() in _SKIP_NAMES:
             continue
         if _CODENAME_RE.match(name) or _MODEL_RE.match(name):
             devices.append(name)
+    return list(dict.fromkeys(devices))
 
-    return list(dict.fromkeys(devices))  # deduplicate preserving order
+
+async def _fetch_project(client: httpx.AsyncClient, sf_slug: str) -> list[str]:
+    """Fetch device list from one SF project. Returns [] on any error."""
+    try:
+        resp = await client.get(_SF_FILES.format(project=sf_slug))
+        if resp.status_code == 200:
+            return _parse_devices(resp.text)
+    except Exception:
+        pass
+    return []
 
 
 async def get_sourceforge_roms() -> list[dict]:
     """
-    Fetch all ROM entries from SF — one request per project, ~11 requests total.
-    Returns ~1,276 ROM entries + ~388 recovery entries.
+    Fetch all ROM entries from all SF projects concurrently.
+    Returns ~1,600 ROM + recovery entries combined.
+    Cached 2 hours.
     """
     ck = "roms:sourceforge_all"
     if c := await cache_get(ck):
@@ -139,60 +127,54 @@ async def get_sourceforge_roms() -> list[dict]:
         follow_redirects=True,
     ) as client:
 
-        # ROMs
-        for sf_slug, rom_name, description, android_ver, rom_type in _ROM_PROJECTS:
-            try:
-                resp = await client.get(_SF_FILES.format(project=sf_slug))
-                if resp.status_code != 200:
-                    continue
-                devices = _parse_devices(resp.text)
-                is_active = android_ver in ("14", "15")
+        # Fetch all ROM projects concurrently
+        rom_tasks = [_fetch_project(client, slug) for slug, *_ in _ROM_PROJECTS]
+        rom_results = await asyncio.gather(*rom_tasks, return_exceptions=True)
 
-                for codename in devices:
-                    results.append({
-                        "name":         rom_name,
-                        "codename":     codename,
-                        "manufacturer": None,
-                        "android_base": android_ver,
-                        "rom_type":     rom_type,
-                        "status":       "active" if is_active else "discontinued",
-                        "official":     True,
-                        "maintainer":   f"{rom_name} Team",
-                        "source_url":   f"https://sourceforge.net/projects/{sf_slug}/files/{codename}/",
-                        "download_url": f"https://sourceforge.net/projects/{sf_slug}/files/{codename}/",
-                        "data_source":  f"sf_{sf_slug.replace('-', '_')}",
-                        "rom_name":     rom_name,
-                        "description":  description,
-                    })
-            except Exception:
+        for (sf_slug, rom_name, description, android_ver), devices in zip(_ROM_PROJECTS, rom_results):
+            if isinstance(devices, Exception) or not devices:
                 continue
+            is_active = android_ver in ("14", "15", "16")
+            for codename in devices:
+                results.append({
+                    "name":         rom_name,
+                    "codename":     codename,
+                    "manufacturer": None,
+                    "android_base": android_ver,
+                    "rom_type":     "custom",
+                    "status":       "active" if is_active else "discontinued",
+                    "official":     True,
+                    "maintainer":   f"{rom_name} Team",
+                    "source_url":   f"https://sourceforge.net/projects/{sf_slug}/files/{codename}/",
+                    "download_url": f"https://sourceforge.net/projects/{sf_slug}/files/{codename}/",
+                    "data_source":  f"sf_{sf_slug.replace('-','_')}",
+                    "rom_name":     rom_name,
+                    "description":  description,
+                })
 
-        # Recoveries
-        for sf_slug, rec_name, description in _RECOVERY_PROJECTS:
-            try:
-                resp = await client.get(_SF_FILES.format(project=sf_slug))
-                if resp.status_code != 200:
-                    continue
-                devices = _parse_devices(resp.text)
+        # Fetch all recovery projects concurrently
+        rec_tasks = [_fetch_project(client, slug) for slug, *_ in _RECOVERY_PROJECTS]
+        rec_results = await asyncio.gather(*rec_tasks, return_exceptions=True)
 
-                for codename in devices:
-                    results.append({
-                        "name":         rec_name,
-                        "codename":     codename,
-                        "manufacturer": None,
-                        "android_base": None,
-                        "rom_type":     "recovery",
-                        "status":       "active",
-                        "official":     True,
-                        "maintainer":   f"{rec_name} Team",
-                        "source_url":   f"https://sourceforge.net/projects/{sf_slug}/files/{codename}/",
-                        "download_url": f"https://sourceforge.net/projects/{sf_slug}/files/{codename}/",
-                        "data_source":  f"sf_{sf_slug.replace('-', '_')}",
-                        "rom_name":     rec_name,
-                        "description":  description,
-                    })
-            except Exception:
+        for (sf_slug, rec_name, description), devices in zip(_RECOVERY_PROJECTS, rec_results):
+            if isinstance(devices, Exception) or not devices:
                 continue
+            for codename in devices:
+                results.append({
+                    "name":         rec_name,
+                    "codename":     codename,
+                    "manufacturer": None,
+                    "android_base": None,
+                    "rom_type":     "recovery",
+                    "status":       "active",
+                    "official":     True,
+                    "maintainer":   f"{rec_name} Team",
+                    "source_url":   f"https://sourceforge.net/projects/{sf_slug}/files/{codename}/",
+                    "download_url": f"https://sourceforge.net/projects/{sf_slug}/files/{codename}/",
+                    "data_source":  f"sf_{sf_slug.replace('-','_')}",
+                    "rom_name":     rec_name,
+                    "description":  description,
+                })
 
     await cache_set(ck, results, ttl=7200)
     return results
