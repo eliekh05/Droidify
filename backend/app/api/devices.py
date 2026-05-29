@@ -91,10 +91,11 @@ async def get_device(codename: str):
     Full device detail including hardware specs (from LineageOS Wiki),
     available ROMs, and recovery options. All fetched live.
     """
-    device, roms, recoveries = await asyncio.gather(
+    device, roms, recoveries, samfw = await asyncio.gather(
         get_device_detail(codename),
         get_roms_for_device(codename),
         get_recovery_for_device(codename),
+        get_samfw_for_device(codename),
     )
 
     if not device:

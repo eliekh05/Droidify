@@ -7,40 +7,43 @@
   const paginEl = document.getElementById('pagination');
   const input   = document.getElementById('search-input');
   const btn     = document.getElementById('search-btn');
+  let currentQ  = new URLSearchParams(location.search).get('q') || '';
+  input.value   = currentQ;
 
-  const params = new URLSearchParams(location.search);
-  let currentQ = params.get('q') || '';
-  input.value = currentQ;
-
-  function pagination(total, offset) {
-    const pages = Math.ceil(total/LIMIT), cur = Math.floor(offset/LIMIT);
-    if (pages <= 1) { paginEl.innerHTML=''; return; }
-    let h = cur>0 ? `<button class="page-btn" onclick="load(${(cur-1)*LIMIT})">←</button>` : '';
-    for (let i=Math.max(0,cur-3); i<=Math.min(pages-1,cur+3); i++)
-      h += `<button class="page-btn${i===cur?' active':''}" onclick="load(${i*LIMIT})">${i+1}</button>`;
-    if (cur<pages-1) h += `<button class="page-btn" onclick="load(${(cur+1)*LIMIT})">→</button>`;
+  function renderPagination(total, offset) {
+    const pages=Math.ceil(total/LIMIT),cur=Math.floor(offset/LIMIT);
+    if (pages<=1) { paginEl.innerHTML=''; return; }
+    let h = `<a class="pagination-previous button${cur===0?' is-disabled':''}" onclick="load(${(cur-1)*LIMIT})">Prev</a>`;
+    h += `<a class="pagination-next button${cur>=pages-1?' is-disabled':''}" onclick="load(${(cur+1)*LIMIT})">Next</a><ul class="pagination-list">`;
+    for (let i=Math.max(0,cur-3);i<=Math.min(pages-1,cur+3);i++)
+      h += `<li><a class="pagination-link button${i===cur?' is-current':''}" onclick="load(${i*LIMIT})">${i+1}</a></li>`;
+    h += '</ul>';
     paginEl.innerHTML = h;
   }
 
   window.load = async function(offset=0) {
-    grid.innerHTML = Array(6).fill('<div class="skeleton" style="height:90px"></div>').join('');
+    grid.innerHTML = Array(6).fill('<div class="column is-6-mobile is-4-tablet"><div class="skeleton" style="height:90px"></div></div>').join('');
     try {
-      const data = await api.roms({ q: currentQ||undefined, limit:LIMIT, offset });
+      const data = await api.roms({ q:currentQ||undefined, limit:LIMIT, offset });
       metaEl.className='results-meta';
-      metaEl.textContent = `${data.total.toLocaleString()} ROM${data.total!==1?'s':''}`;
+      metaEl.textContent=`${data.total.toLocaleString()} ROM${data.total!==1?'s':''}`;
       grid.innerHTML = data.roms.length
-        ? data.roms.map(r => `<div class="card reveal">
-            <div class="card-mfr">${esc(r.source||'custom')}</div>
-            <div class="card-title">${esc(r.name)}</div>
-            <div class="card-codename">${esc(r.codename)}</div>
-            ${r.android_base?`<div style="font-size:.78rem;color:var(--muted)">Android ${esc(r.android_base)}</div>`:''}
-            ${r.download_url?`<div style="margin-top:.5rem"><a href="${esc(r.download_url)}" target="_blank" rel="noopener" style="font-size:.78rem;color:var(--accent)">Download →</a></div>`:''}
+        ? data.roms.map((r,i)=>`<div class="column is-6-mobile is-4-tablet" data-aos="fade-up" data-aos-delay="${Math.min(i,6)*40}">
+            <div class="card">
+              <div class="card-content">
+                <div class="card-mfr">${esc(r.source||'custom')}</div>
+                <p class="title is-6 mb-1">${esc(r.name)}</p>
+                <div class="card-codename">${esc(r.codename)}</div>
+                ${r.android_base?`<p style="font-size:.78rem;color:var(--muted)">Android ${esc(r.android_base)}</p>`:''}
+                ${r.download_url?`<a href="${esc(r.download_url)}" target="_blank" rel="noopener" style="font-size:.78rem;color:var(--accent)">Download →</a>`:''}
+              </div>
+            </div>
           </div>`).join('')
-        : '<div class="empty-state">No ROMs found.</div>';
-      pagination(data.total, offset);
-      if (window._reObserve) window._reObserve();
-      if (offset) window.scrollTo({ top:0, behavior:'smooth' });
-    } catch(e) { grid.innerHTML=`<div class="error-state">${esc(e.message)}</div>`; }
+        : '<div class="column"><div class="empty-state">No ROMs found.</div></div>';
+      renderPagination(data.total, offset);
+      if (window.AOS) AOS.refresh();
+      if (offset) window.scrollTo({top:0,behavior:'smooth'});
+    } catch(e) { grid.innerHTML=`<div class="column"><div class="error-state">${esc(e.message)}</div></div>`; }
   };
 
   function doSearch() {
@@ -50,7 +53,7 @@
     history.pushState({}, '', url);
     load(0);
   }
-  btn.addEventListener('click', doSearch);
-  input.addEventListener('keydown', e => { if(e.key==='Enter') doSearch(); });
+  btn.addEventListener('click',doSearch);
+  input.addEventListener('keydown',e=>{if(e.key==='Enter')doSearch();});
   load(0);
 })();

@@ -1,115 +1,121 @@
 (function () {
   'use strict';
-  const esc = s => String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const main = document.getElementById('device-main');
+  const esc = s => String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const main     = document.getElementById('device-main');
   const codename = new URLSearchParams(location.search).get('c');
 
   if (!codename) {
-    main.innerHTML = '<div class="page-header"><h1>No device specified</h1></div><a href="/devices.html" class="btn-primary">← Back to devices</a>';
+    main.innerHTML = '<div class="page-header"><h1 class="title">No device specified</h1></div><a href="/devices.html" class="button is-primary">← Back to devices</a>';
     return;
   }
-
   document.title = `${codename} — Droidify`;
 
   function tagClass(s) {
-    return ['lineageos','grapheneos'].includes(s) ? 'tag-green'
-         : ['twrp','orangefox'].includes(s)       ? 'tag-blue' : 'tag-gray';
-  }
-
-  function romCard(rom) {
-    const dl = rom.download_url || (rom.download_urls && rom.download_urls[0]) || '';
-    return `<div class="card reveal">
-      <div class="card-mfr">${esc(rom.source || 'custom')}</div>
-      <div class="card-title">${esc(rom.name)}</div>
-      ${rom.android_base ? `<div class="card-codename">Android ${esc(rom.android_base)}</div>` : ''}
-      ${rom.version_label ? `<div style="font-size:.78rem;color:var(--muted)">${esc(rom.version_label)}</div>` : ''}
-      ${dl ? `<div style="margin-top:.5rem"><a href="${esc(dl)}" target="_blank" rel="noopener" style="font-size:.78rem;color:var(--accent)">Download →</a></div>` : ''}
-    </div>`;
+    return ['lineageos','grapheneos'].includes(s) ? 'is-success'
+         : ['twrp','orangefox'].includes(s)       ? 'is-info' : 'is-dark';
   }
 
   function render(device) {
-    const sources = (device.sources || []).map(s =>
-      `<span class="tag ${tagClass(s)}">${esc(s)}</span>`).join('');
-
+    const sources = (device.sources||[]).map(s => `<span class="tag ${tagClass(s)}">${esc(s)}</span>`).join('');
     const roms = device.roms?.length
-      ? `<section class="section">
-          <div class="section-header reveal"><h2>ROMs (${device.roms.length})</h2></div>
-          <div class="device-grid stagger-grid">${device.roms.map(romCard).join('')}</div>
-        </section>`
-      : `<section class="section reveal">
-          <div class="section-header"><h2>ROMs</h2></div>
-          <div class="empty-state">No ROMs found for this device.</div>
-        </section>`;
+      ? device.roms.map((rom, i) => {
+          const dl = rom.download_url||(rom.download_urls&&rom.download_urls[0])||'';
+          return `<div class="column is-6-mobile is-4-tablet" data-aos="fade-up" data-aos-delay="${Math.min(i,6)*40}">
+            <div class="card">
+              <div class="card-content">
+                <div class="card-mfr">${esc(rom.source||'custom')}</div>
+                <p class="title is-6 mb-1">${esc(rom.name)}</p>
+                ${rom.android_base?`<div class="card-codename">Android ${esc(rom.android_base)}</div>`:''}
+                ${rom.version_label?`<p style="font-size:.78rem;color:var(--muted)">${esc(rom.version_label)}</p>`:''}
+                ${dl?`<a href="${esc(dl)}" target="_blank" rel="noopener" style="font-size:.78rem;color:var(--accent)">Download →</a>`:''}
+              </div>
+            </div>
+          </div>`;
+        }).join('')
+      : '<div class="column"><div class="empty-state">No ROMs found for this device.</div></div>';
 
     const recoveries = device.recoveries?.length
-      ? `<section class="section">
-          <div class="section-header reveal"><h2>Recoveries (${device.recoveries.length})</h2></div>
-          <div class="device-grid stagger-grid">${device.recoveries.map(r => `
-            <div class="card reveal">
-              <div class="card-mfr">${esc(r.recovery_type || 'recovery')}</div>
-              <div class="card-title">${esc(r.model_name || r.codename)}</div>
-              ${r.download_url ? `<div style="margin-top:.5rem"><a href="${esc(r.download_url)}" target="_blank" rel="noopener" style="font-size:.78rem;color:var(--accent)">Download →</a></div>` : ''}
-            </div>`).join('')}
+      ? device.recoveries.map((r,i) =>
+          `<div class="column is-6-mobile is-4-tablet" data-aos="fade-up" data-aos-delay="${Math.min(i,6)*40}">
+            <div class="card">
+              <div class="card-content">
+                <div class="card-mfr">${esc(r.recovery_type||'recovery')}</div>
+                <p class="title is-6 mb-1">${esc(r.model_name||r.codename)}</p>
+                ${r.download_url?`<a href="${esc(r.download_url)}" target="_blank" rel="noopener" style="font-size:.78rem;color:var(--accent)">Download →</a>`:''}
+              </div>
+            </div>
+          </div>`
+        ).join('') : '';
+
+    const samfw = (device.stock_firmware||[]).map((f,i) =>
+      `<div class="column is-6-mobile is-4-tablet" data-aos="fade-up" data-aos-delay="${i*40}">
+        <div class="card">
+          <div class="card-content">
+            <div class="card-mfr">Stock Firmware</div>
+            <p class="title is-6 mb-1">${esc(f.model)}</p>
+            <p style="font-size:.82rem;color:var(--muted);margin:.3rem 0">${esc(f.description)}</p>
+            <a href="${esc(f.download_url)}" target="_blank" rel="noopener" style="font-size:.78rem;color:var(--accent)">Download on SamFW →</a>
           </div>
-        </section>` : '';
-
-    const links = [
-      device.wiki_url      ? `<a href="${esc(device.wiki_url)}" target="_blank" rel="noopener" class="btn-primary" style="text-decoration:none;font-size:.82rem">LineageOS Wiki</a>` : '',
-      device.twrp_url      ? `<a href="${esc(device.twrp_url)}" target="_blank" rel="noopener" class="btn-ghost" style="text-decoration:none;font-size:.82rem">TWRP</a>` : '',
-      device.orangefox_url ? `<a href="${esc(device.orangefox_url)}" target="_blank" rel="noopener" class="btn-ghost" style="text-decoration:none;font-size:.82rem">OrangeFox</a>` : '',
-    ].join('');
-
-    const samfw = (device.stock_firmware || []).map(f =>
-      `<div class="card reveal">
-        <div class="card-mfr">Stock Firmware</div>
-        <div class="card-title">${esc(f.model)}</div>
-        <div style="font-size:.82rem;color:var(--muted);margin:.3rem 0;line-height:1.5">${esc(f.description)}</div>
-        <div style="margin-top:.5rem">
-          <a href="${esc(f.download_url)}" target="_blank" rel="noopener"
-            style="font-size:.78rem;color:var(--accent)">Download on SamFW →</a>
         </div>
       </div>`
     ).join('');
 
+    const links = [
+      device.wiki_url ? `<a href="${esc(device.wiki_url)}" target="_blank" rel="noopener" class="button is-primary mr-2 mb-2">LineageOS Wiki</a>` : '',
+      device.twrp_url ? `<a href="${esc(device.twrp_url)}" target="_blank" rel="noopener" class="button is-ghost mr-2 mb-2">TWRP</a>` : '',
+      device.orangefox_url ? `<a href="${esc(device.orangefox_url)}" target="_blank" rel="noopener" class="button is-ghost mr-2 mb-2">OrangeFox</a>` : '',
+    ].join('');
+
     main.innerHTML = `
-      <div class="page-header reveal">
-        <div style="margin-bottom:.5rem">
-          <a href="/devices.html" class="btn-ghost" style="text-decoration:none;font-size:.82rem">← Back</a>
-        </div>
-        <div style="font-size:.78rem;color:var(--muted);margin-bottom:.3rem">${esc(device.manufacturer || '')}</div>
-        <h1>${esc(device.model_name || device.codename)}</h1>
-        <div style="font-family:var(--font-mono);color:var(--accent);font-size:.9rem;margin-top:.25rem">${esc(device.codename)}</div>
-        ${sources ? `<div class="tags" style="margin-top:.75rem">${sources}</div>` : ''}
+      <div class="page-header" data-aos="fade-up">
+        <div class="mb-3"><a href="/devices.html" class="button is-ghost">← Back</a></div>
+        <p style="font-size:.78rem;color:var(--muted);margin-bottom:.3rem">${esc(device.manufacturer||'')}</p>
+        <h1 class="title">${esc(device.model_name||device.codename)}</h1>
+        <p style="font-family:var(--mono);color:var(--accent);font-size:.9rem">${esc(device.codename)}</p>
+        ${sources?`<div class="tags mt-3">${sources}</div>`:''}
       </div>
-      ${roms}
-      ${recoveries}
-      ${samfw ? `<section class="section"><div class="section-header reveal"><h2>Stock Firmware</h2></div><div class="device-grid stagger">${samfw}</div></section>` : ''}
-      ${links ? `<section class="section reveal"><div class="section-header"><h2>Links</h2></div><div style="display:flex;flex-wrap:wrap;gap:.6rem">${links}</div></section>` : ''}
+
+      <section class="section pb-0">
+        <div class="section-header" data-aos="fade-up">
+          <h2 class="title is-6">ROMs${device.roms?.length?` (${device.roms.length})`:''}</h2>
+        </div>
+        <div class="columns is-multiline is-mobile">${roms}</div>
+      </section>
+
+      ${recoveries?`<section class="section pb-0">
+        <div class="section-header" data-aos="fade-up">
+          <h2 class="title is-6">Recoveries (${device.recoveries.length})</h2>
+        </div>
+        <div class="columns is-multiline is-mobile">${recoveries}</div>
+      </section>`:''}
+
+      ${samfw?`<section class="section pb-0">
+        <div class="section-header" data-aos="fade-up">
+          <h2 class="title is-6">Stock Firmware</h2>
+        </div>
+        <div class="columns is-multiline is-mobile">${samfw}</div>
+      </section>`:''}
+
+      ${links?`<section class="section" data-aos="fade-up">
+        <div class="section-header"><h2 class="title is-6">Links</h2></div>
+        <div>${links}</div>
+      </section>`:''}
     `;
-    document.title = `${device.model_name || device.codename} — Droidify`;
-    if (window._reObserve) window._reObserve();
+    document.title = `${device.model_name||device.codename} — Droidify`;
+    if (window.AOS) AOS.refresh();
   }
 
-  async function load(retry = false) {
+  async function load(retry=false) {
     if (!retry) {
-      main.innerHTML = `
-      <div class="page-header">
-        <div style="margin-bottom:.5rem">
-          <a href="/devices.html" class="btn-ghost" style="text-decoration:none;font-size:.82rem">← Back</a>
-        </div>
-        <div class="skeleton" style="height:1.5rem;width:200px;margin-bottom:.5rem"></div>
-        <div class="skeleton" style="height:2.5rem;width:320px;margin-bottom:.5rem"></div>
-        <div class="skeleton" style="height:1rem;width:120px"></div>
-      </div>
-      <div class="device-grid" style="margin-top:1.5rem">
-        ${Array(6).fill('<div class="skeleton" style="height:120px"></div>').join('')}
+      main.innerHTML = `<div style="padding:3rem 0;text-align:center">
+        <div class="spinner"></div>
+        <p style="color:var(--muted)">Loading device data…</p>
       </div>`;
     }
     try {
       const device = await api.device(codename, 20000);
       render(device);
-      // If ROMs empty and indexes still warming, retry once after 3s
-      if (!retry && (!device.roms || device.roms.length === 0)) {
+      if (!retry && (!device.roms||!device.roms.length)) {
         setTimeout(() => load(true), 3000);
       }
     } catch(e) {
@@ -118,15 +124,12 @@
         : e.message.includes('404') ? `Device "${codename}" not found.` : e.message;
       main.innerHTML = `
         <div class="page-header">
-          <h1>Could not load device</h1>
-          <p class="page-sub" style="color:var(--danger)">${esc(msg)}</p>
+          <h1 class="title">Could not load device</h1>
+          <p class="subtitle" style="color:var(--danger)">${esc(msg)}</p>
         </div>
-        <div style="display:flex;gap:.75rem;margin-top:1rem;flex-wrap:wrap">
-          <button class="btn-primary" onclick="location.reload()">↺ Retry</button>
-          <a href="/devices.html" class="btn-ghost" style="text-decoration:none">← Back to devices</a>
-        </div>`;
+        <button class="button is-primary mr-2" onclick="location.reload()">↺ Retry</button>
+        <a href="/devices.html" class="button is-ghost">← Back to devices</a>`;
     }
   }
-
   load();
 })();
