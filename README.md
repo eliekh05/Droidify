@@ -12,7 +12,6 @@ Live Android ecosystem indexer. Devices, ROMs, recoveries, tools, and guides —
 git clone https://github.com/eliekh05/Droidify
 cd Droidify
 ./install.sh
-cloudflared tunnel --url http://localhost:80
 ```
 
 ---

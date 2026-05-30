@@ -496,3 +496,9 @@ a { transition: color 150ms ease; }
   box-shadow: 0 0 12px var(--accent-glow);
   color: #0b0f14 !important;
 }
+
+/* AOS safety fallback — if AOS fails to initialise elements stay visible */
+[data-aos]:not(.aos-init) {
+  opacity: 1 !important;
+  transform: none !important;
+}

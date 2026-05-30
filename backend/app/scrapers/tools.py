@@ -166,7 +166,7 @@ async def get_tools(category: str | None = None) -> list[dict]:
 
     async with get_client() as client:
         gh_results = await asyncio.gather(
-            *[_fetch_gh_release(client, t["owner"], t["repo"]) for t in TOOL_REPOS]
+            *[_fetch_gh_release(client, t) for t in TOOL_REPOS]
         )
 
     tools: list[dict] = []

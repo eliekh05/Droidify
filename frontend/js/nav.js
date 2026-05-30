@@ -1,6 +1,6 @@
 /**
  * Droidify nav.js
- * - Mobile hamburger
+ * - Mobile hamburger (Bulma uses is-active on navbar-menu)
  * - PWA install
  * - Connection checking overlay
  * - Offline banner
@@ -9,16 +9,20 @@
   'use strict';
 
   // ── Mobile hamburger ──────────────────────────────────────────
+  // Bulma requires is-active on both the burger AND the navbar-menu
   const toggle = document.getElementById('nav-toggle');
   const nav    = document.getElementById('main-nav');
   if (toggle && nav) {
     toggle.addEventListener('click', () => {
-      const open = nav.classList.toggle('open');
+      toggle.classList.toggle('is-active');
+      nav.classList.toggle('is-active');
+      const open = nav.classList.contains('is-active');
       toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
     });
     nav.addEventListener('click', e => {
-      if (e.target.classList.contains('nav-link')) {
-        nav.classList.remove('open');
+      if (e.target.closest('a')) {
+        toggle.classList.remove('is-active');
+        nav.classList.remove('is-active');
         toggle.setAttribute('aria-expanded', 'false');
       }
     });
@@ -34,11 +38,10 @@
       if (offlineBanner) offlineBanner.classList.add('show');
       return;
     }
-    // Verify API is actually reachable (not just network is up)
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 5000);
     fetch('/api/health', { signal: ctrl.signal })
-      .then(r => {
+      .then(() => {
         clearTimeout(timer);
         if (overlay) overlay.classList.remove('show');
         if (offlineBanner) offlineBanner.classList.remove('show');
@@ -46,22 +49,15 @@
       .catch(() => {
         clearTimeout(timer);
         if (overlay) overlay.classList.remove('show');
-        // Don't show offline banner if navigator.onLine is true
-        // — could be a server warmup issue
       });
   }
 
-  // Show overlay briefly on page load to verify connection
   if (overlay) {
     overlay.classList.add('show');
-    // Give the backend 3 seconds to respond before hiding
-    setTimeout(() => {
-      overlay.classList.remove('show');
-    }, 3000);
+    setTimeout(() => overlay.classList.remove('show'), 3000);
     checkConnection();
   }
 
-  // Listen for online/offline events
   window.addEventListener('offline', () => {
     if (offlineBanner) offlineBanner.classList.add('show');
   });
