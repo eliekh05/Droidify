@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Droidify API Reference</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<div id="connection-overlay"><div class="conn-spinner"></div><p>Checking connection…</p></div>
+<div id="offline-banner">⚠ You are offline — showing cached data</div>
+
+<nav class="navbar" role="navigation" aria-label="main navigation" style="position:sticky;top:0;z-index:100">
+  <div class="container">
+    <div class="navbar-brand">
+      <a href="/" class="droidify-logo">&#8203;<strong class="accent-text">Droid</strong>ify</a>
+      <a role="button" class="navbar-burger" id="nav-toggle" aria-label="menu" aria-expanded="false" data-target="main-nav">
+        <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+      </a>
+    </div>
+    <div id="main-nav" class="navbar-menu">
+      <div class="navbar-start">
+        <a href="/" class="navbar-item">Home</a>
+        <a href="/devices.html" class="navbar-item">Devices</a>
+        <a href="/roms.html" class="navbar-item">ROMs</a>
+        <a href="/recoveries.html" class="navbar-item">Recoveries</a>
+        <a href="/tools.html" class="navbar-item">Tools</a>
+        <a href="/android.html" class="navbar-item">Android</a>
+        <a href="/guides.html" class="navbar-item">Guides</a>
+        <a href="/docs" class="navbar-item is-active">API</a>
+      </div>
+      <div class="navbar-end">
+        <div class="navbar-item" id="pwa-install-wrap" style="display:none"></div>
+        <div class="navbar-item">
+          <a href="https://github.com/eliekh05/Droidify" class="button is-ghost" target="_blank" rel="noopener">
+            <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></span>
+            <span>GitHub</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<main class="container" style="padding-bottom:3rem">
+  <div class="page-header" data-aos="fade-up">
+    <h1 class="title">API Reference</h1>
+    <p class="subtitle">Live Android ROM, device and recovery data — free, no auth required</p>
+  </div>
+
+  <div class="card mb-4" data-aos="fade-up">
+    <div class="card-content">
+      <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap">
+        <div>
+          <p style="color:var(--muted);font-size:.82rem;margin-bottom:.25rem">Base URL</p>
+          <code style="font-family:var(--mono);color:var(--accent);font-size:.9rem" id="base-url">https://eliekh05-droidify-hf.hf.space</code>
+        </div>
+        <div>
+          <p style="color:var(--muted);font-size:.82rem;margin-bottom:.25rem">Auth</p>
+          <span class="tag is-success">None required</span>
+        </div>
+        <div>
+          <p style="color:var(--muted);font-size:.82rem;margin-bottom:.25rem">Format</p>
+          <span class="tag is-info">JSON</span>
+        </div>
+        <div>
+          <p style="color:var(--muted);font-size:.82rem;margin-bottom:.25rem">Methods</p>
+          <span class="tag is-dark">GET only</span>
+        </div>
+        <div>
+          <a href="/docs" class="button is-ghost" style="font-size:.8rem">Interactive docs →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="api-endpoints"></div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <p>Droidify API &mdash; Live Android ecosystem data &middot; <a href="/privacy.html">Privacy</a> &middot; <a href="/terms.html">Terms</a> &middot; <a href="/faq.html">FAQ</a></p>
+  </div>
+</footer>
+
+<script src="/js/nav.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+<script>AOS.init({ duration: 500, easing: "ease-out-cubic", once: true, offset: 40 });</script>
+<script>
+(function() {
+  // Set base URL dynamically
+  document.getElementById('base-url').textContent = location.origin;
+
+  const esc = s => String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  const ENDPOINTS = [
+    {
+      method: 'GET', path: '/api/health',
+      desc: 'Health check — confirms the API is running and returns build info.',
+      params: [],
+      example: '{"status":"ok","build":"huggingface"}'
+    },
+    {
+      method: 'GET', path: '/api/devices',
+      desc: 'Search and paginate Android devices from LineageOS, OrangeFox, TWRP and more.',
+      params: [
+        { name: 'q', type: 'string', desc: 'Search by device name, codename, or manufacturer' },
+        { name: 'manufacturer', type: 'string', desc: 'Filter by manufacturer (e.g. Xiaomi, Samsung)' },
+        { name: 'limit', type: 'integer', desc: 'Results per page (default: 50, max: 500)' },
+        { name: 'offset', type: 'integer', desc: 'Pagination offset' },
+      ],
+      example: '{"total":946,"offset":0,"limit":50,"devices":[{"codename":"beryllium","model_name":"POCO F1","manufacturer":"Xiaomi",...}]}'
+    },
+    {
+      method: 'GET', path: '/api/devices/{codename}',
+      desc: 'Full device detail including all ROMs, recoveries, and stock firmware links.',
+      params: [
+        { name: 'codename', type: 'path', desc: 'Device codename (e.g. beryllium, mido, blueline)' },
+      ],
+      example: '{"codename":"beryllium","model_name":"POCO F1","roms":[...],"recoveries":[...],"stock_firmware":[]}'
+    },
+    {
+      method: 'GET', path: '/api/roms',
+      desc: 'Paginated ROM index across all sources — 2,300+ builds.',
+      params: [
+        { name: 'q', type: 'string', desc: 'Search by ROM name or codename' },
+        { name: 'rom_type', type: 'string', desc: 'Filter by type: custom | privacy | gsi | recovery' },
+        { name: 'android_base', type: 'string', desc: 'Filter by Android version (e.g. 14, 15, 16)' },
+        { name: 'limit', type: 'integer', desc: 'Results per page (default: 50, max: 500)' },
+        { name: 'offset', type: 'integer', desc: 'Pagination offset' },
+      ],
+      example: '{"total":2293,"roms":[{"name":"LineageOS","codename":"beryllium","android_base":"21","download_url":"..."}]}'
+    },
+    {
+      method: 'GET', path: '/api/recoveries',
+      desc: 'Recovery index — TWRP, OrangeFox, PBRP, SHRP and more.',
+      params: [
+        { name: 'q', type: 'string', desc: 'Search by device name, codename, or recovery type' },
+        { name: 'recovery', type: 'string', desc: 'Filter by type: TWRP | OrangeFox | PBRP | SHRP' },
+        { name: 'manufacturer', type: 'string', desc: 'Filter by manufacturer' },
+        { name: 'limit', type: 'integer', desc: 'Results per page (default: 50)' },
+        { name: 'offset', type: 'integer', desc: 'Pagination offset' },
+      ],
+      example: '{"total":1029,"recoveries":[{"codename":"beryllium","recovery_type":"TWRP","download_url":"..."}]}'
+    },
+    {
+      method: 'GET', path: '/api/tools',
+      desc: 'Android root and flashing tools — Magisk, KernelSU, APatch, ADB, Fastboot.',
+      params: [],
+      example: '{"total":21,"tools":[{"name":"Magisk","version":"v28.1","download_url":"..."}]}'
+    },
+    {
+      method: 'GET', path: '/api/android-versions',
+      desc: 'Complete Android version history with API levels and release years.',
+      params: [],
+      example: '{"total":37,"versions":[{"version_number":"16","codename":"Baklava","api_level":36,"release_year":2025,"status":"active"}]}'
+    },
+    {
+      method: 'GET', path: '/api/guides/{codename}',
+      desc: 'Flashing, rooting and bootloader guides for a device. Always includes universal root guides.',
+      params: [
+        { name: 'codename', type: 'path', desc: 'Device codename (e.g. beryllium, caiman)' },
+        { name: 'guide_type', type: 'string', desc: 'Filter by type: install | upgrade | root | bootloader-unlock' },
+      ],
+      example: '{"codename":"beryllium","guides":[{"title":"LineageOS Install Guide","steps":[...],"source":"LineageOS Wiki"}]}'
+    },
+  ];
+
+  const METHOD_COLORS = {
+    GET: 'is-info',
+    POST: 'is-success',
+    DELETE: 'is-danger',
+    PUT: 'is-warning',
+  };
+
+  const container = document.getElementById('api-endpoints');
+  container.innerHTML = ENDPOINTS.map((ep, i) => `
+    <div class="card mb-4" data-aos="fade-up" data-aos-delay="${i * 40}">
+      <div class="card-content">
+        <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin-bottom:.75rem">
+          <span class="tag ${METHOD_COLORS[ep.method]}" style="font-weight:700;font-size:.8rem;padding:.3rem .65rem">${esc(ep.method)}</span>
+          <code style="font-family:var(--mono);color:var(--accent);font-size:.9rem;font-weight:600">${esc(ep.path)}</code>
+        </div>
+        <p style="color:var(--muted);margin-bottom:${ep.params.length ? '.75rem' : '0'};line-height:1.6">${esc(ep.desc)}</p>
+        ${ep.params.length ? `
+        <table class="table is-fullwidth" style="margin-bottom:.75rem">
+          <thead><tr>
+            <th style="width:140px">Parameter</th>
+            <th style="width:80px">Type</th>
+            <th>Description</th>
+          </tr></thead>
+          <tbody>
+            ${ep.params.map(p => `<tr>
+              <td><code style="color:var(--accent);font-family:var(--mono);font-size:.82rem">${esc(p.name)}</code></td>
+              <td><span style="color:var(--info);font-size:.78rem;font-family:var(--mono)">${esc(p.type)}</span></td>
+              <td style="color:var(--muted);font-size:.85rem">${esc(p.desc)}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>` : ''}
+        <details>
+          <summary style="color:var(--muted);font-size:.8rem;cursor:pointer;user-select:none;margin-top:.25rem">Example response</summary>
+          <pre style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.75rem;margin-top:.5rem;overflow-x:auto;font-size:.78rem;color:var(--text);font-family:var(--mono)">${esc(ep.example)}</pre>
+        </details>
+      </div>
+    </div>
+  `).join('');
+
+  if (window.AOS) AOS.refresh();
+})();
+</script>
+</body>
+</html>

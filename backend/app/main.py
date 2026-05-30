@@ -91,8 +91,8 @@ app = FastAPI(
     title="Droidify API",
     description="Live Android ecosystem indexer. No hardcoded data. No authentication required.",
     version="2.0.0",
-    docs_url="/docs",
-    redoc_url="/redoc",
+    docs_url=None,
+    redoc_url=None,
     redirect_slashes=False,
 )
 
@@ -104,6 +104,26 @@ app.add_middleware(
     allow_methods=["GET", "OPTIONS"],
     allow_headers=["*"],
 )
+
+@app.get("/api-reference", include_in_schema=False)
+async def api_reference():
+    """Human-readable styled API reference page."""
+    if "STATIC_DIR" in dir():
+        from fastapi.responses import FileResponse as _FR2
+        return _FR2(str(STATIC_DIR / "openapi.html"))
+    import pathlib as _pl2
+    from fastapi.responses import FileResponse as _FR2
+    frontend2 = _pl2.Path(__file__).parent.parent.parent / "frontend"
+    return _FR2(str(frontend2 / "openapi.html"))
+
+
+@app.get("/docs", include_in_schema=False)
+async def custom_docs():
+    import pathlib as _pl
+    from fastapi.responses import FileResponse as _FR
+    frontend = _pl.Path(__file__).parent.parent.parent / "frontend"
+    return _FR(str(frontend / "docs.html"))
+
 
 @app.get("/api/health", tags=["meta"])
 async def health():

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Droidify API — Docs</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css" />
+  <style>
+    /* ── Swagger UI dark theme overrides ─────────────────────────── */
+    body { background: var(--bg) !important; }
+
+    .swagger-ui { color: var(--text) !important; font-family: system-ui,-apple-system,'Segoe UI',Roboto,sans-serif !important; }
+
+    /* Top bar */
+    .swagger-ui .topbar { display: none !important; }
+
+    /* Info block */
+    .swagger-ui .info { margin: 1.5rem 0 !important; }
+    .swagger-ui .info .title { color: var(--text) !important; font-weight: 800 !important; letter-spacing: -.04em !important; }
+    .swagger-ui .info .title small { background: var(--accent) !important; color: #0b0f14 !important; border-radius: 4px !important; padding: .1rem .4rem !important; font-size: .7rem !important; }
+    .swagger-ui .info p, .swagger-ui .info li { color: var(--muted) !important; }
+    .swagger-ui .info a { color: var(--accent) !important; }
+
+    /* Scheme container */
+    .swagger-ui .scheme-container { background: var(--surface) !important; border: 1px solid var(--border) !important; border-radius: var(--radius) !important; box-shadow: none !important; padding: 1rem !important; }
+
+    /* Operation blocks */
+    .swagger-ui .opblock { background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: var(--radius) !important; box-shadow: none !important; margin-bottom: .6rem !important; }
+    .swagger-ui .opblock:hover { border-color: rgba(61,214,140,.4) !important; }
+    .swagger-ui .opblock.is-open { border-color: var(--accent) !important; }
+    .swagger-ui .opblock .opblock-summary { border: none !important; }
+    .swagger-ui .opblock .opblock-summary-path { color: var(--text) !important; font-weight: 600 !important; font-family: var(--mono) !important; }
+    .swagger-ui .opblock .opblock-summary-description { color: var(--muted) !important; }
+    .swagger-ui .opblock-body { background: var(--card2) !important; }
+    .swagger-ui .opblock-section-header { background: var(--card2) !important; border-bottom: 1px solid var(--border) !important; }
+    .swagger-ui .opblock-section-header label { color: var(--muted) !important; }
+
+    /* HTTP method badges */
+    .swagger-ui .opblock-summary-method { border-radius: 6px !important; font-weight: 700 !important; min-width: 60px !important; }
+    .swagger-ui .opblock.opblock-get    .opblock-summary-method { background: rgba(96,165,250,.85) !important; }
+    .swagger-ui .opblock.opblock-post   .opblock-summary-method { background: rgba(61,214,140,.85) !important; color: #0b0f14 !important; }
+    .swagger-ui .opblock.opblock-delete .opblock-summary-method { background: rgba(248,113,113,.85) !important; }
+    .swagger-ui .opblock.opblock-put    .opblock-summary-method { background: rgba(251,191,36,.85) !important; color: #0b0f14 !important; }
+    .swagger-ui .opblock.opblock-get    { border-left: 3px solid rgba(96,165,250,.6) !important; }
+    .swagger-ui .opblock.opblock-post   { border-left: 3px solid var(--accent) !important; }
+    .swagger-ui .opblock.opblock-delete { border-left: 3px solid var(--danger) !important; }
+
+    /* Tags / sections */
+    .swagger-ui .opblock-tag { color: var(--text) !important; border-bottom: 1px solid var(--border) !important; font-weight: 700 !important; font-size: .95rem !important; }
+    .swagger-ui .opblock-tag:hover { background: var(--card) !important; border-radius: var(--radius) !important; }
+    .swagger-ui .opblock-tag small { color: var(--muted) !important; }
+
+    /* Parameters table */
+    .swagger-ui table thead tr th { color: var(--muted) !important; border-bottom: 1px solid var(--border) !important; font-size: .78rem !important; text-transform: uppercase !important; letter-spacing: .06em !important; }
+    .swagger-ui table tbody tr td { color: var(--text) !important; border-bottom: 1px solid rgba(30,45,66,.5) !important; }
+    .swagger-ui .parameter__name { color: var(--accent) !important; font-family: var(--mono) !important; font-weight: 600 !important; }
+    .swagger-ui .parameter__type { color: var(--muted) !important; font-family: var(--mono) !important; }
+    .swagger-ui .parameter__in { color: var(--info) !important; font-size: .72rem !important; font-weight: 600 !important; text-transform: uppercase !important; }
+
+    /* Inputs */
+    .swagger-ui input, .swagger-ui select, .swagger-ui textarea {
+      background: var(--card) !important;
+      border: 1px solid var(--border) !important;
+      color: var(--text) !important;
+      border-radius: 8px !important;
+    }
+    .swagger-ui input:focus, .swagger-ui select:focus {
+      border-color: var(--accent) !important;
+      outline: none !important;
+    }
+
+    /* Buttons */
+    .swagger-ui .btn { border-radius: 8px !important; font-weight: 600 !important; transition: transform 150ms ease !important; }
+    .swagger-ui .btn.execute { background: var(--accent) !important; color: #0b0f14 !important; border-color: var(--accent) !important; }
+    .swagger-ui .btn.execute:hover { transform: translateY(-1px) !important; }
+    .swagger-ui .btn.cancel { background: var(--card) !important; border-color: var(--border) !important; color: var(--muted) !important; }
+    .swagger-ui .try-out__btn { background: var(--card2) !important; border-color: var(--border) !important; color: var(--muted) !important; }
+    .swagger-ui .try-out__btn:hover { border-color: var(--accent) !important; color: var(--accent) !important; }
+
+    /* Response blocks */
+    .swagger-ui .responses-inner { background: var(--card2) !important; }
+    .swagger-ui .response-col_status { color: var(--accent) !important; font-family: var(--mono) !important; font-weight: 700 !important; }
+    .swagger-ui .response-col_description { color: var(--muted) !important; }
+    .swagger-ui .highlight-code { background: var(--surface) !important; border: 1px solid var(--border) !important; border-radius: 8px !important; }
+    .swagger-ui .microlight { color: var(--text) !important; font-family: var(--mono) !important; font-size: .82rem !important; }
+    .swagger-ui .response-control-media-type__accept-message { color: var(--muted) !important; }
+
+    /* Model / schema */
+    .swagger-ui .model-box { background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 8px !important; }
+    .swagger-ui .model { color: var(--text) !important; }
+    .swagger-ui .prop-type { color: var(--info) !important; }
+    .swagger-ui .prop-format { color: var(--muted) !important; }
+    .swagger-ui section.models { border: 1px solid var(--border) !important; border-radius: var(--radius) !important; }
+    .swagger-ui section.models h4 { color: var(--text) !important; border-bottom: 1px solid var(--border) !important; }
+    .swagger-ui .model-toggle { color: var(--accent) !important; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+    /* Wrapper */
+    #swagger-ui { max-width: 1100px; margin: 0 auto; padding: 0 1.25rem 3rem; }
+  </style>
+</head>
+<body>
+
+<nav class="navbar" role="navigation" aria-label="main navigation" style="position:sticky;top:0;z-index:100">
+  <div class="container">
+    <div class="navbar-brand">
+      <a href="/" class="droidify-logo">&#8203;<strong class="accent-text">Droid</strong>ify</a>
+      <a role="button" class="navbar-burger" id="nav-toggle" aria-label="menu" aria-expanded="false" data-target="main-nav">
+        <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+      </a>
+    </div>
+    <div id="main-nav" class="navbar-menu">
+      <div class="navbar-start">
+        <a href="/" class="navbar-item">Home</a>
+        <a href="/devices.html" class="navbar-item">Devices</a>
+        <a href="/roms.html" class="navbar-item">ROMs</a>
+        <a href="/recoveries.html" class="navbar-item">Recoveries</a>
+        <a href="/tools.html" class="navbar-item">Tools</a>
+        <a href="/android.html" class="navbar-item">Android</a>
+        <a href="/guides.html" class="navbar-item">Guides</a>
+        <a href="/docs" class="navbar-item is-active">API Docs</a>
+      </div>
+      <div class="navbar-end">
+        <div class="navbar-item" id="pwa-install-wrap" style="display:none"></div>
+        <div class="navbar-item">
+          <a href="https://github.com/eliekh05/Droidify" class="button is-ghost" target="_blank" rel="noopener">
+            <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></span>
+            <span>GitHub</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:.75rem 1rem;margin:.5rem auto;max-width:1100px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
+  <span style="color:var(--muted);font-size:.84rem">Looking for a human-readable version?</span>
+  <a href="/api-reference" class="button is-ghost" style="font-size:.8rem">API Reference →</a>
+</div>
+<div id="swagger-ui"></div>
+
+<footer class="site-footer">
+  <div class="container">
+    <p>Droidify API &mdash; REST API for Android ROM, device and recovery data &middot; <a href="/privacy.html">Privacy</a> &middot; <a href="/terms.html">Terms</a> &middot; <a href="/faq.html">FAQ</a></p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+<script src="/js/nav.js"></script>
+<script>
+  SwaggerUIBundle({
+    url: "/openapi.json",
+    dom_id: "#swagger-ui",
+    presets: [SwaggerUIBundle.presets.apis, SwaggerUIBundle.SwaggerUIStandalonePreset],
+    layout: "BaseLayout",
+    deepLinking: true,
+    defaultModelsExpandDepth: 0,
+    defaultModelExpandDepth: 1,
+    displayRequestDuration: true,
+    filter: true,
+    tryItOutEnabled: false,
+    syntaxHighlight: { theme: "monokai" },
+  });
+</script>
+</body>
+</html>
