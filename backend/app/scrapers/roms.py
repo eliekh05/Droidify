@@ -236,6 +236,7 @@ async def get_all_roms(
     q: str | None = None,
     source: str | None = None,
     android_base: str | None = None,
+    rom_type: str | None = None,
     limit: int = 50,
     offset: int = 0,
 ) -> dict:
@@ -272,6 +273,9 @@ async def get_all_roms(
 
     if android_base:
         roms = [r for r in roms if (r.get("android_base") or "") == android_base]
+
+    if rom_type:
+        roms = [r for r in roms if (r.get("rom_type") or "custom") == rom_type]
 
     return {
         "total": len(roms),

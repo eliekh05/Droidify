@@ -445,3 +445,54 @@ a { transition: color 150ms ease; }
 }
 /* Device grid cards — equal height within grid only */
 .device-grid .card { height: 100%; }
+
+/* ── Navbar brand — prevent split ─────────────────────────────────────────── */
+.droidify-logo {
+  display: inline-flex !important;
+  align-items: center;
+  font-size: 1.2rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -.04em !important;
+  color: var(--text) !important;
+  padding: 0 1rem !important;
+  white-space: nowrap !important;
+  text-decoration: none;
+  line-height: 1;
+}
+.droidify-logo .accent-text {
+  color: var(--accent);
+  font-weight: 800;
+  display: inline;
+}
+.droidify-logo strong {
+  display: inline !important;
+  font-weight: inherit;
+}
+
+/* ── PWA install button ────────────────────────────────────────────────────── */
+#pwa-install-wrap {
+  display: none;
+  align-items: center;
+}
+#pwa-install-wrap .btn-install,
+#pwa-install-wrap button {
+  display: inline-flex !important;
+  align-items: center;
+  gap: .35rem;
+  background: var(--accent) !important;
+  color: #0b0f14 !important;
+  border: none !important;
+  font-size: .8rem !important;
+  font-weight: 700 !important;
+  padding: .4rem .9rem !important;
+  border-radius: 8px !important;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+#pwa-install-wrap .btn-install:hover,
+#pwa-install-wrap button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 12px var(--accent-glow);
+  color: #0b0f14 !important;
+}
