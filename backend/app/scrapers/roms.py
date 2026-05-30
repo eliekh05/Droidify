@@ -190,6 +190,7 @@ async def _build_lookup() -> dict[str, list[dict]]:
     # Fetch all indexes concurrently
     from app.scrapers.sourceforge_roms import get_sourceforge_roms
     from app.scrapers.gsi_roms import get_gsi_roms
+    from app.scrapers.extended_roms import get_extended_roms
     from app.scrapers.pixelexperience import get_pixelexperience_roms
     from app.scrapers.unofficialtwrp import get_unofficialtwrp_devices
     from app.scrapers.community_roms import get_all_community_roms
@@ -203,6 +204,7 @@ async def _build_lookup() -> dict[str, list[dict]]:
         get_unofficialtwrp_devices(),
         get_all_community_roms(),
         get_gsi_roms(),
+        get_extended_roms(),
         _roms_from_lineageos(),
         _roms_from_grapheneos(),
         _roms_from_divestos(),

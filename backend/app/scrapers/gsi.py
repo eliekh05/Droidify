@@ -38,8 +38,7 @@ _AOSP_GSI = {
 async def _fetch_gh_latest(client, owner: str, repo: str, label: str, codename: str) -> dict | None:
     """Fetch latest release info from GitHub Releases API."""
     try:
-        r = await client.get(
-            f"https://api.github.com/repos/{owner}/{repo}/releases/latest",
+        r = await client.get(f"https://github.com/{owner}/{repo}/releases/latest", follow_redirects=False,
             headers={"User-Agent": _UA, "Accept": "application/vnd.github+json"},
             timeout=10,
         )

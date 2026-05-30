@@ -10,7 +10,6 @@ import re
 from app.services.cache import get as cache_get, set as cache_set
 from app.services.http import get_client
 
-GITHUB_RELEASES = "https://api.github.com/repos/{owner}/{repo}/releases/latest"
 GITHUB_HEADERS  = {
     "Accept":       "application/vnd.github.v3+json",
     "User-Agent":   "DroidifyBot/2.0 (+https://droidify.app; open-source indexer)",
@@ -129,36 +128,33 @@ TOOL_STATIC: list[dict] = [
 ]
 
 
-async def _fetch_gh_release(client, owner: str, repo: str) -> dict | None:
-    """Fetch latest GitHub release. Returns None on any error (403, network, etc.)."""
-    ck = f"gh:{owner}/{repo}"
-    cached = await cache_get(ck)
-    if cached is not None:
-        return cached if cached else None
-
-    url = GITHUB_RELEASES.format(owner=owner, repo=repo)
+async def _fetch_gh_release(client, tool: dict) -> dict:
+    """Fetch tool release info using GitHub releases redirect — no API rate limit."""
+    tool = dict(tool)
+    url = tool.get("url", "")
+    if not url or "github.com" not in url:
+        return tool
+    # Extract owner/repo from URL
+    m = re.search(r"github\.com/([^/]+)/([^/]+)", url)
+    if not m:
+        return tool
+    owner, repo = m.group(1), m.group(2).rstrip("/")
     try:
-        resp = await client.get(url, headers=GITHUB_HEADERS, timeout=10)
-        if resp.status_code == 200:
-            data = resp.json()
-            result = {
-                "latest_version": data.get("tag_name", "").lstrip("v"),
-                "release_date":   data.get("published_at", "")[:10],
-                "release_url":    data.get("html_url", ""),
-                "download_urls": [
-                    a["browser_download_url"]
-                    for a in data.get("assets", [])
-                    if a.get("browser_download_url") and
-                    any(a["name"].endswith(ext) for ext in [".apk", ".zip", ".tar.gz"])
-                ][:3],
-            }
-            await cache_set(ck, result, ttl=1800)
-            return result
+        r = await client.get(
+            f"https://github.com/{owner}/{repo}/releases/latest",
+            follow_redirects=False,
+            headers={"User-Agent": "DroidifyBot/2.0"},
+            timeout=8,
+        )
+        if r.status_code in (301, 302):
+            location = r.headers.get("location", "")
+            tag = location.rstrip("/").split("/")[-1]
+            if tag and tag not in ("releases", "latest", repo):
+                tool["version"] = tag
+                tool["download_url"] = f"https://github.com/{owner}/{repo}/releases/tag/{tag}"
     except Exception:
         pass
-
-    await cache_set(ck, {}, ttl=300)  # short cache for failures
-    return None
+    return tool
 
 
 async def get_tools(category: str | None = None) -> list[dict]:

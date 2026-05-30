@@ -21,7 +21,6 @@ import asyncio
 from app.services.cache import get as cache_get, set as cache_set
 from app.services.http import get_client
 
-_GH_API = "https://api.github.com"
 _UA     = "DroidifyBot/2.0 (+https://github.com/eliekh05/Droidify)"
 
 # (name, gh_owner, gh_repo, android_base, description)
@@ -48,14 +47,19 @@ _GSI_SOURCES = [
 
 
 async def _fetch_latest_release(client, owner: str, repo: str) -> dict | None:
-    """Fetch latest GitHub release metadata."""
+    """Fetch latest release tag from GitHub releases page (no API needed)."""
     try:
+        # Use the releases/latest redirect — no API rate limit
         r = await client.get(
-            f"{_GH_API}/repos/{owner}/{repo}/releases/latest",
-            headers={"User-Agent": _UA, "Accept": "application/vnd.github+json"},
+            f"https://github.com/{owner}/{repo}/releases/latest",
+            follow_redirects=False,
+            headers={"User-Agent": "DroidifyBot/2.0"},
         )
-        if r.status_code == 200:
-            return r.json()
+        if r.status_code in (301, 302):
+            location = r.headers.get("location", "")
+            tag = location.rstrip("/").split("/")[-1]
+            if tag and tag != "releases":
+                return {"tag_name": tag, "assets": []}
     except Exception:
         pass
     return None

@@ -17,8 +17,6 @@ from app.services.http import fetch, get_client
 
 TWRP_SEARCH   = "https://twrp.me/search.json"
 ORANGEFOX_API = "https://api.orangefox.download/v3/devices/?per_page=500"
-GH_API        = "https://api.github.com"
-GH_UA         = "DroidifyBot/2.0 (+https://github.com/eliekh05/Droidify)"
 
 _OEM_MAP: dict[str, str] = {
     "alcatel":"Alcatel","asus":"ASUS","bq":"BQ","essential":"Essential",
@@ -127,60 +125,37 @@ async def _fetch_orangefox(client) -> list[dict]:
 
 # ── PBRP (PitchBlack) via GitHub org repos ───────────────────────────────────
 async def _fetch_pbrp(client) -> list[dict]:
+    """Fetch PBRP devices from SourceForge (no GitHub API needed)."""
     ck = "rec:pbrp"
     cached = await cache_get(ck)
     if cached:
         return cached
 
     devices: list[dict] = []
-    page = 1
-    headers = {"User-Agent": GH_UA, "Accept": "application/vnd.github+json"}
-
-    while True:
-        url = f"{GH_API}/orgs/PitchBlackRecoveryProject/repos?type=public&per_page=100&page={page}"
-        try:
-            resp = await client.get(url, headers=headers)
-            if resp.status_code != 200:
-                break
-            repos = resp.json()
-            if not repos:
-                break
-        except Exception:
-            break
-
-        for repo in repos:
-            name = repo.get("name", "")
-            if not name.startswith("android_device_") or not name.endswith("-pbrp"):
+    try:
+        resp = await fetch(client, "https://sourceforge.net/projects/pbrp/files/")
+        if not resp or resp.status_code != 200:
+            return []
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(resp.text, "html.parser")
+        for row in soup.select("tr[id]"):
+            name_cell = row.select_one("td.name a")
+            if not name_cell:
                 continue
-
-            # Extract brand and codename
-            # android_device_xiaomi_whyred-pbrp
-            inner = name[len("android_device_"):-len("-pbrp")]  # xiaomi_whyred
-            parts = inner.split("_", 1)
-            if len(parts) < 2:
-                continue
-            brand    = parts[0].lower()
-            codename = parts[1]
-            mfr      = _OEM_MAP.get(brand, brand.title())
-
-            # Use repo description as model name if available
-            desc = repo.get("description") or ""
-            model_name = desc.split("Device Tree")[0].strip() if "Device Tree" in desc else codename
-
-            devices.append({
-                "codename":     codename,
-                "model_name":   model_name or codename,
-                "manufacturer": mfr,
-                "recovery_type":"PBRP",
-                "status":       "unmaintained" if repo.get("archived") else "active",
-                "source_url":   repo.get("html_url", ""),
-                "download_url": f"https://sourceforge.net/projects/pbrp/files/{codename}/",
-                "source":       "pbrp",
-            })
-
-        if len(repos) < 100:
-            break
-        page += 1
+            codename = name_cell.get_text(strip=True)
+            if re.match(r"^[a-z][a-z0-9_]{2,24}$", codename):
+                devices.append({
+                    "codename":      codename,
+                    "model_name":    codename,
+                    "manufacturer":  "",
+                    "recovery_type": "PBRP",
+                    "status":        "active",
+                    "source_url":    f"https://sourceforge.net/projects/pbrp/files/{codename}/",
+                    "download_url":  f"https://sourceforge.net/projects/pbrp/files/{codename}/",
+                    "source":        "pbrp",
+                })
+    except Exception:
+        pass
 
     await cache_set(ck, devices, ttl=3600)
     return devices
@@ -188,57 +163,37 @@ async def _fetch_pbrp(client) -> list[dict]:
 
 # ── SHRP (SkyHawk) via GitHub org repos ──────────────────────────────────────
 async def _fetch_shrp(client) -> list[dict]:
+    """Fetch SHRP devices from SourceForge (no GitHub API needed)."""
     ck = "rec:shrp"
     cached = await cache_get(ck)
     if cached:
         return cached
 
     devices: list[dict] = []
-    page = 1
-    headers = {"User-Agent": GH_UA, "Accept": "application/vnd.github+json"}
-
-    while True:
-        url = f"{GH_API}/orgs/SHRP-Devices/repos?type=public&per_page=100&page={page}"
-        try:
-            resp = await client.get(url, headers=headers)
-            if resp.status_code != 200:
-                break
-            repos = resp.json()
-            if not repos:
-                break
-        except Exception:
-            break
-
-        for repo in repos:
-            name = repo.get("name", "")
-            # device_samsung_d2x or device_xiaomi_whyred
-            if not name.startswith("device_"):
+    try:
+        resp = await fetch(client, "https://sourceforge.net/projects/shrp/files/")
+        if not resp or resp.status_code != 200:
+            return []
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(resp.text, "html.parser")
+        for row in soup.select("tr[id]"):
+            name_cell = row.select_one("td.name a")
+            if not name_cell:
                 continue
-
-            parts = name.split("_", 2)  # ['device', 'samsung', 'd2x']
-            if len(parts) < 3:
-                continue
-            brand    = parts[1].lower()
-            codename = parts[2]
-            mfr      = _OEM_MAP.get(brand, brand.title())
-
-            desc = repo.get("description") or ""
-            model_name = desc or codename
-
-            devices.append({
-                "codename":     codename,
-                "model_name":   model_name,
-                "manufacturer": mfr,
-                "recovery_type":"SHRP",
-                "status":       "unmaintained" if repo.get("archived") else "active",
-                "source_url":   repo.get("html_url", ""),
-                "download_url": f"https://sourceforge.net/projects/shrp/files/{codename}/",
-                "source":       "shrp",
-            })
-
-        if len(repos) < 100:
-            break
-        page += 1
+            codename = name_cell.get_text(strip=True)
+            if re.match(r"^[a-z][a-z0-9_]{2,24}$", codename):
+                devices.append({
+                    "codename":      codename,
+                    "model_name":    codename,
+                    "manufacturer":  "",
+                    "recovery_type": "SHRP",
+                    "status":        "active",
+                    "source_url":    f"https://sourceforge.net/projects/shrp/files/{codename}/",
+                    "download_url":  f"https://sourceforge.net/projects/shrp/files/{codename}/",
+                    "source":        "shrp",
+                })
+    except Exception:
+        pass
 
     await cache_set(ck, devices, ttl=3600)
     return devices
