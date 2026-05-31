@@ -6,109 +6,136 @@
   <title>Droidify API — Docs</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
   <link rel="stylesheet" href="/css/style.css" />
+  <!-- Swagger UI CSS scoped — loaded AFTER our CSS so we can override -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css" />
   <style>
-    /* ── Swagger UI dark theme overrides ─────────────────────────── */
-    body { background: var(--bg) !important; }
+    /* ── Reset Bulma conflicts inside Swagger UI ─────────────────────── */
+    #swagger-ui * { box-sizing: border-box; }
 
-    .swagger-ui { color: var(--text) !important; font-family: system-ui,-apple-system,'Segoe UI',Roboto,sans-serif !important; }
+    /* Bulma sets table display:table globally — breaks swagger's layout */
+    #swagger-ui .swagger-ui table { display: table; width: 100%; }
+    #swagger-ui .swagger-ui tr { display: table-row; }
+    #swagger-ui .swagger-ui td, #swagger-ui .swagger-ui th { display: table-cell; }
 
-    /* Top bar */
-    .swagger-ui .topbar { display: none !important; }
+    /* Reset Bulma's tag/button styles inside swagger */
+    #swagger-ui .swagger-ui .opblock-summary-method {
+      display: inline-block !important;
+      font-size: .7rem !important;
+      font-weight: 700 !important;
+      min-width: 60px !important;
+      text-align: center !important;
+      border-radius: 4px !important;
+      padding: .3rem .5rem !important;
+    }
 
-    /* Info block */
-    .swagger-ui .info { margin: 1.5rem 0 !important; }
-    .swagger-ui .info .title { color: var(--text) !important; font-weight: 800 !important; letter-spacing: -.04em !important; }
-    .swagger-ui .info .title small { background: var(--accent) !important; color: #0b0f14 !important; border-radius: 4px !important; padding: .1rem .4rem !important; font-size: .7rem !important; }
-    .swagger-ui .info p, .swagger-ui .info li { color: var(--muted) !important; }
-    .swagger-ui .info a { color: var(--accent) !important; }
+    /* ── Hide default top bar ──────────────────────────────────────────── */
+    #swagger-ui .swagger-ui .topbar { display: none !important; }
+
+    /* ── Dark background ───────────────────────────────────────────────── */
+    #swagger-ui { background: transparent; }
+    #swagger-ui .swagger-ui { color: var(--text); font-family: system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; }
+
+    /* Info */
+    #swagger-ui .swagger-ui .info .title { color: var(--text) !important; font-weight: 800; letter-spacing: -.04em; }
+    #swagger-ui .swagger-ui .info .title small { background: var(--accent); color: #0b0f14; border-radius: 4px; padding: .1rem .4rem; font-size: .7rem; }
+    #swagger-ui .swagger-ui .info p, #swagger-ui .swagger-ui .info li { color: var(--muted); }
+    #swagger-ui .swagger-ui .info a { color: var(--accent); }
 
     /* Scheme container */
-    .swagger-ui .scheme-container { background: var(--surface) !important; border: 1px solid var(--border) !important; border-radius: var(--radius) !important; box-shadow: none !important; padding: 1rem !important; }
+    #swagger-ui .swagger-ui .scheme-container { background: var(--surface) !important; border: 1px solid var(--border); border-radius: 12px; box-shadow: none; padding: 1rem; }
+    #swagger-ui .swagger-ui .scheme-container .schemes > label { color: var(--muted); }
 
     /* Operation blocks */
-    .swagger-ui .opblock { background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: var(--radius) !important; box-shadow: none !important; margin-bottom: .6rem !important; }
-    .swagger-ui .opblock:hover { border-color: rgba(61,214,140,.4) !important; }
-    .swagger-ui .opblock.is-open { border-color: var(--accent) !important; }
-    .swagger-ui .opblock .opblock-summary { border: none !important; }
-    .swagger-ui .opblock .opblock-summary-path { color: var(--text) !important; font-weight: 600 !important; font-family: var(--mono) !important; }
-    .swagger-ui .opblock .opblock-summary-description { color: var(--muted) !important; }
-    .swagger-ui .opblock-body { background: var(--card2) !important; }
-    .swagger-ui .opblock-section-header { background: var(--card2) !important; border-bottom: 1px solid var(--border) !important; }
-    .swagger-ui .opblock-section-header label { color: var(--muted) !important; }
+    #swagger-ui .swagger-ui .opblock { background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 12px !important; box-shadow: none !important; margin-bottom: .6rem !important; overflow: hidden; }
+    #swagger-ui .swagger-ui .opblock:hover { border-color: rgba(61,214,140,.4) !important; }
+    #swagger-ui .swagger-ui .opblock.is-open { border-color: var(--accent) !important; }
+    #swagger-ui .swagger-ui .opblock .opblock-summary { border: none !important; padding: .6rem 1rem !important; }
+    #swagger-ui .swagger-ui .opblock-summary-path, #swagger-ui .swagger-ui .opblock-summary-path__deprecated { color: var(--text) !important; font-weight: 600 !important; font-family: 'SF Mono','Fira Code',monospace !important; font-size: .88rem !important; }
+    #swagger-ui .swagger-ui .opblock-summary-description { color: var(--muted) !important; font-size: .82rem !important; }
+    #swagger-ui .swagger-ui .opblock-body { background: var(--card2) !important; }
+    #swagger-ui .swagger-ui .opblock-section-header { background: var(--card2) !important; border-bottom: 1px solid var(--border) !important; }
+    #swagger-ui .swagger-ui .opblock-section-header label { color: var(--muted) !important; font-size: .8rem !important; }
 
-    /* HTTP method badges */
-    .swagger-ui .opblock-summary-method { border-radius: 6px !important; font-weight: 700 !important; min-width: 60px !important; }
-    .swagger-ui .opblock.opblock-get    .opblock-summary-method { background: rgba(96,165,250,.85) !important; }
-    .swagger-ui .opblock.opblock-post   .opblock-summary-method { background: rgba(61,214,140,.85) !important; color: #0b0f14 !important; }
-    .swagger-ui .opblock.opblock-delete .opblock-summary-method { background: rgba(248,113,113,.85) !important; }
-    .swagger-ui .opblock.opblock-put    .opblock-summary-method { background: rgba(251,191,36,.85) !important; color: #0b0f14 !important; }
-    .swagger-ui .opblock.opblock-get    { border-left: 3px solid rgba(96,165,250,.6) !important; }
-    .swagger-ui .opblock.opblock-post   { border-left: 3px solid var(--accent) !important; }
-    .swagger-ui .opblock.opblock-delete { border-left: 3px solid var(--danger) !important; }
+    /* HTTP methods */
+    #swagger-ui .swagger-ui .opblock.opblock-get    { border-left: 3px solid rgba(96,165,250,.7) !important; }
+    #swagger-ui .swagger-ui .opblock.opblock-post   { border-left: 3px solid var(--accent) !important; }
+    #swagger-ui .swagger-ui .opblock.opblock-delete { border-left: 3px solid var(--danger) !important; }
+    #swagger-ui .swagger-ui .opblock.opblock-put    { border-left: 3px solid var(--warn) !important; }
+    #swagger-ui .swagger-ui .opblock.opblock-get    .opblock-summary-method { background: rgba(96,165,250,.85) !important; color: #fff !important; }
+    #swagger-ui .swagger-ui .opblock.opblock-post   .opblock-summary-method { background: var(--accent) !important; color: #0b0f14 !important; }
+    #swagger-ui .swagger-ui .opblock.opblock-delete .opblock-summary-method { background: var(--danger) !important; color: #fff !important; }
+    #swagger-ui .swagger-ui .opblock.opblock-put    .opblock-summary-method { background: var(--warn) !important; color: #0b0f14 !important; }
 
-    /* Tags / sections */
-    .swagger-ui .opblock-tag { color: var(--text) !important; border-bottom: 1px solid var(--border) !important; font-weight: 700 !important; font-size: .95rem !important; }
-    .swagger-ui .opblock-tag:hover { background: var(--card) !important; border-radius: var(--radius) !important; }
-    .swagger-ui .opblock-tag small { color: var(--muted) !important; }
+    /* Tags */
+    #swagger-ui .swagger-ui .opblock-tag { color: var(--text) !important; border-bottom: 1px solid var(--border) !important; font-weight: 700 !important; font-size: .9rem !important; padding: .6rem 0 !important; }
+    #swagger-ui .swagger-ui .opblock-tag:hover { background: var(--card) !important; }
+    #swagger-ui .swagger-ui .opblock-tag small { color: var(--muted) !important; font-weight: 400 !important; }
+    #swagger-ui .swagger-ui .opblock-tag-section h3 { font-size: .7rem !important; }
 
-    /* Parameters table */
-    .swagger-ui table thead tr th { color: var(--muted) !important; border-bottom: 1px solid var(--border) !important; font-size: .78rem !important; text-transform: uppercase !important; letter-spacing: .06em !important; }
-    .swagger-ui table tbody tr td { color: var(--text) !important; border-bottom: 1px solid rgba(30,45,66,.5) !important; }
-    .swagger-ui .parameter__name { color: var(--accent) !important; font-family: var(--mono) !important; font-weight: 600 !important; }
-    .swagger-ui .parameter__type { color: var(--muted) !important; font-family: var(--mono) !important; }
-    .swagger-ui .parameter__in { color: var(--info) !important; font-size: .72rem !important; font-weight: 600 !important; text-transform: uppercase !important; }
+    /* Parameters */
+    #swagger-ui .swagger-ui table.parameters { background: transparent !important; }
+    #swagger-ui .swagger-ui table thead tr th { color: var(--muted) !important; border-bottom: 1px solid var(--border) !important; font-size: .75rem !important; text-transform: uppercase !important; letter-spacing: .06em !important; background: transparent !important; padding: .5rem .75rem !important; }
+    #swagger-ui .swagger-ui table tbody tr td { border-bottom: 1px solid rgba(30,45,66,.5) !important; color: var(--text) !important; padding: .5rem .75rem !important; background: transparent !important; }
+    #swagger-ui .swagger-ui .parameter__name { color: var(--accent) !important; font-family: monospace !important; font-weight: 600 !important; }
+    #swagger-ui .swagger-ui .parameter__type { color: var(--muted) !important; font-family: monospace !important; font-size: .78rem !important; }
+    #swagger-ui .swagger-ui .parameter__in { color: var(--info) !important; font-size: .68rem !important; font-weight: 700 !important; text-transform: uppercase !important; letter-spacing: .05em !important; }
 
     /* Inputs */
-    .swagger-ui input, .swagger-ui select, .swagger-ui textarea {
-      background: var(--card) !important;
-      border: 1px solid var(--border) !important;
-      color: var(--text) !important;
-      border-radius: 8px !important;
-    }
-    .swagger-ui input:focus, .swagger-ui select:focus {
-      border-color: var(--accent) !important;
-      outline: none !important;
-    }
+    #swagger-ui .swagger-ui input[type=text], #swagger-ui .swagger-ui select, #swagger-ui .swagger-ui textarea { background: var(--card) !important; border: 1px solid var(--border) !important; color: var(--text) !important; border-radius: 8px !important; font-size: .85rem !important; }
+    #swagger-ui .swagger-ui input[type=text]:focus, #swagger-ui .swagger-ui select:focus { border-color: var(--accent) !important; outline: none !important; box-shadow: 0 0 0 2px var(--accent-dim) !important; }
 
     /* Buttons */
-    .swagger-ui .btn { border-radius: 8px !important; font-weight: 600 !important; transition: transform 150ms ease !important; }
-    .swagger-ui .btn.execute { background: var(--accent) !important; color: #0b0f14 !important; border-color: var(--accent) !important; }
-    .swagger-ui .btn.execute:hover { transform: translateY(-1px) !important; }
-    .swagger-ui .btn.cancel { background: var(--card) !important; border-color: var(--border) !important; color: var(--muted) !important; }
-    .swagger-ui .try-out__btn { background: var(--card2) !important; border-color: var(--border) !important; color: var(--muted) !important; }
-    .swagger-ui .try-out__btn:hover { border-color: var(--accent) !important; color: var(--accent) !important; }
+    #swagger-ui .swagger-ui .btn { border-radius: 8px !important; font-weight: 600 !important; font-size: .82rem !important; transition: transform 150ms ease !important; border: 1px solid var(--border) !important; }
+    #swagger-ui .swagger-ui .btn.execute { background: var(--accent) !important; color: #0b0f14 !important; border-color: var(--accent) !important; }
+    #swagger-ui .swagger-ui .btn.execute:hover { transform: translateY(-1px) !important; }
+    #swagger-ui .swagger-ui .btn.cancel { background: var(--card) !important; color: var(--muted) !important; }
+    #swagger-ui .swagger-ui .try-out__btn { background: var(--card2) !important; color: var(--muted) !important; border-color: var(--border) !important; }
+    #swagger-ui .swagger-ui .try-out__btn:hover { border-color: var(--accent) !important; color: var(--accent) !important; }
+    #swagger-ui .swagger-ui .authorization__btn { color: var(--muted) !important; }
 
-    /* Response blocks */
-    .swagger-ui .responses-inner { background: var(--card2) !important; }
-    .swagger-ui .response-col_status { color: var(--accent) !important; font-family: var(--mono) !important; font-weight: 700 !important; }
-    .swagger-ui .response-col_description { color: var(--muted) !important; }
-    .swagger-ui .highlight-code { background: var(--surface) !important; border: 1px solid var(--border) !important; border-radius: 8px !important; }
-    .swagger-ui .microlight { color: var(--text) !important; font-family: var(--mono) !important; font-size: .82rem !important; }
-    .swagger-ui .response-control-media-type__accept-message { color: var(--muted) !important; }
+    /* Response */
+    #swagger-ui .swagger-ui .responses-wrapper { background: var(--card2) !important; }
+    #swagger-ui .swagger-ui .response-col_status { color: var(--accent) !important; font-family: monospace !important; font-weight: 700 !important; }
+    #swagger-ui .swagger-ui .microlight { color: var(--text) !important; font-family: 'SF Mono','Fira Code',monospace !important; font-size: .8rem !important; }
+    #swagger-ui .swagger-ui .highlight-code { background: var(--surface) !important; border: 1px solid var(--border) !important; border-radius: 8px !important; }
+    #swagger-ui .swagger-ui .response-control-media-type__accept-message { color: var(--muted) !important; }
+    #swagger-ui .swagger-ui .content-type { color: var(--muted) !important; }
 
-    /* Model / schema */
-    .swagger-ui .model-box { background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 8px !important; }
-    .swagger-ui .model { color: var(--text) !important; }
-    .swagger-ui .prop-type { color: var(--info) !important; }
-    .swagger-ui .prop-format { color: var(--muted) !important; }
-    .swagger-ui section.models { border: 1px solid var(--border) !important; border-radius: var(--radius) !important; }
-    .swagger-ui section.models h4 { color: var(--text) !important; border-bottom: 1px solid var(--border) !important; }
-    .swagger-ui .model-toggle { color: var(--accent) !important; }
+    /* Models */
+    #swagger-ui .swagger-ui section.models { border: 1px solid var(--border) !important; border-radius: 12px !important; }
+    #swagger-ui .swagger-ui section.models h4 { color: var(--text) !important; border-bottom: 1px solid var(--border) !important; padding: .75rem 1rem !important; }
+    #swagger-ui .swagger-ui .model-box { background: var(--card) !important; border-color: var(--border) !important; border-radius: 8px !important; }
+    #swagger-ui .swagger-ui .model { color: var(--text) !important; }
+    #swagger-ui .swagger-ui .prop-type { color: var(--info) !important; }
+    #swagger-ui .swagger-ui .prop-format { color: var(--muted) !important; }
+    #swagger-ui .swagger-ui .model-toggle { color: var(--accent) !important; }
+
+    /* Filter input */
+    #swagger-ui .swagger-ui .filter-container { background: var(--surface) !important; border: none !important; }
+    #swagger-ui .swagger-ui .operation-filter-input { background: var(--card) !important; border: 1px solid var(--border) !important; color: var(--text) !important; border-radius: 8px !important; }
+
+    /* Misc text */
+    #swagger-ui .swagger-ui label { color: var(--muted) !important; font-size: .82rem !important; }
+    #swagger-ui .swagger-ui h4, #swagger-ui .swagger-ui h5 { color: var(--text) !important; }
+    #swagger-ui .swagger-ui .markdown p, #swagger-ui .swagger-ui .markdown li { color: var(--muted) !important; }
+    #swagger-ui .swagger-ui svg { fill: var(--muted) !important; }
+    #swagger-ui .swagger-ui .arrow { fill: var(--muted) !important; }
+    #swagger-ui .swagger-ui select { appearance: auto !important; }
+
+    /* Wrapper */
+    #swagger-ui { max-width: 1100px; margin: 0 auto; padding: 0 1.25rem 3rem; }
 
     /* Scrollbar */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg); }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
-
-    /* Wrapper */
-    #swagger-ui { max-width: 1100px; margin: 0 auto; padding: 0 1.25rem 3rem; }
   </style>
 </head>
 <body>
+<div id="connection-overlay"><div class="conn-spinner"></div><p>Checking connection…</p></div>
+<div id="offline-banner">⚠ You are offline — showing cached data</div>
 
 <nav class="navbar" role="navigation" aria-label="main navigation" style="position:sticky;top:0;z-index:100">
   <div class="container">
@@ -127,7 +154,7 @@
         <a href="/tools.html" class="navbar-item">Tools</a>
         <a href="/android.html" class="navbar-item">Android</a>
         <a href="/guides.html" class="navbar-item">Guides</a>
-        <a href="/docs" class="navbar-item is-active">API Docs</a>
+        <a href="/docs" class="navbar-item is-active">API</a>
       </div>
       <div class="navbar-end">
         <div class="navbar-item" id="pwa-install-wrap" style="display:none"></div>
@@ -142,10 +169,11 @@
   </div>
 </nav>
 
-<div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:.75rem 1rem;margin:.5rem auto;max-width:1100px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
-  <span style="color:var(--muted);font-size:.84rem">Looking for a human-readable version?</span>
-  <a href="/api-reference" class="button is-ghost" style="font-size:.8rem">API Reference →</a>
+<div style="background:var(--card);border-bottom:1px solid var(--border);padding:.6rem 1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
+  <span style="color:var(--muted);font-size:.82rem">Interactive Swagger UI &mdash; try any endpoint directly in the browser</span>
+  <a href="/api-reference" style="font-size:.8rem;color:var(--accent)">Human-readable reference →</a>
 </div>
+
 <div id="swagger-ui"></div>
 
 <footer class="site-footer">
@@ -157,19 +185,25 @@
 <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
 <script src="/js/nav.js"></script>
 <script>
+window.addEventListener('load', function() {
   SwaggerUIBundle({
     url: "/openapi.json",
     dom_id: "#swagger-ui",
-    presets: [SwaggerUIBundle.presets.apis, SwaggerUIBundle.SwaggerUIStandalonePreset],
+    presets: [
+      SwaggerUIBundle.presets.apis,
+      SwaggerUIBundle.SwaggerUIStandalonePreset
+    ],
     layout: "BaseLayout",
     deepLinking: true,
-    defaultModelsExpandDepth: 0,
-    defaultModelExpandDepth: 1,
+    defaultModelsExpandDepth: -1,
+    defaultModelExpandDepth: 0,
     displayRequestDuration: true,
     filter: true,
     tryItOutEnabled: false,
-    syntaxHighlight: { theme: "monokai" },
+    syntaxHighlight: { activated: true, theme: "monokai" },
+    requestSnippetsEnabled: false,
   });
+});
 </script>
 </body>
 </html>

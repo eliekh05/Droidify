@@ -89,9 +89,11 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     lifespan=lifespan,
     title="Droidify API",
-    description="Live Android ecosystem indexer. No hardcoded data. No authentication required.",
+    description="Live Android ROM, device and recovery indexer. No auth required. All endpoints are GET-only.",
     version="2.0.0",
+    openapi_url="/openapi.json",
     docs_url=None,
+    redoc_url=None,
     redoc_url=None,
     redirect_slashes=False,
 )
