@@ -74,8 +74,12 @@
 
   // Expose global load for the guides API route (GET /api/guides)
   api.guides = function(codename) {
-    if (!codename) return fetch('/api/guides').then(r => r.ok ? r.json() : Promise.reject(new Error(`API ${r.status}`)));
-    return fetch(`/api/guides/${encodeURIComponent(codename)}`).then(r => r.ok ? r.json() : Promise.reject(new Error(`API ${r.status}`)));
+    if (!codename) return fetch('/api/guides')
+      .then(function(r) { return r.ok ? r.json() : Promise.reject(new Error('API ' + r.status)); })
+      .catch(function(e) { return Promise.reject(e); });
+    return fetch('/api/guides/' + encodeURIComponent(codename))
+      .then(function(r) { return r.ok ? r.json() : Promise.reject(new Error('API ' + r.status)); })
+      .catch(function(e) { return Promise.reject(e); });
   };
 
   btn.addEventListener('click', doSearch);

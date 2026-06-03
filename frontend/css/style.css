@@ -63,9 +63,10 @@ a { transition: color 150ms ease; }
   min-height: 54px;
 }
 .navbar-brand .navbar-item {
-  font-size: 1.15rem;
-  font-weight: 800;
-  letter-spacing: -.04em;
+  font-size: 1.15rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -.04em !important;
+  white-space: nowrap !important;
   color: var(--text);
   padding: 0 1rem;
 }
@@ -425,12 +426,7 @@ a { transition: color 150ms ease; }
 
 /* ── Navbar brand fix — prevent Droidify from splitting ─── */
 .navbar-item .accent { color: var(--accent); }
-.navbar-brand .navbar-item {
-  white-space: nowrap !important;
-  font-weight: 800 !important;
-  font-size: 1.15rem !important;
-  letter-spacing: -.04em !important;
-}
+
 /* Device grid cards — equal height within grid only */
 .device-grid .card { height: 100%; }
 

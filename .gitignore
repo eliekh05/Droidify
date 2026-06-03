@@ -7,6 +7,4 @@ build/
 .env
 .env.local
 .env.production
-backend/app/private/owner.py
-app/private/owner.py
 .DS_Store

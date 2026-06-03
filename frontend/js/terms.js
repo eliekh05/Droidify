@@ -11,19 +11,17 @@
   const exempt    = ['/terms.html', '/not-read.html', '/privacy.html'];
   const isExempt  = exempt.some(function (p) { return path.endsWith(p); });
 
-  // Punishment page — nothing interactive
   if (onNotRead) return;
 
-  // terms.html — scroll gate
   if (onTerms) {
-    const bar     = document.getElementById('terms-agree-bar');
-    const btn     = document.getElementById('terms-agree-btn');
-    const lockMsg = document.getElementById('terms-lock-msg');
+    const bar      = document.getElementById('terms-agree-bar');
+    const btn      = document.getElementById('terms-agree-btn');
+    const lockMsg  = document.getElementById('terms-lock-msg');
     const sentinel = document.getElementById('terms-end');
     let   reached  = false;
 
     if (sentinel && btn) {
-      const obs = new IntersectionObserver(function (entries) {
+      var obs = new IntersectionObserver(function (entries) {
         if (entries[0].isIntersecting && !reached) {
           reached = true;
           btn.disabled = false;
@@ -31,7 +29,7 @@
           btn.classList.add('is-success');
           if (lockMsg) lockMsg.style.display = 'none';
         }
-      }, { threshold: 0.4 });
+      }, { threshold: 0.5 });
       obs.observe(sentinel);
     }
 
@@ -52,7 +50,6 @@
     return;
   }
 
-  // Every other page — gate check
   if (isExempt) return;
   if (!localStorage.getItem(AGREED_KEY)) {
     window.location.href = TERMS_URL;

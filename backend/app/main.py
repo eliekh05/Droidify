@@ -111,13 +111,14 @@ async def custom_docs():
     )
     return _FR(str(_static2 / "docs.html"))
 
-
-# Optional private module — loaded if present. No-op if absent.
-try:
-    from app.private.owner import register_owner_routes as _reg
-    _reg(app)
-except ModuleNotFoundError:
-    pass
+# Reject bodies over 64KB — this is a read-only API, no large payloads expected
+@app.middleware("http")
+async def limit_body_size(request, call_next):
+    content_length = request.headers.get("content-length")
+    if content_length and int(content_length) > 65536:
+        from fastapi.responses import JSONResponse
+        return JSONResponse({"detail": "Request too large"}, status_code=413)
+    return await call_next(request)
 
 @app.get("/api/health", tags=["meta"])
 async def health():
