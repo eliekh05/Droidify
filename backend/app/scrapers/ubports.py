@@ -1,10 +1,4 @@
-"""UBports / Ubuntu Touch scraper.
-
-Source: https://devices.ubuntu-touch.io/
-Free, no auth. Device list extracted from data-* HTML attributes.
-110 devices including Samsung Galaxy S7 Edge (hero2lte).
-"""
-import re
+"""Ubuntu Touch device scraper — devices.ubuntu-touch.io."""
 from bs4 import BeautifulSoup
 from app.services.cache import get as cache_get, set as cache_set
 from app.services.http import fetch, get_client
@@ -17,7 +11,6 @@ CHANNEL_NAMES = {
     "focal":  "Ubuntu 20.04 (Focal)",
     "xenial": "Ubuntu 16.04 (Xenial)",
 }
-
 
 async def get_ubports_devices() -> list[dict]:
     ck = "ubports_devices"
@@ -65,7 +58,6 @@ async def get_ubports_devices() -> list[dict]:
     await cache_set(ck, devices, ttl=3600)
     return devices
 
-
 async def check_ubports_device(codename: str) -> dict | None:
     """Return UBports ROM entry for a specific device codename."""
     ck = f"ubports:{codename}"
@@ -96,7 +88,6 @@ async def check_ubports_device(codename: str) -> dict | None:
     }
     await cache_set(ck, result, ttl=3600)
     return result
-
 
 def _infer_manufacturer(name: str) -> str:
     n = name.lower()

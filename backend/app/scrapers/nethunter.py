@@ -1,13 +1,4 @@
-"""Kali NetHunter scraper.
-
-Source: https://nethunter.kali.org/device-kernels.html
-Free, no auth. HTML table with 113 devices.
-67 have pre-built images. hero2lte (Samsung Galaxy S7 Edge) has 4 kernels.
-
-NetHunter is a mobile penetration testing platform built on top of
-Android/LineageOS. It provides kernel-level network tools, HID attacks,
-bad USB attacks, and Kali Linux tools in a chroot environment.
-"""
+"""Kali NetHunter scraper — nethunter.kali.org, 113 devices, no auth."""
 import re
 from bs4 import BeautifulSoup
 from app.services.cache import get as cache_get, set as cache_set
@@ -16,7 +7,6 @@ from app.services.http import fetch, get_client
 NETHUNTER_URL   = "https://nethunter.kali.org/device-kernels.html"
 NETHUNTER_DL    = "https://www.kali.org/get-kali/#kali-mobile"
 NETHUNTER_DOCS  = "https://www.kali.org/docs/nethunter/"
-
 
 async def get_nethunter_devices() -> list[dict]:
     ck = "nethunter_devices"
@@ -68,7 +58,6 @@ async def get_nethunter_devices() -> list[dict]:
     await cache_set(ck, devices, ttl=3600)
     return devices
 
-
 async def check_nethunter_device(codename: str) -> dict | None:
     """Return Kali NetHunter ROM entry for a device codename."""
     ck = f"nethunter:{codename}"
@@ -106,7 +95,6 @@ async def check_nethunter_device(codename: str) -> dict | None:
     }
     await cache_set(ck, result, ttl=3600)
     return result
-
 
 def _infer_manufacturer(model_name: str) -> str:
     n = model_name.lower()

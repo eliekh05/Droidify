@@ -1,23 +1,5 @@
-"""
-samfw.py — Samsung stock firmware links via samfw.com
-samfw.com provides a public per-device firmware download page at:
-  https://samfw.com/{MODEL_NUMBER}
-No API key or authentication required for browsing.
-
-This scraper generates samfw.com links for Samsung devices
-so users can easily find and download official stock firmware.
-
-Samsung model number formats:
-  SM-G991B  (Galaxy S21)
-  SM-A536B  (Galaxy A53)
-  SM-N970F  (Galaxy Note 10)
-
-We get Samsung codenames from LineageOS + our devices index,
-map them to model numbers where known, and provide samfw.com links.
-"""
-
+"""Samsung stock firmware links via samfw.com — no auth required."""
 from app.services.cache import get as cache_get, set as cache_set
-from app.services.http import get_client
 
 # Known Samsung codename → model number mappings
 # Sourced from LineageOS wiki and Samsung's public device pages
@@ -81,7 +63,6 @@ SAMSUNG_MODELS: dict[str, list[str]] = {
     "gts7fewifi":  ["SM-T733"],
 }
 
-
 def get_samfw_link(codename: str, model: str | None = None) -> str | None:
     """Return samfw.com link for a Samsung device."""
     if model:
@@ -91,11 +72,9 @@ def get_samfw_link(codename: str, model: str | None = None) -> str | None:
         return f"https://samfw.com/{models[0]}"
     return None
 
-
 def get_samsung_models(codename: str) -> list[str]:
     """Return known model numbers for a Samsung codename."""
     return SAMSUNG_MODELS.get(codename.lower(), [])
-
 
 async def get_samfw_for_device(codename: str) -> list[dict]:
     """

@@ -1,11 +1,4 @@
-"""
-cache.py — In-memory TTL cache with disk persistence.
-
-- In-process dict with TTL (no Redis dependency)
-- Persists to disk on shutdown, restores on startup
-- This means the first user after a restart hits warm caches
-- Thread-safe via asyncio.Lock
-"""
+"""In-memory TTL cache with optional disk persistence."""
 import asyncio
 import json
 import logging
@@ -21,8 +14,6 @@ _lock  = asyncio.Lock()
 DEFAULT_TTL  = 300    # 5 minutes
 PERSIST_PATH = Path(os.environ.get("CACHE_PERSIST_PATH", "/tmp/droidify_cache.json"))
 
-
-# ── Core ops ──────────────────────────────────────────────────────────────────
 async def get(key: str) -> Any | None:
     async with _lock:
         if key in _store:
@@ -32,27 +23,21 @@ async def get(key: str) -> Any | None:
             del _store[key]
     return None
 
-
 async def set(key: str, value: Any, ttl: int = DEFAULT_TTL) -> None:
     async with _lock:
         _store[key] = (value, time.monotonic() + ttl)
-
 
 async def delete(key: str) -> None:
     async with _lock:
         _store.pop(key, None)
 
-
 async def clear() -> None:
     async with _lock:
         _store.clear()
 
-
 def cache_key(*parts) -> str:
     return ":".join(str(p) for p in parts)
 
-
-# ── Disk persistence ──────────────────────────────────────────────────────────
 def save_to_disk() -> None:
     """Serialize non-expired cache entries to disk."""
     now = time.monotonic()
@@ -71,7 +56,6 @@ def save_to_disk() -> None:
         _log.info("Cache saved: %d entries → %s", len(serializable), PERSIST_PATH)
     except Exception as e:
         _log.warning("Cache save failed: %s", e)
-
 
 def load_from_disk() -> int:
     """Restore cache from disk. Returns number of entries restored."""
@@ -93,8 +77,6 @@ def load_from_disk() -> int:
         _log.warning("Cache load failed: %s", e)
         return 0
 
-
-# ── Decorator ─────────────────────────────────────────────────────────────────
 def cached(key: str, ttl: int = DEFAULT_TTL):
     """Decorator for async functions."""
     def decorator(fn):

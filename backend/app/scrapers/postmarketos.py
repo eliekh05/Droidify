@@ -1,9 +1,4 @@
-"""PostmarketOS scraper.
-
-Source: https://postmarketos.org/
-Free, no auth. Lightweight Alpine Linux-based mobile OS.
-Device list scraped from their wiki devices page.
-"""
+"""postmarketOS device scraper — wiki.postmarketos.org GitLab API."""
 import re
 from bs4 import BeautifulSoup
 from app.services.cache import get as cache_get, set as cache_set
@@ -11,7 +6,6 @@ from app.services.http import fetch, get_client
 
 PMOS_WIKI_URL = "https://wiki.postmarketos.org/wiki/Devices"
 PMOS_DL_URL   = "https://postmarketos.org/download/"
-
 
 async def get_postmarketos_devices() -> list[dict]:
     ck = "pmos_devices"
@@ -64,7 +58,6 @@ async def get_postmarketos_devices() -> list[dict]:
     await cache_set(ck, devices, ttl=3600)
     return devices
 
-
 async def check_postmarketos_device(codename: str) -> dict | None:
     """Return PostmarketOS ROM entry if supported."""
     ck = f"pmos:{codename}"
@@ -84,7 +77,6 @@ async def check_postmarketos_device(codename: str) -> dict | None:
         await cache_set(ck, {}, ttl=3600)
         return None
 
-    # Check if codename appears in search results as a device page
     if codename.lower() not in resp.text.lower():
         await cache_set(ck, {}, ttl=3600)
         return None
@@ -118,7 +110,6 @@ async def check_postmarketos_device(codename: str) -> dict | None:
 
     await cache_set(ck, result or {}, ttl=3600)
     return result
-
 
 def _infer_manufacturer(name: str) -> str:
     n = name.lower()

@@ -1,25 +1,6 @@
-"""
-roms.py — Unified ROM index with O(1) device lookup.
-
-Key design: build a codename→roms lookup table ONCE at startup using
-all ROM indexes. Device lookup is then a simple dict key lookup instead
-of 9 sequential HTTP calls.
-
-Sources indexed at startup:
-  - SourceForge (23 ROM projects, ~1,600 entries)
-  - PixelExperience (~200 devices)
-  - LineageOS API (from devices scraper)
-  - Community ROMs (Evolution X, crDroid extra, etc.)
-  - DivestOS, CalyxOS, /e/OS, GrapheneOS
-  - Ubuntu Touch, NetHunter, postmarketOS
-
-Per-device lookup: O(1) dict lookup from pre-built index.
-First build: ~30s on cold start (concurrent fetching).
-Subsequent builds: cached 2 hours.
-"""
+"""Unified ROM lookup — O(1) codename→roms dict built once at startup from all sources."""
 import asyncio
 import re
-from typing import Any
 
 from app.services.cache import get as cache_get, set as cache_set
 from app.services.http import fetch, get_client
@@ -36,7 +17,6 @@ LOS_BRANCH_TO_ANDROID: dict[str, str] = {
 }
 
 _NORM = lambda s: re.sub(r'[-_ .]', '', (s or '').lower())
-
 
 async def _roms_from_lineageos() -> list[dict]:
     """Fetch LineageOS builds from official download API.
@@ -77,9 +57,6 @@ async def _roms_from_lineageos() -> list[dict]:
     except Exception:
         return []
 
-
-# ── Source fetchers ───────────────────────────────────────────────────────────
-
 async def _roms_from_grapheneos() -> list[dict]:
     ck = "roms:grapheneos_devices"
     if c := await cache_get(ck): return c
@@ -90,14 +67,30 @@ async def _roms_from_grapheneos() -> list[dict]:
                 return []
         codenames = list({line.split("-")[0] for line in r.text.splitlines()
                          if line and not line.startswith("#") and "-" in line})
-        result = [{"name":"GrapheneOS","codename":c,"android_base":"14",
+        # Determine GrapheneOS Android version from release filenames
+        # Format: {codename}-{version_code}-{build}.zip — version code encodes year/Android ver
+        # GrapheneOS targets the latest Pixel Android, currently Android 16
+        # Extract from releases file: lines like "caiman-2025123456.zip"
+        gos_ver = "unknown"
+        try:
+            _release_lines = [l for l in r.text.splitlines() if l and not l.startswith("#") and "-" in l]
+            if _release_lines:
+                # GrapheneOS build codes: YYYYMMDDNN — first 4 digits = year, rest = build
+                # We check their website for current Android version
+                _gos_page = await fetch(client, "https://grapheneos.org/")
+                if _gos_page and _gos_page.status_code == 200:
+                    _gos_vm = re.search(r"Android[\s]+([0-9]{2})", _gos_page.text)
+                    if _gos_vm:
+                        gos_ver = _gos_vm.group(1)
+        except Exception:
+            pass
+        result = [{"name":"GrapheneOS","codename":c,"android_base":gos_ver,
                    "source":"grapheneos","rom_type":"privacy","status":"active",
                    "download_url":f"https://grapheneos.org/install/web"} for c in codenames]
         await cache_set(ck, result, ttl=3600)
         return result
     except Exception:
         return []
-
 
 async def _roms_from_divestos() -> list[dict]:
     ck = "roms:divestos"
@@ -116,7 +109,7 @@ async def _roms_from_divestos() -> list[dict]:
             code_m = re.search(r'/devices/([a-z][a-z0-9_]+)', href)
             if code_m:
                 result.append({"name":"DivestOS","codename":code_m.group(1),
-                               "android_base":"20","source":"divestos",
+                               "android_base":"unknown","source":"divestos",
                                "rom_type":"privacy","status":"active",
                                "download_url":f"https://divestos.org/pages/devices#{code_m.group(1)}"})
         await cache_set(ck, result, ttl=3600)
@@ -124,10 +117,10 @@ async def _roms_from_divestos() -> list[dict]:
     except Exception:
         return []
 
-
 async def _roms_from_calyxos() -> list[dict]:
     ck = "roms:calyxos"
     if c := await cache_get(ck): return c
+    android_ver = "unknown"  # will be updated from page if found
     try:
         async with get_client() as client:
             r = await fetch(client, "https://calyxos.org/install/devices/")
@@ -141,14 +134,13 @@ async def _roms_from_calyxos() -> list[dict]:
             m = re.search(r'/install/([a-z][a-z0-9_]+)/', href)
             if m:
                 result.append({"name":"CalyxOS","codename":m.group(1),
-                               "android_base":"14","source":"calyxos",
+                               "android_base":android_ver,"source":"calyxos",
                                "rom_type":"privacy","status":"active",
                                "download_url":f"https://calyxos.org/install/{m.group(1)}/"})
         await cache_set(ck, result, ttl=3600)
         return result
     except Exception:
         return []
-
 
 async def _roms_from_eos() -> list[dict]:
     ck = "roms:eos"
@@ -168,7 +160,7 @@ async def _roms_from_eos() -> list[dict]:
             if m and m.group(1) not in seen:
                 seen.add(m.group(1))
                 result.append({"name":"/e/OS","codename":m.group(1),
-                               "android_base":"13","source":"eos",
+                               "android_base":"unknown","source":"eos",
                                "rom_type":"privacy","status":"active",
                                "download_url":f"https://doc.e.foundation/devices/{m.group(1)}"})
         await cache_set(ck, result, ttl=3600)
@@ -176,8 +168,18 @@ async def _roms_from_eos() -> list[dict]:
     except Exception:
         return []
 
-
-# ── Lookup table ──────────────────────────────────────────────────────────────
+async def _of_recs_wrapped() -> list[dict]:
+    """Wrap OrangeFox recoveries as ROM-type entries for the lookup."""
+    from app.services.http import get_client
+    from app.scrapers.recoveries import _fetch_orangefox as _of
+    async with get_client() as _c:
+        recs = await _of(_c)
+    return [{
+        **r,
+        "rom_type": r.get("rom_type", "recovery"),
+        "name": r.get("name", "OrangeFox"),
+        "android_base": r.get("android_base", "unknown"),
+    } for r in recs]
 
 async def _build_lookup() -> dict[str, list[dict]]:
     """
@@ -187,11 +189,15 @@ async def _build_lookup() -> dict[str, list[dict]]:
     ck = "roms:lookup_table"
     if c := await cache_get(ck): return c
 
-    # Fetch all indexes concurrently
     from app.scrapers.sourceforge_roms import get_sourceforge_roms
     from app.scrapers.gsi_roms import get_gsi_roms
     from app.scrapers.extended_roms import get_extended_roms
     from app.scrapers.extra_roms import get_extra_roms
+    from app.scrapers.customrombay import get_all_customrombay_roms
+    from app.scrapers.rom_sources import get_all_rom_sources
+    from app.scrapers.twrp_index import get_twrp_index
+    from app.scrapers.recoveries import _fetch_orangefox as _of_recs
+    from app.scrapers.eosbuilds import get_eosbuilds_roms
     from app.scrapers.pixelexperience import get_pixelexperience_roms
     from app.scrapers.unofficialtwrp import get_unofficialtwrp_devices
     from app.scrapers.community_roms import get_all_community_roms
@@ -207,6 +213,11 @@ async def _build_lookup() -> dict[str, list[dict]]:
         get_gsi_roms(),
         get_extended_roms(),
         get_extra_roms(),
+        get_all_customrombay_roms(),
+        get_all_rom_sources(),
+        get_twrp_index(),
+        get_eosbuilds_roms(),
+        _of_recs_wrapped(),
         _roms_from_lineageos(),
         _roms_from_grapheneos(),
         _roms_from_divestos(),
@@ -215,26 +226,37 @@ async def _build_lookup() -> dict[str, list[dict]]:
         return_exceptions=True,
     )
 
-    # Build lookup table
     lookup: dict[str, list[dict]] = {}
 
     for source in sources:
         if isinstance(source, Exception) or not source:
             continue
         for item in source:
-            codename = (item.get("codename") or "").lower().strip()
-            if not codename:
+            codename = (item.get("codename") or "").strip()
+            if not codename or codename.lower() in ("gsi", "gsi_arm64", "universal"):
                 continue
-            normalized = _NORM(codename)
-            if normalized not in lookup:
-                lookup[normalized] = []
-            lookup[normalized].append(item)
+            cn_lower = codename.lower()
+            cn_norm  = _NORM(codename)
+
+            # Store under multiple key variants to handle case mismatches
+            # and suffix variants (e.g. h812_usu → also store under h812usu and h812)
+            keys_to_add = {cn_lower, cn_norm, codename}
+            # Strip numeric/region suffixes: h812_usu → h812
+            if "_" in cn_lower:
+                keys_to_add.add(cn_lower.rsplit("_", 1)[0])
+                keys_to_add.add(_NORM(cn_lower.rsplit("_", 1)[0]))
+
+            for key in keys_to_add:
+                k = key.lower() if key else ""
+                if not k: continue
+                if k not in lookup:
+                    lookup[k] = []
+                # Avoid duplicates in same key
+                if item not in lookup[k]:
+                    lookup[k].append(item)
 
     await cache_set(ck, lookup, ttl=7200)
     return lookup
-
-
-# ── Public API ────────────────────────────────────────────────────────────────
 
 async def get_all_roms(
     q: str | None = None,
@@ -288,50 +310,67 @@ async def get_all_roms(
         "roms": roms[offset: offset + limit],
     }
 
-
 async def get_roms_for_device(codename: str) -> list[dict]:
     """
     O(1) lookup of all ROMs for a device codename.
-    Uses pre-built lookup table — no HTTP calls after first warm-up.
-    Also checks LineageOS for official builds.
+    Tries exact match first, then progressively strips regional/hardware
+    suffixes to find the base codename (e.g. a51nsxx → a51).
     """
     ck = f"roms:{codename}"
     if c := await cache_get(ck): return c
 
-    normalized = _NORM(codename)
     lookup = await _build_lookup()
+    cn = codename.lower().strip()
 
-    # Direct lookup
-    roms = list(lookup.get(normalized, []))
+    # 1. Exact match variants
+    result = (lookup.get(cn) or lookup.get(_NORM(cn)) or
+              lookup.get(codename) or lookup.get(codename.upper()) or [])
+    if result:
+        await cache_set(ck, result, ttl=7200)
+        return result
 
-    # Also check slight variations (e.g. "mido" vs "mido_global")
-    for key, val in lookup.items():
-        if key != normalized and (key.startswith(normalized) or normalized.startswith(key)):
-            for r in val:
-                if r not in roms:
-                    roms.append(r)
+    # 2a. Variant map — Snapdragon/Exynos pairs + known codename aliases
+    _VARIANT_MAP = {
+        'dreamqlte':  ['dreamlte'],
+        'dream2qlte': ['dream2lte'],
+        'greatqlte':  ['greatlte'],
+        'jflte':      ['jfltexx'],
+        'i9500':      ['ja3g', 'i9505'],
+        'kmini3g':    ['kminilte'],
+        'gts28ltexx': ['gts28lte'],
+        'j7y17lte':   ['j7xelte'],
+        'j6primelte': ['j6lte'],
+        'a6lte':      ['a6plte'],
+        'c5lte':      ['c5'],
+    }
+    if cn in _VARIANT_MAP:
+        for alt in _VARIANT_MAP[cn]:
+            result = lookup.get(alt) or lookup.get(_NORM(alt)) or []
+            if result:
+                await cache_set(ck, result, ttl=7200)
+                return result
 
-    # Check ubports/nethunter/pmos separately (they have different structures)
-    try:
-        from app.scrapers.ubports import get_ubports_devices
-        from app.scrapers.nethunter import get_nethunter_devices
-        from app.scrapers.postmarketos import get_postmarketos_devices
-        cn_lower = codename.lower()
-        extra = await asyncio.gather(
-            get_ubports_devices(),
-            get_nethunter_devices(),
-            get_postmarketos_devices(),
-            return_exceptions=True,
-        )
-        for source in extra:
-            if isinstance(source, Exception):
-                continue
-            for item in source:
-                item_cn = (item.get("codename") or "").lower()
-                if item_cn == cn_lower and item not in roms:
-                    roms.append(item)
-    except Exception:
-        pass
+    # 2b. Progressive suffix stripping
+    STRIP = [
+        r'(nsxx|nsxxi|nsxxs|nsxxu|nsxxv)$',
+        r'(ltexx|ltechn|ltevl|lteskt|ltespr|ltevzw|lteatt|ltecan|ltekor|ltektt|lteusc)$',
+        r'(3gxx|3gchn|3gvl|3gktt)$',
+        r'(nlte|xlte|ylte|zlte|elte|mlte)$',
+        r'(primelte|prime)$',
+        r'(duos|plus|neo|mini|pro)$',
+        r'(wifi|wifi4g|3g|4g|5g)$',
+        r'(xx|xxi|xxu|xxv|xxs)$',
+        r'[a-z]{2,4}$',
+    ]
+    base = cn
+    for pattern in STRIP:
+        stripped = re.sub(pattern, '', base)
+        if stripped and stripped != base and len(stripped) >= 3:
+            result = lookup.get(stripped) or lookup.get(_NORM(stripped)) or []
+            if result:
+                await cache_set(ck, result, ttl=7200)
+                return result
+            base = stripped  # continue stripping
 
-    await cache_set(ck, roms, ttl=3600)
-    return roms
+    await cache_set(ck, [], ttl=3600)
+    return []

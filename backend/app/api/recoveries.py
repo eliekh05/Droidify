@@ -1,9 +1,7 @@
-import re
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Query
 from app.scrapers.recoveries import get_recoveries
 
 router = APIRouter()
-
 
 @router.get("")
 async def list_recoveries(

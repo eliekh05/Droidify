@@ -1,14 +1,4 @@
-"""
-recoveries.py — expanded recovery scraper
-Sources:
-  TWRP       — twrp.me/search.json          ~900 devices
-  OrangeFox  — api.orangefox.download        ~160 devices
-  PBRP       — GitHub PitchBlackRecoveryProject org repos  ~80+ devices
-  SHRP       — GitHub SHRP-Devices org repos ~60+ devices
-  LineageOS  — lineageos.org wiki devices with recovery tags
-  uTWRP      — unofficialtwrp.com scrape    already in unofficialtwrp.py
-Total target: 300+ unique codenames
-"""
+"""Recovery scraper — TWRP, OrangeFox, PBRP, SHRP."""
 import asyncio
 import re
 
@@ -55,8 +45,6 @@ def _codename_from_repo(repo_name: str, suffix: str) -> str:
         return parts[-1]
     return ""
 
-
-# ── TWRP ─────────────────────────────────────────────────────────────────────
 async def _fetch_twrp(client) -> list[dict]:
     ck = "rec:twrp"
     cached = await cache_get(ck)
@@ -91,39 +79,74 @@ async def _fetch_twrp(client) -> list[dict]:
     await cache_set(ck, devices, ttl=3600)
     return devices
 
-
-# ── OrangeFox ─────────────────────────────────────────────────────────────────
 async def _fetch_orangefox(client) -> list[dict]:
+    """
+    Fetch OrangeFox devices and their latest releases.
+    Uses the v3 API: first get all devices, then fetch latest release per device.
+    The API quirk: releases endpoint returns data even when total=0.
+    """
     ck = "rec:orangefox"
     cached = await cache_get(ck)
     if cached:
         return cached
 
-    resp = await fetch(client, ORANGEFOX_API)
-    if not resp or resp.status_code != 200:
+    all_devices = []
+    page = 1
+    while True:
+        resp = await fetch(client, f"https://api.orangefox.download/v3/devices/?limit=500&page={page}")
+        if not resp or resp.status_code != 200:
+            break
+        data = resp.json()
+        batch = data.get("data", [])
+        if not batch:
+            break
+        all_devices.extend(batch)
+        if len(batch) < 500:
+            break
+        page += 1
+
+    if not all_devices:
         return []
 
+    async def _get_latest_release(dev_id: str) -> str:
+        r = await fetch(client, f"https://api.orangefox.download/v3/releases/?device_id={dev_id}&limit=1")
+        if not r or r.status_code != 200:
+            return ""
+        try:
+            releases = r.json().get("data", [])
+            if releases:
+                return releases[0].get("url", "")
+        except Exception:
+            pass
+        return ""
+
+    import asyncio as _aio
     devices: list[dict] = []
-    for dev in resp.json().get("data", []):
-        codename = dev.get("codename", "")
-        if not codename:
-            continue
-        devices.append({
-            "codename":     codename,
-            "model_name":   dev.get("full_name", dev.get("model_name", "")),
-            "manufacturer": dev.get("oem_name", ""),
-            "recovery_type":"OrangeFox",
-            "status":       "active" if dev.get("supported", True) else "unmaintained",
-            "source_url":   dev.get("url", f"https://orangefox.download/device/{codename}"),
-            "download_url": dev.get("url", ""),
-            "source":       "orangefox",
-        })
+
+    for i in range(0, len(all_devices), 20):
+        batch = all_devices[i:i+20]
+        urls = await _aio.gather(*[_get_latest_release(dev.get("_id", "")) for dev in batch])
+
+        for dev, dl_url in zip(batch, urls):
+            codename = dev.get("codename", "")
+            if not codename:
+                continue
+            device_page = f"https://orangefox.download/device/{dev.get('_id', codename)}"
+            devices.append({
+                "codename":     codename,
+                "model_name":   dev.get("full_name", dev.get("model_name", "")),
+                "manufacturer": dev.get("oem_name", ""),
+                "recovery_type":"OrangeFox",
+                "status":       "active" if dev.get("supported", True) else "unmaintained",
+                "source_url":   device_page,
+                "download_url": dl_url or device_page,
+                "source":       "orangefox",
+                "official":     True,
+            })
 
     await cache_set(ck, devices, ttl=3600)
     return devices
 
-
-# ── PBRP (PitchBlack) via GitHub org repos ───────────────────────────────────
 async def _fetch_pbrp(client) -> list[dict]:
     """Fetch PBRP devices from SourceForge (no GitHub API needed)."""
     ck = "rec:pbrp"
@@ -155,13 +178,11 @@ async def _fetch_pbrp(client) -> list[dict]:
                     "source":        "pbrp",
                 })
     except Exception:
-        pass
+        return []
 
     await cache_set(ck, devices, ttl=3600)
     return devices
 
-
-# ── SHRP (SkyHawk) via GitHub org repos ──────────────────────────────────────
 async def _fetch_shrp(client) -> list[dict]:
     """Fetch SHRP devices from SourceForge (no GitHub API needed)."""
     ck = "rec:shrp"
@@ -193,13 +214,11 @@ async def _fetch_shrp(client) -> list[dict]:
                     "source":        "shrp",
                 })
     except Exception:
-        pass
+        return []
 
     await cache_set(ck, devices, ttl=3600)
     return devices
 
-
-# ── Unified get_recoveries ─────────────────────────────────────────────────────
 async def get_recoveries(
     q: str | None = None,
     recovery: str | None = None,
@@ -266,7 +285,6 @@ async def get_recoveries(
         "limit": limit,
         "recoveries": devices[offset: offset + limit],
     }
-
 
 async def get_recovery_for_device(codename: str) -> list[dict]:
     result = await get_recoveries(limit=9999)

@@ -1,26 +1,10 @@
-"""
-extra_roms.py — Additional ROM sources using raw.githubusercontent.com
-and other public endpoints. Zero GitHub API calls — all raw content fetches.
-
-Sources:
-  LineageOS MicroG  — download.lineage.microg.org JSON listing (362 devices)
-  ProjectSakura     — raw OTA devices.json (51 devices, with XDA links)
-  HavocOS           — raw OTA devices.json
-  DotOS             — raw OTA devices.json
-  CorvusOS          — SourceForge listing
-  NusantaraProject  — raw OTA devices.json
-  CherishOS         — raw OTA devices.json
-  NitrogenOS        — raw OTA
-  BlissROMs         — raw OTA
-  YAAP              — raw tree listing
-"""
+"""Additional ROM sources via raw.githubusercontent.com — LineageOS MicroG, ProjectSakura."""
 import asyncio
 import re
 from app.services.cache import get as cache_get, set as cache_set
 from app.services.http import get_client, fetch
 
 _CODENAME_RE = re.compile(r'^[a-z][a-z0-9_]{2,30}$')
-
 
 def _entry(name, codename, android_base, description, download_url, source, maintainer=None, xda=None):
     e = {
@@ -34,8 +18,6 @@ def _entry(name, codename, android_base, description, download_url, source, main
     if xda: e["xda_thread"] = xda
     return e
 
-
-# ── LineageOS for MicroG ──────────────────────────────────────────────────────
 async def _fetch_los_microg(client) -> list[dict]:
     ck = "roms:los_microg_v2"
     if c := await cache_get(ck): return c
@@ -58,8 +40,6 @@ async def _fetch_los_microg(client) -> list[dict]:
     except Exception:
         return []
 
-
-# ── Generic raw OTA JSON fetcher ──────────────────────────────────────────────
 async def _fetch_raw_ota(client, rom_name, raw_url, android_base, description,
                           source, dl_template) -> list[dict]:
     ck = f"roms:raw_ota_{source}"
@@ -85,7 +65,7 @@ async def _fetch_raw_ota(client, rom_name, raw_url, android_base, description,
             active = item.get('active', True)
             result.append(_entry(
                 rom_name, codename, android_base, description,
-                dl_template.format(codename=codename),
+                dl_template.replace("{codename}", codename),
                 source, maintainer, xda,
             ))
             if not active:
@@ -96,8 +76,6 @@ async def _fetch_raw_ota(client, rom_name, raw_url, android_base, description,
     except Exception:
         return []
 
-
-# ── ProjectSakura — has XDA thread links per device ──────────────────────────
 async def _fetch_project_sakura(client) -> list[dict]:
     return await _fetch_raw_ota(
         client,
@@ -109,8 +87,6 @@ async def _fetch_project_sakura(client) -> list[dict]:
         "https://github.com/ProjectSakura/OTA",
     )
 
-
-# ── HavocOS ───────────────────────────────────────────────────────────────────
 async def _fetch_havoc(client) -> list[dict]:
     # HavocOS has SF listing — already in SF scraper
     # Try their direct JSON
@@ -124,8 +100,6 @@ async def _fetch_havoc(client) -> list[dict]:
         "https://sourceforge.net/projects/havoc-os/files/{codename}/",
     )
 
-
-# ── NusantaraProject ──────────────────────────────────────────────────────────
 async def _fetch_nusantara(client) -> list[dict]:
     return await _fetch_raw_ota(
         client,
@@ -137,8 +111,6 @@ async def _fetch_nusantara(client) -> list[dict]:
         "https://sourceforge.net/projects/nusantaraproject/files/{codename}/",
     )
 
-
-# ── DotOS ─────────────────────────────────────────────────────────────────────
 async def _fetch_dotos(client) -> list[dict]:
     return await _fetch_raw_ota(
         client,
@@ -150,8 +122,6 @@ async def _fetch_dotos(client) -> list[dict]:
         "https://sourceforge.net/projects/dotos/files/{codename}/",
     )
 
-
-# ── StagOS ────────────────────────────────────────────────────────────────────
 async def _fetch_stagos(client) -> list[dict]:
     return await _fetch_raw_ota(
         client,
@@ -163,8 +133,6 @@ async def _fetch_stagos(client) -> list[dict]:
         "https://sourceforge.net/projects/stagos/files/{codename}/",
     )
 
-
-# ── PixelDust ─────────────────────────────────────────────────────────────────
 async def _fetch_pixeldust(client) -> list[dict]:
     return await _fetch_raw_ota(
         client,
@@ -176,8 +144,6 @@ async def _fetch_pixeldust(client) -> list[dict]:
         "https://sourceforge.net/projects/pixeldust/files/{codename}/",
     )
 
-
-# ── AncientOS ─────────────────────────────────────────────────────────────────
 async def _fetch_ancientos(client) -> list[dict]:
     return await _fetch_raw_ota(
         client,
@@ -189,8 +155,6 @@ async def _fetch_ancientos(client) -> list[dict]:
         "https://sourceforge.net/projects/ancientos/files/{codename}/",
     )
 
-
-# ── SparkOS ───────────────────────────────────────────────────────────────────
 async def _fetch_sparkos(client) -> list[dict]:
     return await _fetch_raw_ota(
         client,
@@ -201,7 +165,6 @@ async def _fetch_sparkos(client) -> list[dict]:
         "sparkos",
         "https://sourceforge.net/projects/spark-os/files/{codename}/",
     )
-
 
 async def _fetch_pixel_extended(client) -> list[dict]:
     return await _fetch_raw_ota(
@@ -214,8 +177,6 @@ async def _fetch_pixel_extended(client) -> list[dict]:
         "https://sourceforge.net/projects/pixelextended/files/{codename}/",
     )
 
-
-# ── YAAP (Yet Another AOSP Project) ──────────────────────────────────────────
 async def _fetch_yaap(client) -> list[dict]:
     # YAAP stores device JSONs individually — get listing from tree
     ck = "roms:yaap"
@@ -241,7 +202,6 @@ async def _fetch_yaap(client) -> list[dict]:
         return result
     except Exception:
         return []
-
 
 async def get_extra_roms() -> list[dict]:
     """All extra ROM sources combined."""

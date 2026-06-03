@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta name="description" content="Droidify API Reference — complete documentation for all endpoints.">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Droidify API Reference</title>
@@ -53,21 +54,21 @@
 
   <div class="card mb-4" data-aos="fade-up">
     <div class="card-content">
-      <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap">
+      <div class="op-tag-bar">
         <div>
-          <p style="color:var(--muted);font-size:.82rem;margin-bottom:.25rem">Base URL</p>
-          <code style="font-family:var(--mono);color:var(--accent);font-size:.9rem" id="base-url">https://eliekh05-droidify-hf.hf.space</code>
+          <p class="op-meta">Base URL</p>
+          <code class="op-path" id="base-url">https://eliekh05-droidify-hf.hf.space</code>
         </div>
         <div>
-          <p style="color:var(--muted);font-size:.82rem;margin-bottom:.25rem">Auth</p>
+          <p class="op-meta">Auth</p>
           <span class="tag is-success">None required</span>
         </div>
         <div>
-          <p style="color:var(--muted);font-size:.82rem;margin-bottom:.25rem">Format</p>
+          <p class="op-meta">Format</p>
           <span class="tag is-info">JSON</span>
         </div>
         <div>
-          <p style="color:var(--muted);font-size:.82rem;margin-bottom:.25rem">Methods</p>
+          <p class="op-meta">Methods</p>
           <span class="tag is-dark">GET only</span>
         </div>
         <div>
@@ -87,7 +88,7 @@
 </footer>
 
 <script src="/js/nav.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@reimujs/aos/dist/aos.umd.js"></script>
 <script>AOS.init({ duration: 500, easing: "ease-out-cubic", once: true, offset: 40 });</script>
 <script>
 (function() {
@@ -180,9 +181,9 @@
   container.innerHTML = ENDPOINTS.map((ep, i) => `
     <div class="card mb-4" data-aos="fade-up" data-aos-delay="${i * 40}">
       <div class="card-content">
-        <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin-bottom:.75rem">
-          <span class="tag ${METHOD_COLORS[ep.method]}" style="font-weight:700;font-size:.8rem;padding:.3rem .65rem">${esc(ep.method)}</span>
-          <code style="font-family:var(--mono);color:var(--accent);font-size:.9rem;font-weight:600">${esc(ep.path)}</code>
+        <div class="op-param-row">
+          <span class="tag ${METHOD_COLORS[ep.method]}" class="op-badge">${esc(ep.method)}</span>
+          <code class="op-mono">${esc(ep.path)}</code>
         </div>
         <p style="color:var(--muted);margin-bottom:${ep.params.length ? '.75rem' : '0'};line-height:1.6">${esc(ep.desc)}</p>
         ${ep.params.length ? `
@@ -195,14 +196,14 @@
           <tbody>
             ${ep.params.map(p => `<tr>
               <td><code style="color:var(--accent);font-family:var(--mono);font-size:.82rem">${esc(p.name)}</code></td>
-              <td><span style="color:var(--info);font-size:.78rem;font-family:var(--mono)">${esc(p.type)}</span></td>
-              <td style="color:var(--muted);font-size:.85rem">${esc(p.desc)}</td>
+              <td><span class="op-type">${esc(p.type)}</span></td>
+              <td class="op-desc">${esc(p.desc)}</td>
             </tr>`).join('')}
           </tbody>
         </table>` : ''}
         <details>
-          <summary style="color:var(--muted);font-size:.8rem;cursor:pointer;user-select:none;margin-top:.25rem">Example response</summary>
-          <pre style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.75rem;margin-top:.5rem;overflow-x:auto;font-size:.78rem;color:var(--text);font-family:var(--mono)">${esc(ep.example)}</pre>
+          <summary class="op-toggle">Example response</summary>
+          <pre class="op-response">${esc(ep.example)}</pre>
         </details>
       </div>
     </div>

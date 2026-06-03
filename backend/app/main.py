@@ -1,8 +1,4 @@
-"""Droidify — FastAPI backend (API only).
-
-nginx serves the static frontend on port 80 and proxies /api/* here.
-This process handles only /api/* routes — no static file serving.
-"""
+"""FastAPI application — startup, CORS, route registration, cache warm."""
 import asyncio
 import logging
 import os
@@ -23,7 +19,6 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     _log = logging.getLogger("droidify.startup")
@@ -38,7 +33,6 @@ async def lifespan(app: FastAPI):
             from app.scrapers.sourceforge_roms import get_sourceforge_roms
             from app.scrapers.pixelexperience import get_pixelexperience_roms
             from app.scrapers.unofficialtwrp import get_unofficialtwrp_devices
-            from app.scrapers.roms import get_all_roms
 
             await asyncio.gather(
                 get_devices(limit=50), get_android_versions(), get_tools(),
@@ -51,7 +45,6 @@ async def lifespan(app: FastAPI):
                 return_exceptions=True,
             )
             # Pre-warm new recovery sources
-            from app.scrapers.recoveries import _fetch_pbrp, _fetch_shrp, get_recovery_for_device
             from app.services.http import get_client as _gc
             async with _gc() as _cl:
                 await asyncio.gather(
@@ -85,7 +78,6 @@ async def lifespan(app: FastAPI):
     save_to_disk()
     _log.warning("Cache saved to disk on shutdown")
 
-
 app = FastAPI(
     lifespan=lifespan,
     title="Droidify API",
@@ -93,7 +85,6 @@ app = FastAPI(
     version="2.0.0",
     openapi_url="/openapi.json",
     docs_url=None,
-    redoc_url=None,
     redoc_url=None,
     redirect_slashes=False,
 )
@@ -118,14 +109,12 @@ async def api_reference():
     frontend2 = _pl2.Path(__file__).parent.parent.parent / "frontend"
     return _FR2(str(frontend2 / "openapi.html"))
 
-
 @app.get("/docs", include_in_schema=False)
 async def custom_docs():
     import pathlib as _pl
     from fastapi.responses import FileResponse as _FR
     frontend = _pl.Path(__file__).parent.parent.parent / "frontend"
     return _FR(str(frontend / "docs.html"))
-
 
 @app.get("/api/health", tags=["meta"])
 async def health():

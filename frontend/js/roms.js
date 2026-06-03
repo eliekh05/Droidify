@@ -34,8 +34,8 @@
                 <div class="card-mfr">${esc(r.source||'custom')}</div>
                 <p class="title is-6 mb-1">${esc(r.name)}</p>
                 <div class="card-codename">${esc(r.codename)}</div>
-                ${r.android_base?`<p style="font-size:.78rem;color:var(--muted)">Android ${esc(r.android_base)}</p>`:''}
-                ${r.download_url?`<a href="${esc(r.download_url)}" target="_blank" rel="noopener" style="font-size:.78rem;color:var(--accent)">Download →</a>`:''}
+                ${r.android_base?`<p style="font-size:.78rem;color:let(--muted)">Android ${esc(r.android_base)}</p>`:''}
+                ${r.download_url?`<a href="${esc(r.download_url)}" target="_blank" rel="noopener" style="font-size:.78rem;color:let(--accent)">Download →</a>`:''}
               </div>
             </div>
           </div>`).join('')

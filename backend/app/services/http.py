@@ -1,8 +1,4 @@
-"""Shared async HTTP client for all scrapers.
-
-All requests are made without authentication — only free public endpoints.
-Rate limiting: built-in 0.2s delay between requests via semaphore.
-"""
+"""Shared async HTTP client with connection pooling and retries."""
 import asyncio
 import httpx
 
@@ -17,7 +13,6 @@ HEADERS = {
 # Global semaphore: max 10 concurrent outbound requests
 _SEM = asyncio.Semaphore(10)
 
-
 def get_client() -> httpx.AsyncClient:
     """Return a configured async HTTP client."""
     return httpx.AsyncClient(
@@ -26,7 +21,6 @@ def get_client() -> httpx.AsyncClient:
         follow_redirects=True,
         limits=httpx.Limits(max_connections=20, max_keepalive_connections=10),
     )
-
 
 async def fetch(client: httpx.AsyncClient, url: str, **kwargs) -> httpx.Response | None:
     """Fetch a URL with the shared semaphore. Returns None on error."""

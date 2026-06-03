@@ -1,22 +1,4 @@
-"""
-community_roms.py — Community ROM devices from project websites and APIs.
-
-NO GitHub API calls. All sources use:
-  - Project download websites (HTML scraping, no rate limit)
-  - GitLab API (2000 req/hr unauthenticated)
-  - SourceForge files listing
-  - Direct project OTA JSON endpoints
-
-Sources:
-  crDroid       — crdroid.net/downloads (HTML, 269+ devices)
-  PixelOS       — pixelos.net/downloads (HTML)
-  AncientOS     — ancientrom.com/downloads (HTML)
-  DotOS         — download.dotos.fun (JSON API)
-  SparkOS       — GitHub releases page HTML
-  ProjectBlaze  — projectblaze.in/download (HTML)
-  Paranoid Android — aospa.co (HTML)
-  ProtonAOSP    — protonaosp.org (HTML)
-"""
+"""Community ROM scrapers — project websites and APIs. No GitHub API calls."""
 import asyncio
 import re
 from bs4 import BeautifulSoup
@@ -30,12 +12,10 @@ _SKIP = frozenset([
     'about','contact','all','none','undefined',
 ])
 
-
 def _extract_card_ids(html: str) -> list[str]:
     """Extract codenames from card IDs like id='beryllium'."""
-    found = re.findall(r"id=['\"]([a-z][a-z0-9_]{2,24})['\"]", html)
+    found = re.findall(r'id=["\']([a-z][a-z0-9_]{2,24})["\']', html)
     return [c for c in found if c not in _SKIP and _CODENAME_RE.match(c)]
-
 
 def _make_rom_entry(name, codename, android_base, description, download_url, source):
     return {
@@ -47,8 +27,6 @@ def _make_rom_entry(name, codename, android_base, description, download_url, sou
         "official": True,
     }
 
-
-# ── crDroid — crdroid.net/downloads (HTML, no rate limit) ────────────────────
 async def _fetch_crdroid(client) -> list[dict]:
     ck = "roms:crdroid_web"
     if c := await cache_get(ck): return c
@@ -66,8 +44,6 @@ async def _fetch_crdroid(client) -> list[dict]:
     except Exception:
         return []
 
-
-# ── Evolution X — evolutionx.co/downloads (HTML) ──────────────────────────────
 async def _fetch_evolutionx(client) -> list[dict]:
     ck = "roms:evolutionx_web"
     if c := await cache_get(ck): return c
@@ -90,8 +66,6 @@ async def _fetch_evolutionx(client) -> list[dict]:
     except Exception:
         return []
 
-
-# ── LineageOS for MicroG — download.lineage.microg.org ───────────────────────
 async def _fetch_los_microg(client) -> list[dict]:
     ck = "roms:los_microg"
     if c := await cache_get(ck): return c
@@ -109,8 +83,6 @@ async def _fetch_los_microg(client) -> list[dict]:
     except Exception:
         return []
 
-
-# ── Paranoid Android — aospa.co/downloads ────────────────────────────────────
 async def _fetch_aospa(client) -> list[dict]:
     ck = "roms:aospa_web"
     if c := await cache_get(ck): return c
@@ -130,8 +102,6 @@ async def _fetch_aospa(client) -> list[dict]:
     except Exception:
         return []
 
-
-# ── DivestOS — divestos.org/pages/devices ─────────────────────────────────────
 async def _fetch_divestos_web(client) -> list[dict]:
     ck = "roms:divestos_web"
     if c := await cache_get(ck): return c
@@ -157,8 +127,6 @@ async def _fetch_divestos_web(client) -> list[dict]:
     except Exception:
         return []
 
-
-# ── CalyxOS — calyxos.org/install/devices ─────────────────────────────────────
 async def _fetch_calyxos_web(client) -> list[dict]:
     ck = "roms:calyxos_web"
     if c := await cache_get(ck): return c
@@ -177,8 +145,6 @@ async def _fetch_calyxos_web(client) -> list[dict]:
     except Exception:
         return []
 
-
-# ── /e/OS — doc.e.foundation/devices ─────────────────────────────────────────
 async def _fetch_eos_web(client) -> list[dict]:
     ck = "roms:eos_web"
     if c := await cache_get(ck): return c
@@ -197,8 +163,6 @@ async def _fetch_eos_web(client) -> list[dict]:
     except Exception:
         return []
 
-
-# ── postmarketOS — GitLab API (2000 req/hr, no auth) ─────────────────────────
 async def _fetch_postmarketos_web(client) -> list[dict]:
     ck = "roms:pmos_web"
     if c := await cache_get(ck): return c
@@ -232,8 +196,6 @@ async def _fetch_postmarketos_web(client) -> list[dict]:
     except Exception:
         return []
 
-
-# ── GrapheneOS — releases.grapheneos.org (no auth) ───────────────────────────
 async def _fetch_grapheneos_web(client) -> list[dict]:
     ck = "roms:grapheneos_web"
     if c := await cache_get(ck): return c
@@ -251,7 +213,6 @@ async def _fetch_grapheneos_web(client) -> list[dict]:
         return result
     except Exception:
         return []
-
 
 async def get_all_community_roms() -> list[dict]:
     """All community ROMs combined — zero GitHub API calls."""

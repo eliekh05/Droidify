@@ -95,7 +95,7 @@
         <div class="card" style="cursor:pointer" onclick="location.href='/roms.html?q=${encodeURIComponent(name)}'">
           <div class="card-content">
             <p class="title is-6 mb-1">${esc(name)}</p>
-            <p style="color:var(--muted);font-size:.8rem">${count} build${count!==1?'s':''}</p>
+            <p style="color:let(--muted);font-size:.8rem">${count} build${count!==1?'s':''}</p>
           </div>
         </div>
       </div>`

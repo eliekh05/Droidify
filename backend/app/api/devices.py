@@ -8,11 +8,9 @@ from app.scrapers.samfw import get_samfw_for_device
 
 router = APIRouter()
 
-
 # Only allow safe characters in search — codename/model chars only
 _SAFE_Q  = re.compile(r"[^a-zA-Z0-9 _.+\-]")
 _SAFE_CN = re.compile(r"[^a-zA-Z0-9_\-]")
-
 
 @router.get("")
 async def list_devices(
@@ -45,10 +43,9 @@ async def list_devices(
             los_c = len(d.get("lineageos_branches", [])) if d.get("has_lineageos") else 0
             d["rom_count"] = los_c + len(lookup.get(cn_n, []))
     except Exception:
-        pass
+        raise
 
     return result
-
 
 @router.get("/{codename}")
 async def get_device(codename: str):

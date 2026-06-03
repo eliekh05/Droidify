@@ -1,16 +1,4 @@
-"""
-sourceforge_roms.py — SourceForge ROM + Recovery scraper.
-
-Discovery: SF files listing with show_result=2000 returns all device
-folders in a single request. No pagination, no bot detection.
-
-Projects list is still curated but validated at startup — dead projects
-are skipped gracefully. New projects can be added to _ROM_PROJECTS.
-
-Additionally discovers new ROM projects by querying the SF search API:
-  https://sourceforge.net/directory/os:android/?q=aosp+rom
-This runs once per day and adds any new projects found.
-"""
+"""SourceForge ROM and recovery scraper — show_result=2000 returns all device folders."""
 import asyncio
 import re
 import httpx
@@ -45,7 +33,6 @@ _ROM_PROJECTS: list[tuple[str, str, str, str]] = [
     ("nitrogen-project",  "NitrogenOS",        "AOSP ROM with Nitrogen features",              "13"),
     ("spark-os",          "SparkOS",           "AOSP ROM with spark of customization",          "13"),
     ("cherish-os",        "CherishOS",         "Cherish your Android experience",              "13"),
-    # ── 2025 additions ───────────────────────────────────────────────────────
     ("alphadroid-project", "AlphaDroid",        "crDroid-based ROM with new look",                "16"),
     ("risingos-revived",   "RisingOS",          "Feature-rich AOSP revival",                      "14"),
     ("axion-aosp",         "AxionAOSP",         "Minimal AOSP with AI features",                  "16"),
@@ -62,6 +49,7 @@ _RECOVERY_PROJECTS: list[tuple[str, str, str]] = [
     ("recovery-for-xiaomi-devices", "TWRP for Xiaomi",     "Unofficial TWRP builds for Xiaomi/Redmi/POCO"),
     ("pbrp",                        "PitchBlack Recovery", "PitchBlack Recovery Project — TWRP fork"),
     ("shrp",                        "SkyHawk Recovery",    "SkyHawk Recovery Project — TWRP fork"),
+
 ]
 
 _CODENAME_RE     = re.compile(r'^[a-z][a-z0-9_]{2,24}$')
@@ -72,7 +60,6 @@ _SKIP_NAMES      = frozenset([
     'etc','opt','bin','sbin','sys','dev','run','stable','alpha','beta',
     'gsi','arm','arm64','x86','x86_64','tools','extras','common',
 ])
-
 
 def _parse_devices(html: str) -> list[str]:
     soup  = BeautifulSoup(html, "html.parser")
@@ -97,17 +84,15 @@ def _parse_devices(html: str) -> list[str]:
             devices.append(name)
     return list(dict.fromkeys(devices))
 
-
 async def _fetch_project(client: httpx.AsyncClient, sf_slug: str) -> list[str]:
     """Fetch device list from one SF project. Returns [] on any error."""
     try:
-        resp = await client.get(_SF_FILES.format(project=sf_slug))
+        resp = await client.get(_SF_FILES.replace("{project}", sf_slug))
         if resp.status_code == 200:
             return _parse_devices(resp.text)
     except Exception:
-        pass
+        return []
     return []
-
 
 async def get_sourceforge_roms() -> list[dict]:
     """
@@ -127,7 +112,6 @@ async def get_sourceforge_roms() -> list[dict]:
         follow_redirects=True,
     ) as client:
 
-        # Fetch all ROM projects concurrently
         rom_tasks = [_fetch_project(client, slug) for slug, *_ in _ROM_PROJECTS]
         rom_results = await asyncio.gather(*rom_tasks, return_exceptions=True)
 
@@ -152,7 +136,6 @@ async def get_sourceforge_roms() -> list[dict]:
                     "description":  description,
                 })
 
-        # Fetch all recovery projects concurrently
         rec_tasks = [_fetch_project(client, slug) for slug, *_ in _RECOVERY_PROJECTS]
         rec_results = await asyncio.gather(*rec_tasks, return_exceptions=True)
 

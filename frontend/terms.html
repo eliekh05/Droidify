@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#3dd68c" />
   <title>Terms — Droidify</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@reimujs/aos/dist/aos.css">
   <link rel="stylesheet" href="/css/style.css" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="manifest" href="/manifest.json" />
@@ -44,7 +44,7 @@
       <div class="card mb-4" data-aos="fade-up">
         <div class="card-content">
           <h2 class="title is-6">What Droidify is</h2>
-          <p style="color:var(--muted);line-height:1.75">
+          <p class="text-muted">
             Droidify is a free, read-only index of publicly available Android ROMs, devices, recoveries, and tools.
             All data is fetched live from third-party sources — LineageOS, OrangeFox, TWRP, GitHub, SourceForge, and others.
             Droidify does not host, distribute, or own any ROM or firmware files.
@@ -55,7 +55,7 @@
       <div class="card mb-4" data-aos="fade-up" data-aos-delay="60">
         <div class="card-content">
           <h2 class="title is-6">No warranties</h2>
-          <p style="color:var(--muted);line-height:1.75">
+          <p class="text-muted">
             Droidify is provided as-is, with no warranties of any kind — express or implied.
             We make no guarantee that data is accurate, current, or complete.
             Download links point to third-party sites. We are not responsible for the content,
@@ -67,7 +67,7 @@
       <div class="card mb-4" data-aos="fade-up" data-aos-delay="120">
         <div class="card-content">
           <h2 class="title is-6">Flash at your own risk</h2>
-          <p style="color:var(--muted);line-height:1.75">
+          <p class="text-muted">
             Flashing custom ROMs, recoveries, or modifying your device's software can void your warranty,
             brick your device, or cause data loss. Always back up your data before proceeding.
             Droidify is not liable for any damage resulting from following guides or downloading files
@@ -79,9 +79,9 @@
       <div class="card mb-4" data-aos="fade-up" data-aos-delay="180">
         <div class="card-content">
           <h2 class="title is-6">Third-party content</h2>
-          <p style="color:var(--muted);line-height:1.75">
+          <p class="text-muted">
             All ROM names, logos, and trademarks belong to their respective owners.
-            Droidify is an independent project and is not affiliated with LineageOS, Google, 
+            Droidify is an independent project and is not affiliated with LineageOS, Google,
             OrangeFox, TWRP, or any other project listed in the index.
           </p>
         </div>
@@ -90,8 +90,8 @@
       <div class="card mb-4" data-aos="fade-up" data-aos-delay="240">
         <div class="card-content">
           <h2 class="title is-6">Open source</h2>
-          <p style="color:var(--muted);line-height:1.75">
-            Droidify's source code is available on 
+          <p class="text-muted">
+            Droidify's source code is available on
             <a href="https://github.com/eliekh05/Droidify" target="_blank" rel="noopener" style="color:var(--accent)">GitHub</a>
             under the MIT license. You are free to fork, modify, and self-host it.
           </p>
@@ -114,9 +114,8 @@
   </div>
 </footer>
 <script src="/js/api.js"></script>
-<script src="/js/reveal.js"></script>
 <script src="/js/nav.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@reimujs/aos/dist/aos.umd.js"></script>
 <script>AOS.init({ duration: 500, easing: "ease-out-cubic", once: true, offset: 0 });</script>
 </body>
 </html>

@@ -1,23 +1,9 @@
-"""
-extended_roms.py — Extended ROM sources for devices with 0 ROMs.
-
-Sources discovered via deep research (May 2026):
-  crDroid net API     — 485 devices, JSON per codename
-  iodéOS API          — 52 devices, privacy ROM based on LineageOS
-  OmniROM             — ASUS ZenFone 7/8/9, Pixel 6/6 Pro
-  AXP.OS              — Fairphone 2/3/4/5, privacy-focused
-  MicroG LineageOS    — unofficial LineageOS with MicroG
-  Sailfish OS         — official Jolla devices + some ports
-  Replicant           — 100% free software Android
-  IodéOS              — privacy ROM with adblocker
-  Volunteer/XDA ROMs  — known per-device codename→ROM mappings
-"""
+"""Extended ROM sources — crDroid, iodéOS, OmniROM, AXP.OS, crDroid SF."""
 import asyncio
 import re
 from app.services.cache import get as cache_get, set as cache_set
 from app.services.http import get_client, fetch, fetch
 
-# ── crDroid API ───────────────────────────────────────────────────────────────
 # crDroid has a per-device JSON at: https://sourceforge.net/projects/crdroid/files/{codename}/
 # The OTA repo lists ALL official devices as JSON files
 async def _fetch_crdroid_ota() -> list[dict]:
@@ -33,11 +19,28 @@ async def _fetch_crdroid_ota() -> list[dict]:
         if not codenames:
             codenames = re.findall(r'id="([a-z][a-z0-9_]{2,24})"', r.text)
         skip = {"header","navbar","main","search","footer","content","root"}
+        # Extract crDroid version from page — look for version number in download links
+        crd_ver = "unknown"
+        ver_m = re.search(r"crdroid\.net/\w+/(\d+)", r.text)
+        if not ver_m:
+            # Try the SF listing version pattern
+            ver_m = re.search(r"/crdroid/files/\w+/(\d+)/", r.text)
+        if ver_m:
+            crd_ver = ver_m.group(1)
+        else:
+            # Fallback: check latest Android version from crdroid.net changelog
+            try:
+                ver_text = re.search(r"crDroid Android[\s]+([0-9.]+)", r.text)
+                if ver_text:
+                    crd_ver = ver_text.group(1).split(".")[0]
+            except Exception:
+                pass
+
         result = [{
-            "name": "crDroid", "codename": cn, "android_base": "16",
+            "name": "crDroid", "codename": cn, "android_base": crd_ver,
             "rom_type": "custom", "status": "active", "source": "crdroid_web",
-            "description": "Official crDroid — Android 16, LineageOS-based",
-            "download_url": f"https://crdroid.net/{cn}/16",
+            "description": f"Official crDroid — Android {crd_ver}, LineageOS-based",
+            "download_url": f"https://crdroid.net/{cn}/{crd_ver}",
             "official": True, "maintainer": "crDroid Team",
         } for cn in codenames if cn not in skip]
         await cache_set(ck, result, ttl=7200)
@@ -45,8 +48,6 @@ async def _fetch_crdroid_ota() -> list[dict]:
     except Exception:
         return []
 
-
-# ── iodéOS ────────────────────────────────────────────────────────────────────
 async def _fetch_iodeos() -> list[dict]:
     ck = "roms:iodeos"
     if c := await cache_get(ck): return c
@@ -77,8 +78,6 @@ async def _fetch_iodeos() -> list[dict]:
     except Exception:
         return []
 
-
-# ── OmniROM ───────────────────────────────────────────────────────────────────
 async def _fetch_omnirom() -> list[dict]:
     """OmniROM devices from dl.omnirom.org — no GitHub API."""
     ck = "roms:omnirom"
@@ -90,7 +89,7 @@ async def _fetch_omnirom() -> list[dict]:
                 return []
         codenames = re.findall(r'href="/([a-z][a-z0-9_]{2,24})/"', r.text)
         result = [{
-            "name": "OmniROM", "codename": cn, "android_base": "15",
+            "name": "OmniROM", "codename": cn, "android_base": "unknown",
             "rom_type": "custom", "status": "active", "source": "omnirom",
             "description": "AOSP-based ROM from OmniROM team",
             "download_url": f"https://dl.omnirom.org/{cn}/", "official": True,
@@ -100,108 +99,102 @@ async def _fetch_omnirom() -> list[dict]:
     except Exception:
         return []
 
-
-# ── AXP.OS (Fairphone specialist) ─────────────────────────────────────────────
 async def _fetch_axpos() -> list[dict]:
+    """Scrape AXP.OS device list from axpos.org/devices/ — no hardcoded devices."""
     ck = "roms:axpos"
     if c := await cache_get(ck): return c
-    # AXP.OS specialises in Fairphone + some Sony devices
-    # Their device list is static but well-known
-    result = [
-        {"name": "AXP.OS", "codename": "FP2",  "android_base": "10", "rom_type": "privacy",
-         "status": "active", "source": "axpos", "official": True,
-         "description": "Privacy-focused LineageOS fork for Fairphone",
-         "download_url": "https://axpos.org/devices/fairphone/fp2/"},
-        {"name": "AXP.OS", "codename": "FP3",  "android_base": "15", "rom_type": "privacy",
-         "status": "active", "source": "axpos", "official": True,
-         "description": "Privacy-focused LineageOS fork for Fairphone",
-         "download_url": "https://axpos.org/devices/fairphone/fp3/"},
-        {"name": "AXP.OS", "codename": "FP4",  "android_base": "15", "rom_type": "privacy",
-         "status": "active", "source": "axpos", "official": True,
-         "description": "Privacy-focused LineageOS fork for Fairphone",
-         "download_url": "https://axpos.org/devices/fairphone/fp4/"},
-        {"name": "AXP.OS", "codename": "FP5",  "android_base": "15", "rom_type": "privacy",
-         "status": "active", "source": "axpos", "official": True,
-         "description": "Privacy-focused LineageOS fork for Fairphone",
-         "download_url": "https://axpos.org/devices/fairphone/fp5/"},
-        # Sony devices
-        {"name": "AXP.OS", "codename": "xz2c", "android_base": "15", "rom_type": "privacy",
-         "status": "active", "source": "axpos", "official": True,
-         "description": "AXP.OS for Sony Xperia XZ2 Compact",
-         "download_url": "https://axpos.org/devices/sony/xz2c/"},
-        {"name": "AXP.OS", "codename": "discovery", "android_base": "15", "rom_type": "privacy",
-         "status": "active", "source": "axpos", "official": True,
-         "description": "AXP.OS for Sony Xperia XZ3",
-         "download_url": "https://axpos.org/devices/sony/discovery/"},
-    ]
-    await cache_set(ck, result, ttl=86400)
-    return result
+    try:
+        async with get_client() as client:
+            r = await fetch(client, "https://axpos.org/")
+            if not r or r.status_code != 200:
+                return []
+        from bs4 import BeautifulSoup as _BS
+        soup = _BS(r.text, "html.parser")
+        result = []
+        seen = set()
+        for a in soup.find_all("a", href=True):
+            href = a["href"]
+            # Pattern: /devices/{brand}/{codename}/
+            m = re.match(r"^/devices/([a-z][a-z0-9]+)/([a-zA-Z][a-zA-Z0-9_]{1,30})/?$", href)
+            if not m:
+                continue
+            brand, codename = m.group(1), m.group(2)
+            if codename in seen or brand in ("changelogs",):
+                continue
+            seen.add(codename)
+            result.append({
+                "name":         "AXP.OS",
+                "codename":     codename,
+                "android_base": "unknown",
+                "rom_type":     "privacy",
+                "status":       "active",
+                "source":       "axpos",
+                "official":     True,
+                "description":  f"AXP.OS privacy ROM for {a.get_text(strip=True)}",
+                "download_url": f"https://axpos.org{href}",
+                "source_url":   "https://axpos.org/devices/",
+            })
+        await cache_set(ck, result, ttl=43200)
+        return result
+    except Exception:
+        return []
 
-
-# ── Known device→ROM mappings from research ───────────────────────────────────
 # These are devices confirmed to have ROMs via XDA/wiki research
 # but not covered by automated scraping
-_KNOWN_ROMS: list[dict] = [
-    # Samsung Galaxy A series — unofficial LineageOS confirmed on XDA
-    {"name":"LineageOS","codename":"a51",    "android_base":"13","rom_type":"custom","status":"active",
-     "source":"unofficial_xda","description":"Unofficial LineageOS 20 for Galaxy A51",
-     "download_url":"https://xdaforums.com/f/samsung-galaxy-a51-roms-kernels-recoveries-ot.9859/"},
-    {"name":"LineageOS","codename":"a53x",   "android_base":"15","rom_type":"custom","status":"active",
-     "source":"unofficial_xda","description":"Unofficial LineageOS for Galaxy A53 5G",
-     "download_url":"https://xdaforums.com/t/rom-15-unofficial-aosp-lineageos-for-galaxy-a53-5g.4757812/"},
-    {"name":"LineageOS","codename":"a33x",   "android_base":"16","rom_type":"custom","status":"active",
-     "source":"unofficial_xda","description":"Unofficial LineageOS 23 for Galaxy A33 5G",
-     "download_url":"https://xdaforums.com/t/rom-unofficial-16-lineageos-23-0-for-galaxy-a33-5g-a33x.4777385/"},
-    # Fairphone
-    {"name":"LineageOS","codename":"FP2",   "android_base":"18","rom_type":"custom","status":"eol",
-     "source":"lineageos_wiki","description":"LineageOS for Fairphone 2 (EOL)",
-     "download_url":"https://wiki.lineageos.org/devices/FP2/"},
-    {"name":"CalyxOS","codename":"FP4",     "android_base":"15","rom_type":"privacy","status":"active",
-     "source":"calyxos","description":"Official CalyxOS for Fairphone 4",
-     "download_url":"https://calyxos.org/install/fairphone/fp4/"},
-    {"name":"CalyxOS","codename":"FP5",     "android_base":"15","rom_type":"privacy","status":"active",
-     "source":"calyxos","description":"Official CalyxOS for Fairphone 5",
-     "download_url":"https://calyxos.org/install/fairphone/fp5/"},
-    # HTC confirmed LineageOS on XDA
-    {"name":"LineageOS","codename":"pme",   "android_base":"11","rom_type":"custom","status":"eol",
-     "source":"unofficial_xda","description":"Unofficial LineageOS 18 for HTC 10",
-     "download_url":"https://community.e.foundation/t/unofficial-builds-htc-u11-ocn-htc-one-a9-hiae-htc-10-pme-htc-one-m8-m8d-for-e-os-r/52905"},
-    # ASUS ZenFone
-    {"name":"OmniROM","codename":"ASUS_AI2202","android_base":"15","rom_type":"custom","status":"active",
-     "source":"omnirom","description":"OmniROM for ASUS ZenFone 9",
-     "download_url":"https://dl.omnirom.org/ASUS_AI2202/"},
-    {"name":"OmniROM","codename":"ASUS_AI2201","android_base":"15","rom_type":"custom","status":"active",
-     "source":"omnirom","description":"OmniROM for ASUS ZenFone 8",
-     "download_url":"https://dl.omnirom.org/ASUS_AI2201/"},
-    # Leeco
-    {"name":"LineageOS","codename":"s2",    "android_base":"11","rom_type":"custom","status":"eol",
-     "source":"unofficial_xda","description":"Unofficial LineageOS for LeEco Le 2",
-     "download_url":"https://xdaforums.com/f/leeco-le-2-roms-kernels-recoveries-other-dev.6429/"},
-    # Nubia
-    {"name":"LineageOS","codename":"nx511j","android_base":"10","rom_type":"custom","status":"eol",
-     "source":"unofficial_xda","description":"LineageOS for Nubia Z9 mini",
-     "download_url":"https://xdaforums.com/c/zte-nubia.6196/"},
-    # BQ
-    {"name":"LineageOS","codename":"krillin","android_base":"17","rom_type":"custom","status":"active",
-     "source":"lineageos_official","description":"Official LineageOS for BQ Aquaris X5 Plus",
-     "download_url":"https://download.lineageos.org/krillin"},
-]
 
+async def _fetch_crdroid_sf(client) -> list[dict]:
+    """
+    Fetch crDroid device list from SourceForge project file listing.
+    The SF project root page lists all device codename folders.
+    """
+    ck = "roms:crdroid_sf"
+    if c := await cache_get(ck): return c
+    try:
+        r = await fetch(client, "https://sourceforge.net/projects/crdroid/files/",
+                       headers={"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"})
+        if not r or r.status_code != 200:
+            return []
+        # SF lists folder names in the page
+        codenames = set(re.findall(
+            r'/projects/crdroid/files/([a-z][a-z0-9_]{2,24})/',
+            r.text
+        )) - {'latest', 'download', 'stats', 'OldReleases'}
+        result = []
+        for codename in codenames:
+            result.append({
+                "name":         "crDroid",
+                "codename":     codename,
+                "android_base": "unknown",
+                "rom_type":     "custom",
+                "status":       "active",
+                "source":       "crdroid_sf",
+                "description":  "crDroid Android — feature-rich LineageOS fork",
+                "download_url": f"https://sourceforge.net/projects/crdroid/files/{codename}/",
+                "source_url":   "https://crdroid.net/",
+                "official":     True,
+            })
+        await cache_set(ck, result, ttl=21600)
+        return result
+    except Exception:
+        return []
 
 async def get_extended_roms() -> list[dict]:
     """All extended ROM sources combined."""
     ck = "roms:extended_all"
     if c := await cache_get(ck): return c
 
+    async with get_client() as _ext_client:
+        crdroid_sf = await _fetch_crdroid_sf(_ext_client)
+
     sources = await asyncio.gather(
         _fetch_crdroid_ota(),
         _fetch_iodeos(),
         _fetch_omnirom(),
-        _fetch_axpos(),
         return_exceptions=True,
     )
+    sources = list(sources) + [crdroid_sf]
 
-    result: list[dict] = list(_KNOWN_ROMS)
+    result: list[dict] = []
     for source in sources:
         if isinstance(source, list):
             result.extend(source)

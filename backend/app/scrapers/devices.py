@@ -1,22 +1,10 @@
-"""Live device scraper — fetches from free public sources only.
-
-Sources (no auth, no payment required):
-  1. LineageOS Download API  — 281 codenames, branch info, download URLs
-  2. LineageOS Wiki search.json — device model names + manufacturer
-  3. LineageOS Wiki device page  — SoC, RAM, CPU, release date (parsed from HTML)
-  4. OrangeFox API           — 159 devices with OEM, model, recovery support
-  5. TWRP search.json        — 896 devices for recovery cross-reference
-"""
+"""Live device scraper — LineageOS API and Wiki, OrangeFox, TWRP."""
 import asyncio
 import re
-from typing import Any
 
-from bs4 import BeautifulSoup
-
-from app.services.cache import cache_key, get as cache_get, set as cache_set
+from app.services.cache import get as cache_get, set as cache_set
 from app.services.http import fetch, get_client
 
-# ── Source URLs ───────────────────────────────────────────────────────────────
 LOS_API        = "https://download.lineageos.org/api/v1/devices"
 LOS_WIKI_SRCH  = "https://wiki.lineageos.org/search.json"
 ORANGEFOX_API  = "https://api.orangefox.download/v3/devices/?per_page=500"
@@ -39,8 +27,6 @@ def _norm_oem(oem: str) -> str:
     key = oem.strip().lower()
     return _OEM_NORM.get(key, oem.strip().title())
 
-
-# ── LineageOS Download API ────────────────────────────────────────────────────
 async def _fetch_lineageos(client) -> dict[str, dict]:
     ck = "dev:los_api"
     cached = await cache_get(ck)
@@ -68,8 +54,6 @@ async def _fetch_lineageos(client) -> dict[str, dict]:
     await cache_set(ck, devices, ttl=3600)
     return devices
 
-
-# ── LineageOS Wiki search ─────────────────────────────────────────────────────
 async def _fetch_wiki(client) -> dict[str, dict]:
     ck = "dev:los_wiki"
     cached = await cache_get(ck)
@@ -96,8 +80,6 @@ async def _fetch_wiki(client) -> dict[str, dict]:
     await cache_set(ck, devices, ttl=3600)
     return devices
 
-
-# ── OrangeFox API ─────────────────────────────────────────────────────────────
 async def _fetch_orangefox(client) -> dict[str, dict]:
     ck = "dev:orangefox"
     cached = await cache_get(ck)
@@ -125,8 +107,6 @@ async def _fetch_orangefox(client) -> dict[str, dict]:
     await cache_set(ck, devices, ttl=3600)
     return devices
 
-
-# ── TWRP search ───────────────────────────────────────────────────────────────
 async def _fetch_twrp(client) -> dict[str, dict]:
     ck = "dev:twrp"
     cached = await cache_get(ck)
@@ -158,8 +138,6 @@ async def _fetch_twrp(client) -> dict[str, dict]:
     await cache_set(ck, devices, ttl=3600)
     return devices
 
-
-# ── Merge all sources ─────────────────────────────────────────────────────────
 async def _get_all_devices() -> dict[str, dict]:
     ck = "dev:merged"
     cached = await cache_get(ck)
@@ -219,8 +197,6 @@ async def _get_all_devices() -> dict[str, dict]:
     await cache_set(ck, merged, ttl=3600)
     return merged
 
-
-# ── Public API ────────────────────────────────────────────────────────────────
 async def get_devices(
     q: str | None = None,
     manufacturer: str | None = None,
@@ -263,11 +239,9 @@ async def get_devices(
         "devices": devices[offset: offset + limit],
     }
 
-
 async def get_device_by_codename(codename: str) -> dict | None:
     all_devices = await _get_all_devices()
     return all_devices.get(codename)
-
 
 # Keep backward compat alias
 get_device_detail = get_device_by_codename

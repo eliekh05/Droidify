@@ -14,9 +14,9 @@
       <div class="card">
         <div class="card-content">
           <p class="title is-6 mb-1">${esc(t.name)}</p>
-          ${t.description?`<p style="font-size:.82rem;color:var(--muted);margin:.3rem 0;line-height:1.5">${esc(t.description)}</p>`:''}
+          ${t.description?`<p style="font-size:.82rem;color:let(--muted);margin:.3rem 0;line-height:1.5">${esc(t.description)}</p>`:''}
           ${t.version?`<div class="card-codename">v${esc(t.version)}</div>`:''}
-          ${t.download_url?`<a href="${esc(t.download_url)}" target="_blank" rel="noopener" style="font-size:.78rem;color:var(--accent)">Download →</a>`:''}
+          ${t.download_url?`<a href="${esc(t.download_url)}" target="_blank" rel="noopener" style="font-size:.78rem;color:let(--accent)">Download →</a>`:''}
         </div>
       </div>
     </div>`).join('');

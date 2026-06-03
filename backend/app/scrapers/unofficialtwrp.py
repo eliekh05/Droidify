@@ -1,13 +1,4 @@
-"""
-unofficialtwrp.com scraper — WordPress REST API
-6,200+ posts covering unofficial TWRP builds for devices not in official TWRP.
-Covers: Tecno (985), Oppo/Realme (784), Xiaomi (437), Infinix (521),
-        Samsung (213), Motorola (81), Huawei (81), ZTE (79), and 70+ more brands.
-
-Each post = one device unofficial TWRP build.
-Uses WordPress REST API — no SourceForge, no scraping HTML.
-Fetches ALL pages concurrently (63 pages × 100 posts = ~6,200 entries).
-"""
+"""unofficialtwrp.com scraper — WordPress REST API, 6200+ unofficial TWRP builds."""
 import re
 import asyncio
 import httpx
@@ -52,15 +43,8 @@ _KNOWN_BRANDS = re.compile(
     re.IGNORECASE,
 )
 
-
 def _extract_codename(title: str, slug: str) -> str | None:
-    """
-    Extract device codename from post title or slug.
-    Priority:
-      1. Parenthesised token in title: "TWRP for Galaxy A52 (a52q)"
-      2. Bracket token in title: "TWRP [a52q] ..."
-      3. Slug after stripping TWRP/version/brand noise
-    """
+    """Extract Android codename from a WordPress post slug."""
     # 1. Parentheses — most reliable
     m = re.search(r'\(([a-z][a-z0-9_]{2,20})\)', title, re.IGNORECASE)
     if m:
@@ -83,7 +67,6 @@ def _extract_codename(title: str, slug: str) -> str | None:
 
     return None
 
-
 def _extract_manufacturer(categories: list[int], title: str) -> str:
     for cat_id in categories:
         if cat_id in _CAT_NAMES:
@@ -99,7 +82,6 @@ def _extract_manufacturer(categories: list[int], title: str) -> str:
             return brand
     return "Unknown"
 
-
 async def _fetch_page(client: httpx.AsyncClient, page: int) -> list[dict]:
     try:
         r = await client.get(
@@ -114,9 +96,8 @@ async def _fetch_page(client: httpx.AsyncClient, page: int) -> list[dict]:
         if r.status_code == 200:
             return r.json()
     except Exception:
-        pass
+        return []
     return []
-
 
 async def get_unofficialtwrp_devices() -> list[dict]:
     """Fetch ALL unofficial TWRP posts concurrently — all ~6,200 entries."""
@@ -133,7 +114,6 @@ async def get_unofficialtwrp_devices() -> list[dict]:
             headers=_HEADERS,
             follow_redirects=True,
         ) as client:
-            # Fetch page 1 to discover total page count
             resp = await client.get(
                 _API_BASE,
                 params={

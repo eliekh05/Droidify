@@ -70,18 +70,6 @@ a { transition: color 150ms ease; }
   padding: 0 1rem;
 }
 .navbar-brand .navbar-item .accent { color: var(--accent); }
-.navbar-item, .navbar-link {
-  color: var(--muted) !important;
-  font-size: .84rem;
-  font-weight: 500;
-  border-radius: 7px;
-  transition: color 180ms ease, background 180ms ease !important;
-  position: relative;
-}
-.navbar-item:hover, .navbar-link:hover {
-  background: var(--card) !important;
-  color: var(--text) !important;
-}
 .navbar-item.is-active {
   color: var(--accent) !important;
   background: transparent !important;
@@ -502,3 +490,21 @@ a { transition: color 150ms ease; }
   opacity: 1 !important;
   transform: none !important;
 }
+
+/* Content text helpers */
+.text-muted { color: var(--muted); line-height: 1.8; }
+.text-accent { color: var(--accent); }
+.section-label { color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 1rem; }
+.section-label.mt { margin-top: 2rem; }
+
+/* openapi.html endpoint explorer */
+.op-meta { color:var(--muted);font-size:.82rem;margin-bottom:.25rem }
+.op-path { font-family:var(--mono);color:var(--accent);font-size:.9rem }
+.op-tag-bar { display:flex;gap:1rem;align-items:center;flex-wrap:wrap }
+.op-param-row { display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin-bottom:.75rem }
+.op-badge { font-weight:700;font-size:.8rem;padding:.3rem .65rem }
+.op-mono { font-family:var(--mono);color:var(--accent);font-size:.9rem;font-weight:600 }
+.op-response { background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.75rem;margin-top:.5rem;overflow-x:auto;font-size:.78rem;color:var(--text);font-family:var(--mono) }
+.op-type { color:var(--info);font-size:.78rem;font-family:var(--mono) }
+.op-desc { color:var(--muted);font-size:.85rem }
+.op-toggle { color:var(--muted);font-size:.8rem;cursor:pointer;user-select:none;margin-top:.25rem }

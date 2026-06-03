@@ -1,11 +1,5 @@
-"""
-GSI (Generic System Image) ROM scraper.
-Fetches live release data from GitHub Releases API.
-GSI ROMs run on ANY Android 8.0+ Treble-compatible device.
-Zero hardcoded data — all sourced live.
-"""
+"""GSI device scraper — generic Treble-compatible device entries."""
 import asyncio
-import re
 from ..services.cache import get as cache_get, set as cache_set
 from ..services.http import get_client
 
@@ -33,7 +27,6 @@ _AOSP_GSI = {
     "type":        "rom",
     "description": "Official AOSP Generic System Image for Treble-compatible devices",
 }
-
 
 async def _fetch_gh_latest(client, owner: str, repo: str, label: str, codename: str) -> dict | None:
     """Fetch latest release info from GitHub Releases API."""
@@ -67,7 +60,6 @@ async def _fetch_gh_latest(client, owner: str, repo: str, label: str, codename: 
         }
     except Exception:
         return None
-
 
 async def get_gsi_roms() -> list[dict]:
     ck = "roms:gsi"

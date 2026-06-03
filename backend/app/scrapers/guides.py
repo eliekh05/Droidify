@@ -1,13 +1,4 @@
-"""
-guides.py — Flashing, rooting and modding guides.
-
-Sources (free, no auth):
-  LineageOS Wiki  — install + upgrade guides per device (structured HTML)
-  GrapheneOS      — install guide for supported Pixels
-  Magisk Docs     — universal root guide
-  KernelSU Docs   — kernel-based root guide
-  APatch Docs     — alternative root guide
-"""
+"""Flashing, rooting, and modding guides — LineageOS Wiki, GrapheneOS, universal guides."""
 import asyncio
 import re
 from bs4 import BeautifulSoup
@@ -27,7 +18,6 @@ _GOS_DEVICES = frozenset([
     "bluejay","oriole","raven",
 ])
 
-
 def _extract_steps(soup: BeautifulSoup) -> list[str]:
     """Extract ordered steps from wiki HTML."""
     steps = []
@@ -39,7 +29,6 @@ def _extract_steps(soup: BeautifulSoup) -> list[str]:
                 steps.append(text[:300])
     return steps[:20]  # cap at 20 steps
 
-
 def _extract_notes(soup: BeautifulSoup) -> str:
     """Extract warnings/prerequisites from wiki HTML."""
     notes = []
@@ -49,11 +38,10 @@ def _extract_notes(soup: BeautifulSoup) -> str:
             notes.append(text[:200])
     return " ".join(notes[:3])
 
-
 async def _fetch_los_guide(client, codename: str, guide_type: str) -> dict | None:
     """Fetch and parse a LineageOS wiki guide page."""
-    url = LOS_INSTALL.format(codename=codename) if guide_type == "install" \
-          else LOS_UPGRADE.format(codename=codename)
+    url = LOS_INSTALL.replace("{codename}", codename) if guide_type == "install" \
+          else LOS_UPGRADE.replace("{codename}", codename)
     try:
         resp = await fetch(client, url)
         if not resp or resp.status_code != 200:
@@ -75,7 +63,6 @@ async def _fetch_los_guide(client, codename: str, guide_type: str) -> dict | Non
         }
     except Exception:
         return None
-
 
 async def get_guides_for_device(
     codename: str,
@@ -168,7 +155,6 @@ async def get_guides_for_device(
 
     await cache_set(ck, guides, ttl=3600)
     return guides
-
 
 async def get_all_guides(limit: int = 50, offset: int = 0) -> dict:
     """Return a list of generic guides not tied to a specific device."""

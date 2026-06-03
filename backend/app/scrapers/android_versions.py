@@ -1,20 +1,4 @@
-"""Android version history — fetched live from apilevels.com with Wikipedia fallback.
-
-Primary:  https://apilevels.com  (Erik Belinski, open-source, free, no auth)
-Fallback: https://en.wikipedia.org/wiki/Android_version_history
-Static:   Built-in known-good data used if both live sources fail.
-
-apilevels.com table structure (6 columns, heavy rowspan):
-  Col 0: Android label  "Android 15" or "Android 4"   [rowspan'd across sub-rows]
-  Col 1: API level      "Level 35" or "Level 27 Android 8.1"
-  Col 2: Version code   "VANILLA_ICE_CREAM"
-  Col 3: Codename       "Vanilla Ice Cream"            [rowspan'd]
-  Col 4: Cumulative %   "34.4%"                        [rowspan'd]
-  Col 5: Year           "2024" / "TBD"                 [rowspan'd]
-
-Sub-version rows have fewer cells when rowspan'd cells are absent.
-We determine layout by: does first cell start with "Android"?
-"""
+"""Android version history — live from apilevels.com, Wikipedia fallback, static fallback."""
 import re
 from html import unescape
 
@@ -64,14 +48,12 @@ _MONTH_MAP = {
     "september":"09","october":"10","november":"11","december":"12",
 }
 
-
 def _ct(cell) -> str:
     """Clean cell text — strip <style> and <sup> tags, collapse whitespace."""
     for tag in cell.find_all(["style", "sup"]):
         tag.decompose()
     t = unescape(cell.get_text(separator=" ", strip=True))
     return re.sub(r"\s{2,}", " ", t).strip()
-
 
 def _version_code(raw: str) -> str | None:
     """Extract first valid UPPER_SNAKE_CASE version code from cell text."""
@@ -84,20 +66,11 @@ def _version_code(raw: str) -> str | None:
     valid = [c for c in codes if c not in skip]
     return valid[0] if valid else None
 
-
 def _parse_date(year: int | None) -> str | None:
     return f"{year}-01-01" if year and year >= 2008 else None
 
-
 def _parse_status(api: int, is_beta: bool, release_year: int | None = None) -> str:
-    """Determine support status.
-    
-    Rules:
-    - Explicitly marked beta/preview → partial
-    - Year is TBD (None) → partial (not yet released)  
-    - API 34+ and actually released → active
-    - Everything older → unsupported
-    """
+    """Parse support status string to active/preview/discontinued."""
     if is_beta:
         return "partial"
     if release_year is None:
@@ -106,7 +79,6 @@ def _parse_status(api: int, is_beta: bool, release_year: int | None = None) -> s
     if api >= 34:
         return "active"
     return "unsupported"
-
 
 def _parse_row(texts: list[str]) -> list[dict] | None:
     """
@@ -124,7 +96,6 @@ def _parse_row(texts: list[str]) -> list[dict] | None:
     # Is the first cell an Android major version label?
     is_android = bool(re.match(r"^Android\s+\d", texts[0], re.I))
 
-    # Map cells to semantic columns
     if is_android:
         android_cell = texts[0]
         api_cell     = texts[1] if n > 1 else ""
@@ -197,7 +168,6 @@ def _parse_row(texts: list[str]) -> list[dict] | None:
     joined = " ".join(texts)
     is_beta = "BETA" in joined or "PREVIEW" in joined.upper()
 
-    # Build entries — one per API level in this row
     result = []
     for api in apis:
         ver = sub_versions.get(api, android_major)
@@ -211,7 +181,6 @@ def _parse_row(texts: list[str]) -> list[dict] | None:
             "is_beta":          is_beta,
         })
     return result
-
 
 def _parse_apilevels(html: str) -> list[dict]:
     """Parse apilevels.com HTML → list of Android version dicts."""
@@ -288,7 +257,6 @@ def _parse_apilevels(html: str) -> list[dict]:
             if e["cumulative_usage"] is None and last_usage:
                 e["cumulative_usage"] = last_usage
 
-        # Build final records
         for e in entries:
             api = e["api_level"]
             status = _parse_status(api, e["is_beta"], e.get("release_year"))
@@ -321,7 +289,6 @@ def _parse_apilevels(html: str) -> list[dict]:
             deduped.append(e)
 
     return deduped
-
 
 def _parse_wikipedia(html: str) -> list[dict]:
     """Wikipedia fallback parser — minimal, just needs to work."""
@@ -381,7 +348,6 @@ def _parse_wikipedia(html: str) -> list[dict]:
             seen.add(r["api_level"]); deduped.append(r)
     return deduped
 
-
 async def get_android_versions() -> list[dict]:
     """
     Fetch Android version history.
@@ -421,7 +387,6 @@ async def get_android_versions() -> list[dict]:
     versions = _static_fallback()
     await cache_set(ck, versions, ttl=600)
     return versions
-
 
 def _static_fallback() -> list[dict]:
     """Built-in last-resort data — Android 1.0 → 17 Preview."""

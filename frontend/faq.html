@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#3dd68c" />
   <title>FAQ — Droidify</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@reimujs/aos/dist/aos.css">
   <link rel="stylesheet" href="/css/style.css" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="manifest" href="/manifest.json" />
@@ -56,17 +56,15 @@
 
   <div class="columns">
     <div class="column is-9">
-
-      <!-- ABOUT DROIDIFY -->
-      <p class="title is-6" style="color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:1rem" data-aos="fade-up">About Droidify</p>
+      <p class="title is-6" class="section-label" data-aos="fade-up">About Droidify</p>
 
       <div class="card mb-4" data-aos="fade-up">
         <div class="card-content">
-          <h2 class="title is-5" style="color:var(--accent)">1. What is Droidify?</h2>
-          <p style="color:var(--muted);line-height:1.8">
-            A live index of Android custom ROMs, recoveries, devices, and tools. Think of it as a search engine 
-            specifically for the Android modding ecosystem — it pulls data in real time from over 20 public 
-            sources so you can find what's available for your device without hunting across a dozen different 
+          <h2 class="title is-5 text-accent">1. What is Droidify?</h2>
+          <p class="text-muted">
+            A live index of Android custom ROMs, recoveries, devices, and tools. Think of it as a search engine
+            specifically for the Android modding ecosystem — it pulls data in real time from over 20 public
+            sources so you can find what's available for your device without hunting across a dozen different
             websites. Nothing is hosted here. Nothing is hardcoded. It's just a very well-connected aggregator.
           </p>
         </div>
@@ -74,11 +72,11 @@
 
       <div class="card mb-4" data-aos="fade-up" data-aos-delay="40">
         <div class="card-content">
-          <h2 class="title is-5" style="color:var(--accent)">2. Who built this and why?</h2>
-          <p style="color:var(--muted);line-height:1.8">
-            A solo developer who got tired of the state of Android ROM discovery. Finding a working ROM 
-            for a specific device used to mean opening XDA threads from 2019, clicking dead SourceForge links, 
-            checking three different recovery project websites, and eventually stumbling on something that 
+          <h2 class="title is-5 text-accent">2. Who built this and why?</h2>
+          <p class="text-muted">
+            A solo developer who got tired of the state of Android ROM discovery. Finding a working ROM
+            for a specific device used to mean opening XDA threads from 2019, clicking dead SourceForge links,
+            checking three different recovery project websites, and eventually stumbling on something that
             might work — after hours of searching. Droidify is the tool that should have existed before all that.
           </p>
         </div>
@@ -86,10 +84,10 @@
 
       <div class="card mb-4" data-aos="fade-up" data-aos-delay="80">
         <div class="card-content">
-          <h2 class="title is-5" style="color:var(--accent)">3. Is Droidify free?</h2>
-          <p style="color:var(--muted);line-height:1.8">
-            Completely. No account, no subscription, no paywall, no ads. The source code is open on GitHub 
-            under the MIT license. You can self-host it on your own machine if you want — the whole thing 
+          <h2 class="title is-5 text-accent">3. Is Droidify free?</h2>
+          <p class="text-muted">
+            Completely. No account, no subscription, no paywall, no ads. The source code is open on GitHub
+            under the MIT license. You can self-host it on your own machine if you want — the whole thing
             runs in two Docker containers with a single install command.
           </p>
         </div>
@@ -97,12 +95,12 @@
 
       <div class="card mb-4" data-aos="fade-up" data-aos-delay="120">
         <div class="card-content">
-          <h2 class="title is-5" style="color:var(--accent)">4. Where does the data come from?</h2>
-          <p style="color:var(--muted);line-height:1.8">
-            Directly from the source. LineageOS Download API, OrangeFox API, TWRP's search index, 
-            crDroid's website, SourceForge file listings for 33+ ROM projects, GrapheneOS releases, 
-            postmarketOS on GitLab, DivestOS, CalyxOS, /e/OS, Ubuntu Touch, Kali NetHunter, 
-            and more. Everything is fetched live and cached for up to two hours. No data is manually 
+          <h2 class="title is-5 text-accent">4. Where does the data come from?</h2>
+          <p class="text-muted">
+            Directly from the source. LineageOS Download API, OrangeFox API, TWRP's search index,
+            crDroid's website, SourceForge file listings for 33+ ROM projects, GrapheneOS releases,
+            postmarketOS on GitLab, DivestOS, CalyxOS, /e/OS, Ubuntu Touch, Kali NetHunter,
+            and more. Everything is fetched live and cached for up to two hours. No data is manually
             entered or maintained.
           </p>
         </div>
@@ -110,26 +108,24 @@
 
       <div class="card mb-4" data-aos="fade-up" data-aos-delay="160">
         <div class="card-content">
-          <h2 class="title is-5" style="color:var(--accent)">5. Is Droidify affiliated with LineageOS, OrangeFox, or any ROM project?</h2>
-          <p style="color:var(--muted);line-height:1.8">
-            Not at all. Droidify is an independent project with no ties to any ROM team, recovery project, 
-            or Android community organization. It reads their public APIs the same way any browser would. 
+          <h2 class="title is-5 text-accent">5. Is Droidify affiliated with LineageOS, OrangeFox, or any ROM project?</h2>
+          <p class="text-muted">
+            Not at all. Droidify is an independent project with no ties to any ROM team, recovery project,
+            or Android community organization. It reads their public APIs the same way any browser would.
             Every trademark mentioned on this site belongs to its respective owner.
           </p>
         </div>
       </div>
-
-      <!-- DATA & DEVICES -->
-      <p class="title is-6" style="color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:1rem;margin-top:2rem" data-aos="fade-up">Data &amp; Devices</p>
+      <p class="title is-6" class="section-label mt" data-aos="fade-up">Data &amp; Devices</p>
 
       <div class="card mb-4" data-aos="fade-up">
         <div class="card-content">
-          <h2 class="title is-5" style="color:var(--accent)">6. Why does my device show zero ROMs?</h2>
-          <p style="color:var(--muted);line-height:1.8">
-            Several possibilities. Your device might only have builds hosted on Google Drive links in XDA threads 
-            — those can't be indexed automatically because there's no structured API. Or the cache is cold 
-            and the ROM hasn't appeared yet (wait two minutes after a fresh server start). Or your device 
-            genuinely has no active ROM support from any of the projects Droidify indexes. If you believe 
+          <h2 class="title is-5 text-accent">6. Why does my device show zero ROMs?</h2>
+          <p class="text-muted">
+            Several possibilities. Your device might only have builds hosted on Google Drive links in XDA threads
+            — those can't be indexed automatically because there's no structured API. Or the cache is cold
+            and the ROM hasn't appeared yet (wait two minutes after a fresh server start). Or your device
+            genuinely has no active ROM support from any of the projects Droidify indexes. If you believe
             a ROM exists that should be showing, open a GitHub issue with the codename and the project URL.
           </p>
         </div>
@@ -137,11 +133,11 @@
 
       <div class="card mb-4" data-aos="fade-up" data-aos-delay="40">
         <div class="card-content">
-          <h2 class="title is-5" style="color:var(--accent)">7. Why is the first page load slow?</h2>
-          <p style="color:var(--muted);line-height:1.8">
-            On a fresh server start, the backend fetches data from 20+ external sources simultaneously. 
-            This warmup takes roughly two minutes to complete. Once the cache is hot, every page and API 
-            call responds instantly. Subsequent restarts load from a saved cache on disk, so the warmup 
+          <h2 class="title is-5 text-accent">7. Why is the first page load slow?</h2>
+          <p class="text-muted">
+            On a fresh server start, the backend fetches data from 20+ external sources simultaneously.
+            This warmup takes roughly two minutes to complete. Once the cache is hot, every page and API
+            call responds instantly. Subsequent restarts load from a saved cache on disk, so the warmup
             is much faster. The slowness you see is a one-time cost per deployment, not an ongoing issue.
           </p>
         </div>
@@ -149,11 +145,11 @@
 
       <div class="card mb-4" data-aos="fade-up" data-aos-delay="80">
         <div class="card-content">
-          <h2 class="title is-5" style="color:var(--accent)">8. How often is the data updated?</h2>
-          <p style="color:var(--muted);line-height:1.8">
-            Every two hours for most sources. ROM indexes, recovery lists, and device data are all cached 
-            with a two-hour TTL. Stock firmware links (SamFW) are cached for 24 hours since they change 
-            rarely. If a new ROM build was released an hour ago, it might not appear yet — but it will 
+          <h2 class="title is-5 text-accent">8. How often is the data updated?</h2>
+          <p class="text-muted">
+            Every two hours for most sources. ROM indexes, recovery lists, and device data are all cached
+            with a two-hour TTL. Stock firmware links (SamFW) are cached for 24 hours since they change
+            rarely. If a new ROM build was released an hour ago, it might not appear yet — but it will
             on the next cache refresh.
           </p>
         </div>
@@ -161,12 +157,12 @@
 
       <div class="card mb-4" data-aos="fade-up" data-aos-delay="120">
         <div class="card-content">
-          <h2 class="title is-5" style="color:var(--accent)">9. Can I trust the download links?</h2>
-          <p style="color:var(--muted);line-height:1.8">
-            Droidify links to the official download pages of each ROM project — SourceForge, the ROM's 
-            own website, OrangeFox's CDN, TWRP's server. We don't proxy, mirror, or modify anything. 
-            That said, always verify the SHA256 checksum of what you download against what the project 
-            publishes. The source name is shown next to every link so you always know exactly where 
+          <h2 class="title is-5 text-accent">9. Can I trust the download links?</h2>
+          <p class="text-muted">
+            Droidify links to the official download pages of each ROM project — SourceForge, the ROM's
+            own website, OrangeFox's CDN, TWRP's server. We don't proxy, mirror, or modify anything.
+            That said, always verify the SHA256 checksum of what you download against what the project
+            publishes. The source name is shown next to every link so you always know exactly where
             you're going.
           </p>
         </div>
@@ -174,28 +170,26 @@
 
       <div class="card mb-4" data-aos="fade-up" data-aos-delay="160">
         <div class="card-content">
-          <h2 class="title is-5" style="color:var(--accent)">10. Can I request a missing ROM or device?</h2>
-          <p style="color:var(--muted);line-height:1.8">
-            Yes. Open an issue on 
+          <h2 class="title is-5 text-accent">10. Can I request a missing ROM or device?</h2>
+          <p class="text-muted">
+            Yes. Open an issue on
             <a href="https://github.com/eliekh05/Droidify/issues" target="_blank" rel="noopener" style="color:var(--accent)">GitHub</a>
-            with the device codename and the ROM project's public download URL or API endpoint. 
-            If the project has a structured file listing or JSON API, it can be added as a scraper source. 
+            with the device codename and the ROM project's public download URL or API endpoint.
+            If the project has a structured file listing or JSON API, it can be added as a scraper source.
             Single-file Google Drive links or forum posts can't be indexed automatically.
           </p>
         </div>
       </div>
-
-      <!-- CUSTOM ROMs -->
-      <p class="title is-6" style="color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:1rem;margin-top:2rem" data-aos="fade-up">Custom ROMs</p>
+      <p class="title is-6" class="section-label mt" data-aos="fade-up">Custom ROMs</p>
 
       <div class="card mb-4" data-aos="fade-up">
         <div class="card-content">
-          <h2 class="title is-5" style="color:var(--accent)">11. What is a custom ROM?</h2>
-          <p style="color:var(--muted);line-height:1.8">
-            A complete replacement for your phone's operating system, built from Android's open source code 
-            by a community or team independent of your manufacturer. Custom ROMs can bring newer Android 
-            versions to devices the manufacturer abandoned, remove bloatware, add customization options, 
-            improve battery life, or offer privacy features not present in stock firmware. LineageOS, 
+          <h2 class="title is-5 text-accent">11. What is a custom ROM?</h2>
+          <p class="text-muted">
+            A complete replacement for your phone's operating system, built from Android's open source code
+            by a community or team independent of your manufacturer. Custom ROMs can bring newer Android
+            versions to devices the manufacturer abandoned, remove bloatware, add customization options,
+            improve battery life, or offer privacy features not present in stock firmware. LineageOS,
             crDroid, GrapheneOS, and /e/OS are some of the most well-known examples.
           </p>
         </div>
@@ -203,13 +197,13 @@
 
       <div class="card mb-4" data-aos="fade-up" data-aos-delay="40">
         <div class="card-content">
-          <h2 class="title is-5" style="color:var(--accent)">12. What is a GSI ROM?</h2>
-          <p style="color:var(--muted);line-height:1.8">
-            GSI stands for Generic System Image. It's a ROM build designed to run on any Android device 
-            that supports Project Treble — which is most phones launched since 2018. Instead of being 
-            compiled specifically for your device's hardware, a GSI uses generic drivers and relies on 
-            the device's vendor partition for hardware support. They're great for testing or running on 
-            devices with no device-specific ROM available, but may have hardware quirks like a broken 
+          <h2 class="title is-5 text-accent">12. What is a GSI ROM?</h2>
+          <p class="text-muted">
+            GSI stands for Generic System Image. It's a ROM build designed to run on any Android device
+            that supports Project Treble — which is most phones launched since 2018. Instead of being
+            compiled specifically for your device's hardware, a GSI uses generic drivers and relies on
+            the device's vendor partition for hardware support. They're great for testing or running on
+            devices with no device-specific ROM available, but may have hardware quirks like a broken
             camera or missing fingerprint support.
           </p>
         </div>
@@ -217,13 +211,13 @@
 
       <div class="card mb-4" data-aos="fade-up" data-aos-delay="80">
         <div class="card-content">
-          <h2 class="title is-5" style="color:var(--accent)">13. What's the difference between official and unofficial builds?</h2>
-          <p style="color:var(--muted);line-height:1.8">
-            An official build is maintained by the ROM project itself — it goes through their review 
-            process, gets listed on their download page, and typically receives ongoing OTA updates. 
-            An unofficial build is made by an individual developer outside of the project, often for 
-            devices the project doesn't officially support. Unofficial builds can be excellent, but 
-            they may be abandoned, less tested, or missing features. Always check when a build was 
+          <h2 class="title is-5 text-accent">13. What's the difference between official and unofficial builds?</h2>
+          <p class="text-muted">
+            An official build is maintained by the ROM project itself — it goes through their review
+            process, gets listed on their download page, and typically receives ongoing OTA updates.
+            An unofficial build is made by an individual developer outside of the project, often for
+            devices the project doesn't officially support. Unofficial builds can be excellent, but
+            they may be abandoned, less tested, or missing features. Always check when a build was
             last updated before flashing.
           </p>
         </div>
@@ -231,27 +225,25 @@
 
       <div class="card mb-4" data-aos="fade-up" data-aos-delay="120">
         <div class="card-content">
-          <h2 class="title is-5" style="color:var(--accent)">14. Will I lose my data when flashing a ROM?</h2>
-          <p style="color:var(--muted);line-height:1.8">
-            Almost certainly yes, at least on a clean install. Flashing a ROM typically requires wiping 
-            the data partition, which removes all your apps, settings, photos stored internally, and 
-            accounts. Back up everything to an external drive or cloud storage before you start. 
+          <h2 class="title is-5 text-accent">14. Will I lose my data when flashing a ROM?</h2>
+          <p class="text-muted">
+            Almost certainly yes, at least on a clean install. Flashing a ROM typically requires wiping
+            the data partition, which removes all your apps, settings, photos stored internally, and
+            accounts. Back up everything to an external drive or cloud storage before you start.
             Photos on an SD card are usually safe, but don't rely on it — back those up too.
           </p>
         </div>
       </div>
-
-      <!-- BOOTLOADER & SAFETY -->
-      <p class="title is-6" style="color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:1rem;margin-top:2rem" data-aos="fade-up">Bootloader &amp; Safety</p>
+      <p class="title is-6" class="section-label mt" data-aos="fade-up">Bootloader &amp; Safety</p>
 
       <div class="card mb-4" data-aos="fade-up">
         <div class="card-content">
-          <h2 class="title is-5" style="color:var(--accent)">15. Will flashing a ROM void my warranty?</h2>
-          <p style="color:var(--muted);line-height:1.8">
-            Almost certainly yes. Unlocking the bootloader is a prerequisite for flashing any custom ROM, 
-            and it permanently changes a flag in your device's firmware. On Samsung devices, this trips 
-            Knox — a hardware-level security flag that can never be reset, even if you restore stock 
-            firmware completely. Some manufacturers are more lenient than others, but in general: 
+          <h2 class="title is-5 text-accent">15. Will flashing a ROM void my warranty?</h2>
+          <p class="text-muted">
+            Almost certainly yes. Unlocking the bootloader is a prerequisite for flashing any custom ROM,
+            and it permanently changes a flag in your device's firmware. On Samsung devices, this trips
+            Knox — a hardware-level security flag that can never be reset, even if you restore stock
+            firmware completely. Some manufacturers are more lenient than others, but in general:
             once unlocked, your warranty is gone.
           </p>
         </div>
@@ -259,12 +251,12 @@
 
       <div class="card mb-4" data-aos="fade-up" data-aos-delay="40">
         <div class="card-content">
-          <h2 class="title is-5" style="color:var(--accent)">16. What is a bootloader and why does it need to be unlocked?</h2>
-          <p style="color:var(--muted);line-height:1.8">
-            The bootloader is firmware that runs before Android starts. It verifies that the operating 
-            system hasn't been tampered with before loading it. By default it only allows signed, 
-            manufacturer-approved software to run — which is why you can't just copy a custom ROM onto 
-            your phone and reboot. Unlocking it removes that signature check, letting you load any 
+          <h2 class="title is-5 text-accent">16. What is a bootloader and why does it need to be unlocked?</h2>
+          <p class="text-muted">
+            The bootloader is firmware that runs before Android starts. It verifies that the operating
+            system hasn't been tampered with before loading it. By default it only allows signed,
+            manufacturer-approved software to run — which is why you can't just copy a custom ROM onto
+            your phone and reboot. Unlocking it removes that signature check, letting you load any
             software you choose. The unlock process itself typically wipes your device.
           </p>
         </div>
@@ -272,14 +264,14 @@
 
       <div class="card mb-4" data-aos="fade-up" data-aos-delay="80">
         <div class="card-content">
-          <h2 class="title is-5" style="color:var(--accent)">17. My device bricked — what now?</h2>
-          <p style="color:var(--muted);line-height:1.8">
-            A soft brick (bootloop, stuck on logo, recovery won't boot) is usually fixable by flashing 
-            stock firmware via fastboot. A hard brick is rarer and means the device won't enter any 
-            recoverable mode at all. Most Qualcomm devices have an emergency download mode (EDL) 
-            accessible by holding specific buttons while plugging in USB — this can reflash the device 
-            even when nothing else works. MediaTek devices have a similar BROM mode. Search XDA for 
-            your exact model and the word "unbrick" — the community has documented procedures for 
+          <h2 class="title is-5 text-accent">17. My device bricked — what now?</h2>
+          <p class="text-muted">
+            A soft brick (bootloop, stuck on logo, recovery won't boot) is usually fixable by flashing
+            stock firmware via fastboot. A hard brick is rarer and means the device won't enter any
+            recoverable mode at all. Most Qualcomm devices have an emergency download mode (EDL)
+            accessible by holding specific buttons while plugging in USB — this can reflash the device
+            even when nothing else works. MediaTek devices have a similar BROM mode. Search XDA for
+            your exact model and the word "unbrick" — the community has documented procedures for
             almost every device.
           </p>
         </div>
@@ -287,29 +279,27 @@
 
       <div class="card mb-4" data-aos="fade-up" data-aos-delay="120">
         <div class="card-content">
-          <h2 class="title is-5" style="color:var(--accent)">18. What is a custom recovery and do I need one?</h2>
-          <p style="color:var(--muted);line-height:1.8">
-            A custom recovery (TWRP, OrangeFox, SHRP, PBRP) is a replacement for the minimal recovery 
-            environment that ships with your phone. It gives you a touchscreen interface for flashing 
-            zip files, creating and restoring full backups (NANDroid), wiping partitions, and mounting 
-            storage. You need one to flash most custom ROMs — though some ROMs (like GrapheneOS) have 
+          <h2 class="title is-5 text-accent">18. What is a custom recovery and do I need one?</h2>
+          <p class="text-muted">
+            A custom recovery (TWRP, OrangeFox, SHRP, PBRP) is a replacement for the minimal recovery
+            environment that ships with your phone. It gives you a touchscreen interface for flashing
+            zip files, creating and restoring full backups (NANDroid), wiping partitions, and mounting
+            storage. You need one to flash most custom ROMs — though some ROMs (like GrapheneOS) have
             their own web-based installer that doesn't require a custom recovery at all.
           </p>
         </div>
       </div>
-
-      <!-- MISC -->
-      <p class="title is-6" style="color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:1rem;margin-top:2rem" data-aos="fade-up">Miscellaneous</p>
+      <p class="title is-6" class="section-label mt" data-aos="fade-up">Miscellaneous</p>
 
       <div class="card mb-4" data-aos="fade-up">
         <div class="card-content">
-          <h2 class="title is-5" style="color:var(--accent)">19. What is root access and do I need it?</h2>
-          <p style="color:var(--muted);line-height:1.8">
-            Root access means having superuser (administrator) privileges over your own phone — 
-            the ability to read and write any file, install system-level modifications, run ad blockers 
-            at the network level, and generally do things the manufacturer decided you shouldn't be 
-            able to do. You don't need root to run a custom ROM — LineageOS for example works 
-            perfectly without it. But if you want to use Magisk, KernelSU, or Xposed-style mods, 
+          <h2 class="title is-5 text-accent">19. What is root access and do I need it?</h2>
+          <p class="text-muted">
+            Root access means having superuser (administrator) privileges over your own phone —
+            the ability to read and write any file, install system-level modifications, run ad blockers
+            at the network level, and generally do things the manufacturer decided you shouldn't be
+            able to do. You don't need root to run a custom ROM — LineageOS for example works
+            perfectly without it. But if you want to use Magisk, KernelSU, or Xposed-style mods,
             root is the prerequisite.
           </p>
         </div>
@@ -317,14 +307,14 @@
 
       <div class="card mb-4" data-aos="fade-up" data-aos-delay="40">
         <div class="card-content">
-          <h2 class="title is-5" style="color:var(--accent)">20. Will Google Pay and banking apps still work after flashing?</h2>
-          <p style="color:var(--muted);line-height:1.8">
-            It depends on the ROM and your setup. Google Pay and most banking apps use Play Integrity 
-            (formerly SafetyNet) to verify the device is unmodified. A stock-based ROM without root 
-            will usually pass. A ROM with root, or with an unlocked bootloader showing in the 
-            attestation, will often fail. Magisk has a hide feature that can sometimes bypass this 
-            check, but it's a moving target as Google tightens the requirements. GrapheneOS and 
-            CalyxOS both have good Play Integrity support. On LineageOS it varies by device and 
+          <h2 class="title is-5 text-accent">20. Will Google Pay and banking apps still work after flashing?</h2>
+          <p class="text-muted">
+            It depends on the ROM and your setup. Google Pay and most banking apps use Play Integrity
+            (formerly SafetyNet) to verify the device is unmodified. A stock-based ROM without root
+            will usually pass. A ROM with root, or with an unlocked bootloader showing in the
+            attestation, will often fail. Magisk has a hide feature that can sometimes bypass this
+            check, but it's a moving target as Google tightens the requirements. GrapheneOS and
+            CalyxOS both have good Play Integrity support. On LineageOS it varies by device and
             build. Check the ROM's own documentation before assuming banking will work.
           </p>
         </div>
@@ -348,9 +338,8 @@
   </div>
 </footer>
 <script src="/js/api.js"></script>
-<script src="/js/reveal.js"></script>
 <script src="/js/nav.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@reimujs/aos/dist/aos.umd.js"></script>
 <script>AOS.init({ duration: 500, easing: "ease-out-cubic", once: true, offset: 60 });</script>
 </body>
 </html>

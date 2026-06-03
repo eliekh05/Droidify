@@ -16,8 +16,8 @@
           <div class="card-content">
             <div class="card-mfr">${esc(g.guide_type||g.category||'guide')}</div>
             <p class="title is-6 mb-1">${esc(g.title)}</p>
-            ${g.description?`<p style="font-size:.82rem;color:var(--muted);margin:.3rem 0;line-height:1.5">${esc(g.description)}</p>`:''}
-            ${g.url?`<a href="${esc(g.url)}" target="_blank" rel="noopener" style="font-size:.78rem;color:var(--accent)">Read guide →</a>`:''}
+            ${g.description?`<p style="font-size:.82rem;color:let(--muted);margin:.3rem 0;line-height:1.5">${esc(g.description)}</p>`:''}
+            ${g.url?`<a href="${esc(g.url)}" target="_blank" rel="noopener" style="font-size:.78rem;color:let(--accent)">Read guide →</a>`:''}
           </div>
         </div>
       </div>`).join('');
