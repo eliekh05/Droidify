@@ -9,21 +9,21 @@
   const onTerms   = path.endsWith('terms.html')    || path === '/terms';
   const onNotRead = path.endsWith('not-read.html') || path === '/not-read';
   const exempt    = ['/terms.html', '/not-read.html', '/privacy.html'];
-  const isExempt  = exempt.some(p => path.endsWith(p));
+  const isExempt  = exempt.some(function (p) { return path.endsWith(p); });
 
-  // Punishment page — nothing interactive, just the back button
+  // Punishment page — nothing interactive
   if (onNotRead) return;
 
-  // terms.html — scroll gate only
+  // terms.html — scroll gate
   if (onTerms) {
     const bar     = document.getElementById('terms-agree-bar');
     const btn     = document.getElementById('terms-agree-btn');
     const lockMsg = document.getElementById('terms-lock-msg');
-    let   reached = false;
-
     const sentinel = document.getElementById('terms-end');
-    if (sentinel) {
-      const obs = new IntersectionObserver(entries => {
+    let   reached  = false;
+
+    if (sentinel && btn) {
+      const obs = new IntersectionObserver(function (entries) {
         if (entries[0].isIntersecting && !reached) {
           reached = true;
           btn.disabled = false;
@@ -35,16 +35,20 @@
       obs.observe(sentinel);
     }
 
-    btn.addEventListener('click', () => {
-      if (!reached) {
-        window.location.href = NOT_READ_URL;
-        return;
-      }
-      localStorage.setItem(AGREED_KEY, Date.now().toString());
-      window.location.href = '/';
-    });
+    if (btn) {
+      btn.addEventListener('click', function () {
+        if (!reached) {
+          window.location.href = NOT_READ_URL;
+          return;
+        }
+        localStorage.setItem(AGREED_KEY, Date.now().toString());
+        window.location.href = '/';
+      });
+    }
 
-    if (bar) setTimeout(() => bar.classList.add('terms-bar-visible'), 600);
+    if (bar) {
+      setTimeout(function () { bar.classList.add('terms-bar-visible'); }, 600);
+    }
     return;
   }
 

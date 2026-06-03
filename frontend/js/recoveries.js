@@ -26,7 +26,7 @@
                 <div class="card-mfr">${esc(r.recovery_type||'recovery')}</div>
                 <p class="title is-6 mb-1">${esc(r.model_name||r.codename)}</p>
                 <div class="card-codename">${esc(r.codename)}</div>
-                ${r.download_url?`<a href="${safeUrl(r.download_url)}" target="_blank" rel="noopener" style="font-size:.78rem;color:let(--accent)">Download →</a>`:''}
+                ${r.download_url?`<a href="${safeUrl(r.download_url)}" target="_blank" rel="noopener" style="font-size:.78rem;color:var(--accent)">Download →</a>`:''}
               </div>
             </div>
           </div>`).join('')

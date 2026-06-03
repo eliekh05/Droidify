@@ -49,8 +49,8 @@
                 <div class="card-mfr">${esc(rom.source||'custom')}</div>
                 <p class="title is-6 mb-1">${esc(rom.name)}</p>
                 ${rom.android_base?`<div class="card-codename">Android ${esc(rom.android_base)}</div>`:''}
-                ${rom.version_label?`<p style="font-size:.78rem;color:let(--muted)">${esc(rom.version_label)}</p>`:''}
-                ${dl?`<a href="${safeUrl(dl)}" target="_blank" rel="noopener" style="font-size:.78rem;color:let(--accent)">Download →</a>`:''}
+                ${rom.version_label?`<p style="font-size:.78rem;color:var(--muted)">${esc(rom.version_label)}</p>`:''}
+                ${dl?`<a href="${safeUrl(dl)}" target="_blank" rel="noopener" style="font-size:.78rem;color:var(--accent)">Download →</a>`:''}
               </div>
             </div>
           </div>`;
@@ -64,7 +64,7 @@
               <div class="card-content">
                 <div class="card-mfr">${esc(r.recovery_type||'recovery')}</div>
                 <p class="title is-6 mb-1">${esc(r.model_name||r.codename)}</p>
-                ${r.download_url?`<a href="${safeUrl(r.download_url)}" target="_blank" rel="noopener" style="font-size:.78rem;color:let(--accent)">Download →</a>`:''}
+                ${r.download_url?`<a href="${safeUrl(r.download_url)}" target="_blank" rel="noopener" style="font-size:.78rem;color:var(--accent)">Download →</a>`:''}
               </div>
             </div>
           </div>`
@@ -76,8 +76,8 @@
           <div class="card-content">
             <div class="card-mfr">Stock Firmware</div>
             <p class="title is-6 mb-1">${esc(f.model)}</p>
-            <p style="font-size:.82rem;color:let(--muted);margin:.3rem 0">${esc(f.description)}</p>
-            <a href="${safeUrl(f.download_url)}" target="_blank" rel="noopener" style="font-size:.78rem;color:let(--accent)">Download on SamFW →</a>
+            <p style="font-size:.82rem;color:var(--muted);margin:.3rem 0">${esc(f.description)}</p>
+            <a href="${safeUrl(f.download_url)}" target="_blank" rel="noopener" style="font-size:.78rem;color:var(--accent)">Download on SamFW →</a>
           </div>
         </div>
       </div>`
@@ -92,9 +92,9 @@
     main.innerHTML = `
       <div class="page-header" data-aos="fade-up">
         <div class="mb-3"><a href="/devices.html" class="button is-ghost">← Back</a></div>
-        <p style="font-size:.78rem;color:let(--muted);margin-bottom:.3rem">${esc(device.manufacturer||'')}</p>
+        <p style="font-size:.78rem;color:var(--muted);margin-bottom:.3rem">${esc(device.manufacturer||'')}</p>
         <h1 class="title">${esc(device.model_name||device.codename)}</h1>
-        <p style="font-family:let(--mono);color:let(--accent);font-size:.9rem">${esc(device.codename)}</p>
+        <p style="font-family:var(--mono);color:var(--accent);font-size:.9rem">${esc(device.codename)}</p>
         ${sources?`<div class="tags mt-3">${sources}</div>`:''}
       </div>
 
@@ -132,7 +132,7 @@
     if (!retry) {
       main.innerHTML = `<div style="padding:3rem 0;text-align:center">
         <div class="spinner"></div>
-        <p style="color:let(--muted)">Loading device data…</p>
+        <p style="color:var(--muted)">Loading device data…</p>
       </div>`;
     }
     try {
@@ -148,7 +148,7 @@
       main.innerHTML = `
         <div class="page-header">
           <h1 class="title">Could not load device</h1>
-          <p class="subtitle" style="color:let(--danger)">${esc(msg)}</p>
+          <p class="subtitle" style="color:var(--danger)">${esc(msg)}</p>
         </div>
         <button class="button is-primary mr-2" onclick="location.reload()">↺ Retry</button>
         <a href="/devices.html" class="button is-ghost">← Back to devices</a>`;
