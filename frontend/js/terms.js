@@ -29,7 +29,7 @@
           btn.classList.add('is-success');
           if (lockMsg) lockMsg.style.display = 'none';
         }
-      }, { threshold: 0.5 });
+      }, { threshold: 0.1 });
       obs.observe(sentinel);
     }
 
