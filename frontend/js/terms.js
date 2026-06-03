@@ -44,9 +44,7 @@
       });
     }
 
-    if (bar) {
-      setTimeout(function () { bar.classList.add('terms-bar-visible'); }, 600);
-    }
+    // bar is already visible via HTML class
     return;
   }
 
