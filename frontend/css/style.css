@@ -508,3 +508,405 @@ a { transition: color 150ms ease; }
 .op-type { color:var(--info);font-size:.78rem;font-family:var(--mono) }
 .op-desc { color:var(--muted);font-size:.85rem }
 .op-toggle { color:var(--muted);font-size:.8rem;cursor:pointer;user-select:none;margin-top:.25rem }
+
+/* ── Swagger UI reset ── */
+#swagger-ui,
+#swagger-ui * {
+  writing-mode: horizontal-tb !important;
+  text-orientation: mixed !important;
+}
+#swagger-ui .swagger-ui { color: var(--text); }
+#swagger-ui .info .title { color: var(--text); }
+#swagger-ui .info p,
+#swagger-ui .info li { color: var(--text); }
+#swagger-ui .opblock-tag { color: var(--text); }
+#swagger-ui input, #swagger-ui select { background: var(--surface); color: var(--text); border-color: var(--border); }
+#swagger-ui .scheme-container { background: var(--surface); }
+#swagger-ui .topbar { display: none; }
+#swagger-ui .opblock { border-color: var(--border); }
+
+/* ── Light mode support ── */
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg:        #f4f7fb;
+    --surface:   #ffffff;
+    --card:      #ffffff;
+    --card2:     #f0f4f9;
+    --border:    #dde3ec;
+    --text:      #111827;
+    --muted:     #6b7280;
+    --accent:    #059669;
+    --accent-dim: rgba(5,150,105,.10);
+    --accent-glow: rgba(5,150,105,.20);
+    --info:      #2563eb;
+    --warn:      #d97706;
+    --danger:    #dc2626;
+    --bulma-body-background-color: var(--bg);
+    --bulma-body-color: var(--text);
+  }
+}
+
+/* ── Guide steps ── */
+.guide-steps summary { cursor: pointer; user-select: none; }
+.guide-steps[open] summary { margin-bottom: .5rem; }
+.guide-ol { padding-left: 1.25rem; margin: 0; }
+.guide-ol li { font-size: .84rem; line-height: 1.6; margin-bottom: .3rem; color: var(--text); }
+.guide-notes { font-size: .8rem; color: var(--muted); margin-top: .5rem; font-style: italic; }
+.card-link { font-size: .82rem; color: var(--accent); text-decoration: none; display: inline-block; margin-top: .4rem; }
+.card-link:hover { text-decoration: underline; }
+.card-sub { font-size: .82rem; color: var(--muted); margin: .3rem 0; line-height: 1.5; }
+
+/* ── FAQ accordion ── */
+.faq-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: .75rem;
+  overflow: hidden;
+}
+.faq-item summary {
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: .95rem;
+  color: var(--text);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+  outline: none;
+}
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary::after {
+  content: '+';
+  font-size: 1.1rem;
+  color: var(--accent);
+  font-weight: 300;
+  flex-shrink: 0;
+}
+.faq-item[open] summary::after { content: '−'; }
+.faq-item[open] summary { color: var(--accent); }
+.faq-item > *:not(summary) {
+  padding: 0 1.25rem 1rem;
+  font-size: .88rem;
+  line-height: 1.65;
+  color: var(--muted);
+}
+.faq-item p + p { margin-top: .5rem; }
+.faq-item ul { padding-left: 1.25rem; margin: .4rem 0; }
+.faq-item ul li { margin-bottom: .25rem; }
+.faq-item code {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: .1rem .4rem;
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: .82rem;
+}
+.faq-item a { color: var(--accent); text-decoration: none; }
+.faq-item a:hover { text-decoration: underline; }
+
+/* ── Terms page ── */
+.mt-2 { margin-top: .75rem !important; }
+
+/* ── Terms page ── */
+.terms-danger-card {
+  border-left: 3px solid var(--danger) !important;
+}
+.terms-issue-list {
+  margin: .75rem 0 .75rem 1.25rem;
+  font-size: .88rem;
+  color: var(--muted);
+  line-height: 1.8;
+}
+.terms-issue-list li::marker { color: var(--danger); }
+.terms-tldr {
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  font-size: .88rem;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-top: 1.5rem;
+}
+.terms-tldr strong { color: var(--text); }
+.terms-link { color: var(--accent); text-decoration: none; }
+.terms-link:hover { text-decoration: underline; }
+
+/* ── Terms agree bar ── */
+.terms-agree-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--card);
+  border-top: 2px solid var(--border);
+  padding: 1rem 1.5rem;
+  z-index: 200;
+  transform: translateY(100%);
+  transition: transform .35s cubic-bezier(.22,1,.36,1);
+  box-shadow: 0 -4px 24px rgba(0,0,0,.4);
+}
+.terms-agree-bar.terms-bar-visible {
+  transform: translateY(0);
+}
+.terms-agree-inner {
+  max-width: 760px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .6rem;
+}
+.terms-lock-msg {
+  font-size: .85rem;
+  color: var(--muted);
+  text-align: center;
+  margin: 0;
+}
+#terms-agree-btn {
+  min-width: 280px;
+  font-weight: 600;
+  transition: background .25s, color .25s, border-color .25s;
+}
+#terms-agree-btn:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+#terms-agree-btn.is-success {
+  background: var(--accent);
+  color: #000;
+  border-color: var(--accent);
+}
+
+/* ── Not-read punishment page ── */
+.not-read-icon {
+  font-size: 3.5rem;
+  text-align: center;
+  margin-bottom: 1rem;
+  filter: grayscale(1);
+}
+.not-read-title {
+  text-align: center;
+  color: var(--danger) !important;
+  margin-bottom: 1.5rem !important;
+}
+.not-read-body {
+  font-size: .95rem;
+  line-height: 1.75;
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+.not-read-actions {
+  text-align: center;
+  margin: 2rem 0 1rem;
+}
+.not-read-note {
+  font-size: .78rem;
+  color: var(--muted);
+  text-align: center;
+  opacity: .7;
+  line-height: 1.5;
+}
+
+/* ── Terms owner bypass bar ── */
+.terms-auth-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 500;
+  background: #1a2a1a;
+  border-bottom: 2px solid var(--accent);
+  padding: .6rem 1.5rem;
+}
+.terms-auth-inner {
+  max-width: 760px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.terms-auth-badge {
+  font-size: .8rem;
+  color: var(--accent);
+  font-family: var(--mono);
+  font-weight: 600;
+}
+
+/* ── Not-read punishment page ── */
+.not-read-page { min-height: 100vh; display: flex; align-items: center; }
+.not-read-warning {
+  background: rgba(248,113,113,.08);
+  border: 1px solid var(--danger);
+  border-left: 4px solid var(--danger);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  font-size: .88rem;
+  color: var(--text);
+  line-height: 1.65;
+  margin: 1.25rem 0;
+}
+
+/* ── Punishment page secret hint ── */
+.not-read-secret-hint {
+  text-align: center;
+  color: var(--accent);
+  font-size: .9rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  padding: .75rem 1.25rem;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+}
+
+/* ── Layout helpers ── */
+.docs-top-bar { background:var(--card); border-bottom:1px solid var(--border); padding:.6rem 1rem; }
+.nr-container { max-width:640px; margin:auto; padding:3rem 1rem; }
+.privacy-list { color:var(--muted); padding-left:1.25rem; line-height:1.9; }
+.privacy-highlight { background:var(--card); border:1px solid var(--accent); color:var(--muted); }
+
+/* ── Theme switcher ── */
+[data-theme="light"] {
+  --bg:        #f4f7fb;
+  --surface:   #ffffff;
+  --card:      #ffffff;
+  --card2:     #f0f4f9;
+  --border:    #dde3ec;
+  --text:      #111827;
+  --muted:     #6b7280;
+  --accent:    #059669;
+  --accent-dim: rgba(5,150,105,.10);
+  --accent-glow: rgba(5,150,105,.20);
+  --info:      #2563eb;
+  --warn:      #d97706;
+  --danger:    #dc2626;
+  --bulma-body-background-color: var(--bg);
+  --bulma-body-color: var(--text);
+}
+[data-theme="dark"] {
+  --bg:          #0b0f14;
+  --surface:     #111820;
+  --card:        #141c26;
+  --card2:       #1a2333;
+  --border:      #1e2d40;
+  --text:        #e8eef5;
+  --muted:       #7a8fa6;
+  --accent:      #3dd68c;
+  --accent-dim:  rgba(61,214,140,.12);
+  --accent-glow: rgba(61,214,140,.25);
+  --info:        #60a5fa;
+  --warn:        #fbbf24;
+  --danger:      #f87171;
+  --bulma-body-background-color: var(--bg);
+  --bulma-body-color: var(--text);
+}
+
+.theme-switcher {
+  display: flex;
+  gap: .25rem;
+  align-items: center;
+}
+.theme-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: .8rem;
+  padding: .25rem .45rem;
+  line-height: 1;
+  transition: background .15s, color .15s, border-color .15s;
+  display: flex;
+  align-items: center;
+  gap: .2rem;
+}
+.theme-btn:hover {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.theme-btn.active {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* ── PWA install modal ── */
+#pwa-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity .25s ease;
+  pointer-events: none;
+}
+#pwa-modal.pwa-modal-visible {
+  opacity: 1;
+  pointer-events: all;
+}
+.pwa-modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(4px);
+}
+.pwa-modal-box {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2rem 1.75rem 1.5rem;
+  max-width: 360px;
+  width: calc(100% - 2rem);
+  text-align: center;
+  box-shadow: 0 24px 64px rgba(0,0,0,.4);
+  transform: translateY(8px);
+  transition: transform .25s ease;
+}
+#pwa-modal.pwa-modal-visible .pwa-modal-box {
+  transform: translateY(0);
+}
+.pwa-modal-icon {
+  font-size: 2.5rem;
+  margin-bottom: .75rem;
+  line-height: 1;
+}
+.pwa-modal-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: .6rem;
+}
+.pwa-modal-body {
+  font-size: .88rem;
+  color: var(--muted);
+  line-height: 1.65;
+  margin-bottom: 1.25rem;
+}
+.pwa-modal-body strong {
+  color: var(--text);
+  font-weight: 600;
+}
+.pwa-modal-close {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: .6rem 1.75rem;
+  font-size: .9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity .15s;
+  width: 100%;
+}
+.pwa-modal-close:hover { opacity: .88; }

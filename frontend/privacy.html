@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    (function(){
+      const t = localStorage.getItem('droidify_theme');
+      if (t && t !== 'system') document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Droidify privacy policy — no tracking, no cookies, no user data collected." />
@@ -17,7 +23,7 @@
 <body>
 <div id="connection-overlay"><div class="conn-spinner"></div><p>Checking connection…</p></div>
 <div id="offline-banner">⚠ You are offline — showing cached data</div>
-<nav class="navbar" role="navigation" aria-label="main navigation" style="position:sticky;top:0;z-index:100">
+<nav class="navbar" role="navigation" aria-label="main navigation">
   <div class="container">
     <div class="navbar-brand">
       <a href="/" class="droidify-logo">&#8203;<strong class="accent-text">Droid</strong>ify</a>
@@ -38,6 +44,7 @@
       <a href="/guides.html" class="navbar-item">Guides</a>
       </div>
       <div class="navbar-end">
+        <div class="navbar-item theme-switcher" id="theme-switcher"></div>
         <div class="navbar-item" id="pwa-install-wrap" style="display:none"></div>
         <div class="navbar-item">
           <a href="https://github.com/eliekh05/Droidify" class="button is-ghost" target="_blank" rel="noopener">
@@ -65,7 +72,7 @@
       <div class="card mb-4" data-aos="fade-up" data-aos-delay="80">
         <div class="card-content">
           <h2 class="title is-6">Data we do not collect</h2>
-          <ul style="color:var(--muted);padding-left:1.25rem;line-height:1.9">
+          <ul class="privacy-list">
             <li>No personal information</li><li>No cookies</li>
             <li>No analytics or tracking</li><li>No advertising</li>
             <li>No location data</li><li>No payment information</li>
@@ -78,7 +85,7 @@
           <p style="color:var(--muted)"><a href="https://github.com/eliekh05/Droidify/issues" target="_blank" rel="noopener" style="color:var(--accent)">GitHub Issues</a></p>
         </div>
       </div>
-      <div class="notification" style="background:var(--card);border:1px solid var(--accent);color:var(--muted)" data-aos="fade-up" data-aos-delay="200">
+      <div class="notification" class="privacy-highlight" data-aos="fade-up" data-aos-delay="200">
         Short version: Droidify collects nothing about you.
       </div>
     </div>

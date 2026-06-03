@@ -1,27 +1,12 @@
-# Python
 __pycache__/
-*.py[cod]
+*.pyc
 *.pyo
-.Python
 *.egg-info/
+dist/
 build/
-.eggs/
-
-# Environments
 .env
-.venv
-venv/
-ENV/
-
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# OS
+.env.local
+.env.production
+backend/app/private/owner.py
+app/private/owner.py
 .DS_Store
-Thumbs.db
-
-# Logs
-*.log

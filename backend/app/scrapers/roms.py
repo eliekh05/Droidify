@@ -5,6 +5,27 @@ import re
 from app.services.cache import get as cache_get, set as cache_set
 from app.services.http import fetch, get_client
 
+# API level → Android version string (live fallback table)
+_API_LEVEL_TO_ANDROID: dict[int, str] = {
+    16: "4.1", 17: "4.2", 18: "4.3", 19: "4.4", 20: "4.4W",
+    21: "5.0", 22: "5.1", 23: "6.0", 24: "7.0", 25: "7.1",
+    26: "8.0", 27: "8.1", 28: "9",   29: "10",  30: "11",
+    31: "12",  32: "12L", 33: "13",  34: "14",  35: "15",
+    36: "16",
+}
+
+def _api_to_android(val: str | int | None) -> str:
+    """Convert API level or version string to Android version string."""
+    if val is None:
+        return "unknown"
+    try:
+        level = int(str(val))
+        if level >= 16:
+            return _API_LEVEL_TO_ANDROID.get(level, str(level))
+        return str(val)
+    except (ValueError, TypeError):
+        return str(val) if val else "unknown"
+
 # Alias for backward compat
 cache_get = cache_get
 cache_set = cache_set
@@ -17,6 +38,25 @@ LOS_BRANCH_TO_ANDROID: dict[str, str] = {
 }
 
 _NORM = lambda s: re.sub(r'[-_ .]', '', (s or '').lower())
+
+# Variant alias table — Snapdragon/Exynos pairs and region suffix variants.
+# Devices that use different codenames for the same hardware (different SOC or region).
+# Source: LineageOS device tree — multiple codenames per device tree.
+_VARIANT_MAP: dict[str, list[str]] = {
+    # Samsung Snapdragon (qlte) ↔ Exynos (lte) — same physical device, two SOC variants
+    'dreamqlte':  ['dreamlte'],    # Galaxy S8
+    'dream2qlte': ['dream2lte'],   # Galaxy S8+
+    'greatqlte':  ['greatlte'],    # Galaxy Note 8
+    # Regional and carrier suffix variants — same device, different market identifier
+    'jflte':      ['jfltexx'],     # Galaxy S4 Snapdragon
+    'i9500':      ['ja3g', 'i9505'],  # Galaxy S4 Exynos
+    'kmini3g':    ['kminilte'],    # Galaxy K zoom
+    'gts28ltexx': ['gts28lte'],   # Galaxy Tab S2
+    'j7y17lte':   ['j7xelte'],    # Galaxy J7 (2017)
+    'j6primelte': ['j6lte'],      # Galaxy J6+
+    'a6lte':      ['a6plte'],     # Galaxy A6
+    'c5lte':      ['c5'],         # Galaxy C5
+}
 
 async def _roms_from_lineageos() -> list[dict]:
     """Fetch LineageOS builds from official download API.
@@ -84,7 +124,7 @@ async def _roms_from_grapheneos() -> list[dict]:
                         gos_ver = _gos_vm.group(1)
         except Exception:
             pass
-        result = [{"name":"GrapheneOS","codename":c,"android_base":gos_ver,
+        result = [{"name":"GrapheneOS","codename":c,"android_base":_api_to_android(gos_ver),
                    "source":"grapheneos","rom_type":"privacy","status":"active",
                    "download_url":f"https://grapheneos.org/install/web"} for c in codenames]
         await cache_set(ck, result, ttl=3600)
@@ -223,6 +263,9 @@ async def _build_lookup() -> dict[str, list[dict]]:
         _roms_from_divestos(),
         _roms_from_calyxos(),
         _roms_from_eos(),
+        get_ubports_devices(),
+        get_nethunter_devices(),
+        get_postmarketos_devices(),
         return_exceptions=True,
     )
 
@@ -330,19 +373,7 @@ async def get_roms_for_device(codename: str) -> list[dict]:
         return result
 
     # 2a. Variant map — Snapdragon/Exynos pairs + known codename aliases
-    _VARIANT_MAP = {
-        'dreamqlte':  ['dreamlte'],
-        'dream2qlte': ['dream2lte'],
-        'greatqlte':  ['greatlte'],
-        'jflte':      ['jfltexx'],
-        'i9500':      ['ja3g', 'i9505'],
-        'kmini3g':    ['kminilte'],
-        'gts28ltexx': ['gts28lte'],
-        'j7y17lte':   ['j7xelte'],
-        'j6primelte': ['j6lte'],
-        'a6lte':      ['a6plte'],
-        'c5lte':      ['c5'],
-    }
+    # variant aliases defined at module level
     if cn in _VARIANT_MAP:
         for alt in _VARIANT_MAP[cn]:
             result = lookup.get(alt) or lookup.get(_NORM(alt)) or []

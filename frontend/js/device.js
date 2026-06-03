@@ -1,6 +1,29 @@
 (function () {
   'use strict';
-  const esc = s => String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  const safeUrl = u => {
+    if (!u || typeof u !== 'string') return '';
+    const s = u.trim();
+    if (/^https?:\/\//i.test(s)) return s;
+    return '';
+  };
+
+  const tagClass = s => {
+    // Only allow known safe source names as CSS class suffixes
+    const safe = ['lineageos','twrp','orangefox','pbrp','shrp','grapheneos',
+                  'calyx','divestos','postmarketos','nethunter','eosbuilds',
+                  'customrombay','pixelexperience','samfw','unknown'];
+    const k = String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+    return safe.includes(k) ? `is-${k}` : 'is-default';
+  };
+  const esc = s => String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;
+// safeUrl: only allow http/https URLs — strips javascript:, data:, etc.
+  const safeUrl = u => {
+    if (!u) return '#';
+    const s = String(u).trim();
+    if (/^https?:\/\//i.test(s)) return s;
+    return '#';
+  };','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const main     = document.getElementById('device-main');
   const codename = new URLSearchParams(location.search).get('c');
 
@@ -8,7 +31,7 @@
     main.innerHTML = '<div class="page-header"><h1 class="title">No device specified</h1></div><a href="/devices.html" class="button is-primary">← Back to devices</a>';
     return;
   }
-  document.title = `${codename} — Droidify`;
+  document.title = `${esc(codename)} — Droidify`;
 
   function tagClass(s) {
     return ['lineageos','grapheneos'].includes(s) ? 'is-success'
@@ -27,7 +50,7 @@
                 <p class="title is-6 mb-1">${esc(rom.name)}</p>
                 ${rom.android_base?`<div class="card-codename">Android ${esc(rom.android_base)}</div>`:''}
                 ${rom.version_label?`<p style="font-size:.78rem;color:let(--muted)">${esc(rom.version_label)}</p>`:''}
-                ${dl?`<a href="${esc(dl)}" target="_blank" rel="noopener" style="font-size:.78rem;color:let(--accent)">Download →</a>`:''}
+                ${dl?`<a href="${safeUrl(dl)}" target="_blank" rel="noopener" style="font-size:.78rem;color:let(--accent)">Download →</a>`:''}
               </div>
             </div>
           </div>`;
@@ -41,7 +64,7 @@
               <div class="card-content">
                 <div class="card-mfr">${esc(r.recovery_type||'recovery')}</div>
                 <p class="title is-6 mb-1">${esc(r.model_name||r.codename)}</p>
-                ${r.download_url?`<a href="${esc(r.download_url)}" target="_blank" rel="noopener" style="font-size:.78rem;color:let(--accent)">Download →</a>`:''}
+                ${r.download_url?`<a href="${safeUrl(r.download_url)}" target="_blank" rel="noopener" style="font-size:.78rem;color:let(--accent)">Download →</a>`:''}
               </div>
             </div>
           </div>`
@@ -54,16 +77,16 @@
             <div class="card-mfr">Stock Firmware</div>
             <p class="title is-6 mb-1">${esc(f.model)}</p>
             <p style="font-size:.82rem;color:let(--muted);margin:.3rem 0">${esc(f.description)}</p>
-            <a href="${esc(f.download_url)}" target="_blank" rel="noopener" style="font-size:.78rem;color:let(--accent)">Download on SamFW →</a>
+            <a href="${safeUrl(f.download_url)}" target="_blank" rel="noopener" style="font-size:.78rem;color:let(--accent)">Download on SamFW →</a>
           </div>
         </div>
       </div>`
     ).join('');
 
     const links = [
-      device.wiki_url ? `<a href="${esc(device.wiki_url)}" target="_blank" rel="noopener" class="button is-primary mr-2 mb-2">LineageOS Wiki</a>` : '',
-      device.twrp_url ? `<a href="${esc(device.twrp_url)}" target="_blank" rel="noopener" class="button is-ghost mr-2 mb-2">TWRP</a>` : '',
-      device.orangefox_url ? `<a href="${esc(device.orangefox_url)}" target="_blank" rel="noopener" class="button is-ghost mr-2 mb-2">OrangeFox</a>` : '',
+      device.wiki_url ? `<a href="${safeUrl(device.wiki_url)}" target="_blank" rel="noopener" class="button is-primary mr-2 mb-2">LineageOS Wiki</a>` : '',
+      device.twrp_url ? `<a href="${safeUrl(device.twrp_url)}" target="_blank" rel="noopener" class="button is-ghost mr-2 mb-2">TWRP</a>` : '',
+      device.orangefox_url ? `<a href="${safeUrl(device.orangefox_url)}" target="_blank" rel="noopener" class="button is-ghost mr-2 mb-2">OrangeFox</a>` : '',
     ].join('');
 
     main.innerHTML = `
@@ -101,7 +124,7 @@
         <div>${links}</div>
       </section>`:''}
     `;
-    document.title = `${device.model_name||device.codename} — Droidify`;
+    document.title = `${esc(device.model_name||device.codename)} — Droidify`;
     if (window.AOS) AOS.refresh();
   }
 
@@ -121,7 +144,7 @@
     } catch(e) {
       const msg = e.message.includes('timed out')
         ? 'Loading timed out — the server is still warming up. Please try again.'
-        : e.message.includes('404') ? `Device "${codename}" not found.` : e.message;
+        : e.message.includes('404') ? `Device "${esc(codename)}" not found.` : e.message;
       main.innerHTML = `
         <div class="page-header">
           <h1 class="title">Could not load device</h1>

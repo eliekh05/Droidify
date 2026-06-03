@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    (function(){
+      const t = localStorage.getItem('droidify_theme');
+      if (t && t !== 'system') document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
   <meta name="description" content="Droidify Interactive API — browse and test all REST endpoints live.">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -137,7 +143,7 @@
 <div id="connection-overlay"><div class="conn-spinner"></div><p>Checking connection…</p></div>
 <div id="offline-banner">⚠ You are offline — showing cached data</div>
 
-<nav class="navbar" role="navigation" aria-label="main navigation" style="position:sticky;top:0;z-index:100">
+<nav class="navbar" role="navigation" aria-label="main navigation">
   <div class="container">
     <div class="navbar-brand">
       <a href="/" class="droidify-logo">&#8203;<strong class="accent-text">Droid</strong>ify</a>
@@ -157,6 +163,7 @@
         <a href="/docs" class="navbar-item is-active">API</a>
       </div>
       <div class="navbar-end">
+        <div class="navbar-item theme-switcher" id="theme-switcher"></div>
         <div class="navbar-item" id="pwa-install-wrap" style="display:none"></div>
         <div class="navbar-item">
           <a href="https://github.com/eliekh05/Droidify" class="button is-ghost" target="_blank" rel="noopener">
@@ -182,6 +189,7 @@
   </div>
 </footer>
 
+<script src="/js/terms.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
 <script src="/js/nav.js"></script>
 <script>

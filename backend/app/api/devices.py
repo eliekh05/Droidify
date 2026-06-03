@@ -1,5 +1,7 @@
 import asyncio
 import re
+
+_CODENAME_RE = re.compile(r'^[a-z0-9_-]{1,40}$')
 from fastapi import APIRouter, Query, HTTPException
 from app.scrapers.devices import get_devices, get_device_detail
 from app.scrapers.roms import get_roms_for_device, LOS_BRANCH_TO_ANDROID

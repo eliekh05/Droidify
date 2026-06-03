@@ -1,0 +1,101 @@
+name: Auto-close unsupported issues
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  auto-close:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+
+    steps:
+      - name: Check and close unsupported issues
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title  = context.payload.issue.title.toLowerCase();
+            const body   = (context.payload.issue.body || '').toLowerCase();
+            const text   = title + ' ' + body;
+
+            const triggers = [
+              'knox',
+              'warranty',
+              'voided',
+              'play protect',
+              'safetynet',
+              'bricked',
+              'brick',
+              'data loss',
+              'lost data',
+              'recover data',
+              'data recovery',
+              'data gone',
+              'my data',
+              'unbrick',
+              'un-brick',
+              'flash tool broke',
+              'bootloop',
+              '0x1',
+              'knox void',
+              'warranty void',
+              'device dead',
+              'phone dead',
+              'phone bricked',
+              'wont boot',
+              "won't boot",
+              'stuck on boot',
+              'bootloader loop',
+              'certification',
+              'banking app',
+              'banking apps',
+              'google pay',
+              'samsung pay',
+            ];
+
+            const matched = triggers.find(t => text.includes(t));
+            if (!matched) return;
+
+            await github.rest.issues.createComment({
+              owner:    context.repo.owner,
+              repo:     context.repo.repo,
+              issue_number: context.payload.issue.number,
+              body: [
+                "## This issue has been automatically closed",
+                "",
+                "Droidify is a read-only index. It does not flash anything, upload any files, or touch your device.",
+                "",
+                "Issues about the following are outside Droidify's scope and will always be closed immediately:",
+                "",
+                "- Tripped Knox counter or warranty void",
+                "- Failed Play Protect / SafetyNet certification",
+                "- Data loss from flashing",
+                "- Bricked device, bootloop, or device that won't boot",
+                "- Problems with a specific ROM, recovery, or firmware file",
+                "- Requests to recover data or un-brick a device",
+                "",
+                "**Who you should talk to:** the developer who made the ROM or recovery you flashed.",
+                "Find them on XDA Forums, their GitHub profile, or their Telegram channel.",
+                "They built the file. They know the device. They are the right people to help you.",
+                "",
+                "Droidify showed you a link. Every decision after that was yours.",
+                "",
+                "Read the [Terms of Use](https://github.com/eliekh05/Droidify/blob/main/frontend/terms.html) for the full explanation.",
+              ].join("\n"),
+            });
+
+            await github.rest.issues.update({
+              owner:  context.repo.owner,
+              repo:   context.repo.repo,
+              issue_number: context.payload.issue.number,
+              state:  'closed',
+              state_reason: 'not_planned',
+            });
+
+            await github.rest.issues.addLabels({
+              owner:  context.repo.owner,
+              repo:   context.repo.repo,
+              issue_number: context.payload.issue.number,
+              labels: ['auto-closed'],
+            });

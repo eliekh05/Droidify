@@ -28,6 +28,9 @@ services:
       - CORS_ORIGINS=*
       - SCRAPER_TIMEOUT=20
       - CACHE_DEFAULT_TTL=300
+      # Set OWNER_SECRET in your shell or CI environment — never hardcode it here.
+      # GitHub repo secret → passed through deploy workflow → container runtime.
+      - OWNER_SECRET=${OWNER_SECRET:-}
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request,os; urllib.request.urlopen('http://localhost:'+os.environ.get('PORT','8000')+'/api/health',timeout=8)"]
       interval: 30s

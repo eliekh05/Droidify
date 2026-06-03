@@ -1,28 +1,60 @@
 (function () {
   'use strict';
-  const esc=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const grid=document.getElementById('tools-grid'),input=document.getElementById('search-input'),btn=document.getElementById('search-btn');
-  let allTools=[];
+  const esc = s => String(s || '').replace(/[&<>"']/g, c =>
+    ({'&':'&amp;
+// safeUrl: only allow http/https URLs — strips javascript:, data:, etc.
+  const safeUrl = u => {
+    if (!u) return '#';
+    const s = String(u).trim();
+    if (/^https?:\/\//i.test(s)) return s;
+    return '#';
+  };','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-  api.tools().then(data=>{
-    allTools=data.tools||data;
+  const grid  = document.getElementById('tools-grid');
+  const input = document.getElementById('search-input');
+  const btn   = document.getElementById('search-btn');
+  let allTools = [];
+
+  api.tools().then(data => {
+    allTools = data.tools || data;
     render(allTools);
-  }).catch(e=>{grid.innerHTML=`<div class="column"><div class="error-state">${esc(e.message)}</div></div>`;});
+  }).catch(e => {
+    grid.innerHTML = `<div class="column"><div class="error-state">${esc(e.message)}</div></div>`;
+  });
 
-  function render(tools){
-    grid.innerHTML=tools.map((t,i)=>`<div class="column is-6-mobile is-4-tablet" data-aos="fade-up" data-aos-delay="${Math.min(i,6)*50}">
-      <div class="card">
-        <div class="card-content">
-          <p class="title is-6 mb-1">${esc(t.name)}</p>
-          ${t.description?`<p style="font-size:.82rem;color:let(--muted);margin:.3rem 0;line-height:1.5">${esc(t.description)}</p>`:''}
-          ${t.version?`<div class="card-codename">v${esc(t.version)}</div>`:''}
-          ${t.download_url?`<a href="${esc(t.download_url)}" target="_blank" rel="noopener" style="font-size:.78rem;color:let(--accent)">Download →</a>`:''}
+  function render(tools) {
+    if (!tools.length) {
+      grid.innerHTML = '<div class="column"><div class="empty-state">No tools found.</div></div>';
+      return;
+    }
+    grid.innerHTML = tools.map((t, i) => {
+      const ver    = t.latest_version || '';
+      const dlUrl  = (t.download_urls && t.download_urls[0]) || t.release_url || t.official_url || '';
+      const status = t.status === 'discontinued' ? '<span class="tag is-danger is-light ml-1">discontinued</span>' : '';
+      return `<div class="column is-6-mobile is-4-tablet" data-aos="fade-up" data-aos-delay="${Math.min(i,6)*50}">
+        <div class="card">
+          <div class="card-content">
+            <div class="card-mfr">${esc(t.category || '')}</div>
+            <p class="title is-6 mb-1">${esc(t.name)}${status}</p>
+            ${t.description ? `<p class="card-sub">${esc(t.description)}</p>` : ''}
+            ${ver ? `<div class="card-codename">${esc(ver)}</div>` : ''}
+            ${dlUrl ? `<a href="${esc(dlUrl)}" target="_blank" rel="noopener" class="card-link">Download →</a>` : ''}
+          </div>
         </div>
-      </div>
-    </div>`).join('');
-    if(window.AOS)AOS.refresh();
+      </div>`;
+    }).join('');
+    if (window.AOS) AOS.refresh();
   }
-  function doSearch(){const q=input.value.trim().toLowerCase();render(q?allTools.filter(t=>(t.name||'').toLowerCase().includes(q)||(t.description||'').toLowerCase().includes(q)):allTools);}
-  btn.addEventListener('click',doSearch);
-  input.addEventListener('input',doSearch);
+
+  function doSearch() {
+    const q = input.value.trim().toLowerCase();
+    render(q ? allTools.filter(t =>
+      (t.name || '').toLowerCase().includes(q) ||
+      (t.description || '').toLowerCase().includes(q) ||
+      (t.category || '').toLowerCase().includes(q)
+    ) : allTools);
+  }
+
+  btn.addEventListener('click', doSearch);
+  input.addEventListener('input', doSearch);
 })();

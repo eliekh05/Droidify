@@ -13,7 +13,7 @@ TOOL_REPOS: list[dict] = [
      "platforms": ["android"],   "status": "active"},
 
     {"name": "KernelSU",         "cat": "root",     "owner": "tiann",           "repo": "KernelSU",
-     "known_version": "v1.0.2",  "url": "https://kernelsu.org/",
+     "known_version": "v1.0.2",  "url": "https://github.com/tiann/KernelSU",
      "desc": "Kernel-based root for GKI kernels. Hides root at the kernel level.",
      "platforms": ["android"],   "status": "active"},
 
@@ -139,9 +139,16 @@ async def _fetch_sp_flash_tool(client) -> dict:
         r2 = await fetch(client, latest_article, headers={"User-Agent": "Mozilla/5.0"})
         dl_url = latest_article  # fallback
         if r2 and r2.status_code == 200:
-            zip_m = re.search(r'https://[^\s<>]+[.]zip', r2.text)
-            if zip_m:
-                dl_url = zip_m.group(1)
+            from bs4 import BeautifulSoup as _BS
+            _soup2 = _BS(r2.text, "html.parser")
+            for _a in _soup2.find_all("a", href=True):
+                if _a["href"].endswith(".zip") and "upload" in _a["href"]:
+                    dl_url = _a["href"]
+                    break
+            if dl_url == latest_article:
+                zip_m = re.search(r'https://[^"\'<>\s]+\.zip', r2.text)
+                if zip_m:
+                    dl_url = zip_m.group(0)
 
         result = {"download_url": dl_url, "version": version, "article_url": latest_article}
         await cache_set(ck, result, ttl=43200)

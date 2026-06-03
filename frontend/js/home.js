@@ -1,6 +1,13 @@
 (function () {
   'use strict';
-  const esc = s => String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const esc = s => String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;
+// safeUrl: only allow http/https URLs — strips javascript:, data:, etc.
+  const safeUrl = u => {
+    if (!u) return '#';
+    const s = String(u).trim();
+    if (/^https?:\/\//i.test(s)) return s;
+    return '#';
+  };','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
   // Hero search
   const heroInput = document.getElementById('hero-search');
@@ -43,7 +50,7 @@
       d.has_orangefox  ? '<span class="tag is-warning">OrangeFox</span>' : '',
     ].join('');
     return `<div class="column is-6-mobile is-4-tablet is-4-desktop" data-aos="fade-up" data-aos-delay="${delay}">
-      <div class="card" style="cursor:pointer" onclick="location.href='/device.html?c=${esc(d.codename)}'">
+      <div class="card" style="cursor:pointer" onclick="location.href='/device.html?c=' + encodeURIComponent(d.codename)">
         <div class="card-content">
           <div class="card-mfr">${esc(d.manufacturer||'Unknown')}</div>
           <p class="title is-6 mb-1">${esc(d.model_name||d.codename)}</p>
@@ -92,7 +99,7 @@
     const families = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0, 8);
     romFamEl.innerHTML = families.map(([name, count], i) =>
       `<div class="column is-6-mobile is-3-tablet" data-aos="fade-up" data-aos-delay="${i*50}">
-        <div class="card" style="cursor:pointer" onclick="location.href='/roms.html?q=${encodeURIComponent(name)}'">
+        <div class="card" style="cursor:pointer" onclick="location.href='/roms.html?q=' + encodeURIComponent(name)">
           <div class="card-content">
             <p class="title is-6 mb-1">${esc(name)}</p>
             <p style="color:let(--muted);font-size:.8rem">${count} build${count!==1?'s':''}</p>

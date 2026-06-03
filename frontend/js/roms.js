@@ -1,7 +1,14 @@
 (function () {
   'use strict';
   const LIMIT = 24;
-  const esc = s => String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const esc = s => String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;
+// safeUrl: only allow http/https URLs — strips javascript:, data:, etc.
+  const safeUrl = u => {
+    if (!u) return '#';
+    const s = String(u).trim();
+    if (/^https?:\/\//i.test(s)) return s;
+    return '#';
+  };','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const grid    = document.getElementById('rom-grid');
   const metaEl  = document.getElementById('results-meta');
   const paginEl = document.getElementById('pagination');
@@ -35,7 +42,7 @@
                 <p class="title is-6 mb-1">${esc(r.name)}</p>
                 <div class="card-codename">${esc(r.codename)}</div>
                 ${r.android_base?`<p style="font-size:.78rem;color:let(--muted)">Android ${esc(r.android_base)}</p>`:''}
-                ${r.download_url?`<a href="${esc(r.download_url)}" target="_blank" rel="noopener" style="font-size:.78rem;color:let(--accent)">Download →</a>`:''}
+                ${r.download_url?`<a href="${safeUrl(r.download_url)}" target="_blank" rel="noopener" style="font-size:.78rem;color:let(--accent)">Download →</a>`:''}
               </div>
             </div>
           </div>`).join('')

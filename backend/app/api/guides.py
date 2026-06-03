@@ -1,3 +1,7 @@
+import re
+
+_CODENAME_RE = re.compile(r"^[a-z0-9_-]{1,40}$")
+
 """
 guides.py — API endpoints for flashing, rooting, and resale guides.
 """
@@ -55,6 +59,8 @@ async def device_guides(
     ),
 ):
     """All guides for a specific device."""
+    if not _CODENAME_RE.match(codename):
+        raise HTTPException(status_code=400, detail="Invalid codename")
     device_specific = await get_guides_for_device(
         codename=codename,
         manufacturer=manufacturer,
