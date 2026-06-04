@@ -17,6 +17,11 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css" />
   <style>
     /* ── Reset Bulma conflicts inside Swagger UI ─────────────────────── */
+    /* Force horizontal text — Swagger sometimes inherits vertical writing mode */
+    #swagger-ui *, #swagger-ui .swagger-ui * {
+      writing-mode: horizontal-tb !important;
+      text-orientation: mixed !important;
+    }
     #swagger-ui * { box-sizing: border-box; }
 
     /* Bulma sets table display:table globally — breaks swagger's layout */
@@ -161,7 +166,6 @@
         <a href="/android.html" class="navbar-item">Android</a>
         <a href="/guides.html" class="navbar-item">Guides</a>
       <a href="/docs.html" class="navbar-item">API</a>
-        <a href="/docs" class="navbar-item is-active">API</a>
       </div>
       <div class="navbar-end">
         <div id="auth-wrap"></div>
