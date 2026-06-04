@@ -54,6 +54,6 @@ _PAGE = """<!DOCTYPE html>
 </html>"""
 
 
-@router.get("/not-read", include_in_schema=False)
+@router.get("", include_in_schema=False)
 async def not_read(request: Request):
     return HTMLResponse(content=_PAGE, status_code=200)

@@ -8,7 +8,9 @@ import os
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from fastapi import Request
 
-SECRET = os.environ.get("SESSION_SECRET", "")
+# SESSION_SECRET must be set in HF Spaces Secrets
+# Falls back to a fixed string so the app runs — set the secret for production
+SECRET = os.environ.get("SESSION_SECRET", "droidify-default-secret-change-in-hf")
 COOKIE = "droidify_session"
 MAX_AGE = 60 * 60 * 24 * 30  # 30 days
 
@@ -23,7 +25,7 @@ def set_session(response, data: dict) -> None:
         key=COOKIE,
         value=token,
         httponly=True,
-        secure=True,
+        secure=False,   # HF proxy handles TLS — inner request is HTTP
         samesite="lax",
         max_age=MAX_AGE,
         path="/",
