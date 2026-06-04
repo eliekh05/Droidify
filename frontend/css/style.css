@@ -906,3 +906,71 @@ a { transition: color 150ms ease; }
   width: 100%;
 }
 .pwa-modal-close:hover { opacity: .88; }
+
+.terms-check-label {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: .95rem;
+  color: var(--text);
+  cursor: pointer;
+  user-select: none;
+}
+.terms-check-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.terms-check-label input[type="checkbox"]:disabled {
+  cursor: not-allowed;
+  opacity: .4;
+}
+
+/* ── Terms checkbox ── */
+.terms-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  cursor: pointer;
+  font-size: .92rem;
+  color: var(--text);
+  user-select: none;
+}
+.terms-checkbox-label input[type="checkbox"] {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--accent);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.terms-agree-inner {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .75rem 1.5rem;
+}
+
+/* ── Terms agree checkbox ── */
+.terms-agree-label {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  cursor: not-allowed;
+  opacity: .45;
+  font-size: .95rem;
+  color: var(--text);
+  transition: opacity .25s, color .25s;
+  user-select: none;
+}
+.terms-agree-label.terms-label-active {
+  cursor: pointer;
+  opacity: 1;
+}
+.terms-agree-label input[type="checkbox"] {
+  width: 1.3rem;
+  height: 1.3rem;
+  accent-color: var(--accent);
+  cursor: inherit;
+  flex-shrink: 0;
+}

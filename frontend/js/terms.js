@@ -14,47 +14,51 @@
   if (onNotRead) return;
 
   if (onTerms) {
-    const btn     = document.getElementById('terms-agree-btn');
-    const lockMsg = document.getElementById('terms-lock-msg');
-    let   reached = false;
+    var check   = document.getElementById('terms-agree-check');
+    var lockMsg = document.getElementById('terms-lock-msg');
+    var label   = document.getElementById('terms-agree-label');
+    var reached = false;
 
-    // Disable via JS so click events always fire regardless of disabled state
-    if (btn) {
-      btn.disabled = true;
-    }
+    // Starts disabled — enabled only after scrolling to bottom
+    if (check) check.disabled = true;
+
+    // Add padding-bottom so page scrolls past the fixed bar
+    var bar = document.getElementById('terms-agree-bar');
+    var barH = bar ? bar.offsetHeight : 100;
+    document.body.style.paddingBottom = (barH + 16) + 'px';
 
     function unlock() {
       if (reached) return;
       reached = true;
-      if (btn) {
-        btn.disabled = false;
-        btn.classList.remove('is-light');
-        btn.classList.add('is-success');
-      }
-      if (lockMsg) lockMsg.style.display = 'none';
-      window.removeEventListener('scroll', checkScroll);
+      if (check) check.disabled = false;
+      if (lockMsg) lockMsg.textContent = 'Check the box to agree and continue.';
+      if (label) label.classList.add('terms-label-active');
     }
 
     function checkScroll() {
-      // MDN recommended pattern — tolerates rounding differences
       var remaining = document.documentElement.scrollHeight
                     - window.innerHeight
                     - window.scrollY;
-      if (remaining <= 2) unlock();
+      if (remaining <= 2) {
+        unlock();
+        window.removeEventListener('scroll', checkScroll);
+      }
     }
 
     window.addEventListener('scroll', checkScroll, { passive: true });
-    // Check immediately — unlocks if page is too short to scroll
     checkScroll();
 
-    if (btn) {
-      btn.addEventListener('click', function () {
+    if (check) {
+      check.addEventListener('change', function () {
         if (!reached) {
+          check.checked = false;
           window.location.href = NOT_READ_URL;
           return;
         }
-        localStorage.setItem(AGREED_KEY, Date.now().toString());
-        window.location.href = '/';
+        if (check.checked) {
+          localStorage.setItem(AGREED_KEY, Date.now().toString());
+          window.location.href = '/';
+        }
       });
     }
 

@@ -207,7 +207,6 @@
       Knox and warranty issues on GitHub are auto-closed.
     </div>
 
-    <div id="terms-end" style="height:120px;margin-top:1rem"></div>
 
   </div>
 </main>
@@ -226,11 +225,12 @@
 
 <div id="terms-agree-bar" class="terms-agree-bar terms-bar-visible">
   <div class="terms-agree-inner">
-    <p id="terms-lock-msg" class="terms-lock-msg">
-      ↓ Scroll to the bottom to unlock the agree button
-    </p>
-    <button id="terms-agree-btn" class="button is-medium is-light" disabled>
-      I have read and agreed to the Terms of Use
+    <label class="terms-checkbox-label" for="terms-agree-check">
+      <input type="checkbox" id="terms-agree-check" />
+      <span>I have read and understood the Terms of Use</span>
+    </label>
+    <button id="terms-agree-btn" class="button is-medium is-success" disabled>
+      Agree and Continue →
     </button>
   </div>
 </div>
