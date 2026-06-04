@@ -1,67 +1,110 @@
 'use strict';
 
-const CACHE_NAME = 'droidify-v1780608918';
-const STATIC_URLS  = [
-  '/',
-  '/index.html',
-  '/device.html',
-  '/faq.html',
-  '/terms.html',
-  '/privacy.html',
-  '/not-read',
+// Single persistent cache — never wiped, updated incrementally
+const CACHE = 'droidify';
+
+// URLs to pre-cache on install (only fetched if not already cached)
+const PRECACHE = [
   '/css/style.css',
   '/js/terms.js',
   '/js/nav.js',
   '/js/home.js',
   '/js/device.js',
   '/manifest.json',
+  '/favicon.svg',
 ];
 
-// Install — cache all static assets
-self.addEventListener('install', function (event) {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(function (cache) { return cache.addAll(STATIC_URLS); })
-      .then(function () { return self.skipWaiting(); })
-  );
-});
-
-// Activate — delete old caches
-self.addEventListener('activate', function (event) {
-  event.waitUntil(
-    caches.keys().then(function (keys) {
+// Install — cache any PRECACHE URLs not already stored
+self.addEventListener('install', function (e) {
+  e.waitUntil(
+    caches.open(CACHE).then(function (cache) {
       return Promise.all(
-        keys.filter(function (k) { return k !== CACHE_NAME; })
-            .map(function (k) { return caches.delete(k); })
+        PRECACHE.map(function (url) {
+          return cache.match(url).then(function (hit) {
+            if (!hit) return cache.add(url).catch(function () {});
+          });
+        })
       );
-    }).then(function () { return self.clients.claim(); })
+    }).then(function () { return self.skipWaiting(); })
   );
 });
 
-// Fetch — network first for API, cache first for assets
-self.addEventListener('fetch', function (event) {
-  const url = new URL(event.request.url);
+// Activate — claim clients, no cache deletion
+self.addEventListener('activate', function (e) {
+  e.waitUntil(self.clients.claim());
+});
 
-  // Always go to network for API calls
-  if (url.pathname.startsWith('/api/')) {
-    event.respondWith(fetch(event.request));
+// Fetch strategy:
+// API calls            → always network
+// HTML pages           → network first, cache fallback (always fresh content)
+// CSS/JS with ?v=      → cache first (version param busts when changed)
+// Everything else      → network first, update cache on success
+self.addEventListener('fetch', function (e) {
+  var url = new URL(e.request.url);
+
+  // Skip non-GET and cross-origin
+  if (e.request.method !== 'GET' || url.origin !== self.location.origin) return;
+
+  // API — always network
+  if (url.pathname.startsWith('/api/') || url.pathname === '/not-read') {
+    e.respondWith(fetch(e.request));
     return;
   }
 
-  // Cache first, fallback to network, then update cache
-  event.respondWith(
-    caches.match(event.request).then(function (cached) {
-      const networkFetch = fetch(event.request).then(function (response) {
-        if (response && response.status === 200 && response.type === 'basic') {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(function (cache) {
-            cache.put(event.request, clone);
-          });
+  // Static assets with version param — cache first, update in background
+  if (url.search.indexOf('v=') !== -1) {
+    e.respondWith(
+      caches.match(e.request).then(function (cached) {
+        if (cached) {
+          // Refresh in background
+          fetch(e.request).then(function (fresh) {
+            if (fresh && fresh.status === 200) {
+              caches.open(CACHE).then(function (c) { c.put(e.request, fresh); });
+            }
+          }).catch(function () {});
+          return cached;
         }
-        return response;
-      }).catch(function () { return cached; });
+        return fetch(e.request).then(function (fresh) {
+          if (fresh && fresh.status === 200) {
+            var clone = fresh.clone();
+            caches.open(CACHE).then(function (c) { c.put(e.request, clone); });
+          }
+          return fresh;
+        });
+      })
+    );
+    return;
+  }
 
-      return cached || networkFetch;
+  // HTML pages — network first, cache fallback
+  if (url.pathname.endsWith('.html') || url.pathname === '/' ||
+      !url.pathname.includes('.')) {
+    e.respondWith(
+      fetch(e.request).then(function (fresh) {
+        if (fresh && fresh.status === 200) {
+          var clone = fresh.clone();
+          caches.open(CACHE).then(function (c) { c.put(e.request, clone); });
+        }
+        return fresh;
+      }).catch(function () {
+        return caches.match(e.request).then(function (cached) {
+          return cached || caches.match('/');
+        });
+      })
+    );
+    return;
+  }
+
+  // Everything else — network first, update cache
+  e.respondWith(
+    fetch(e.request).then(function (fresh) {
+      if (fresh && fresh.status === 200) {
+        var clone = fresh.clone();
+        caches.open(CACHE).then(function (c) { c.put(e.request, clone); });
+      }
+      return fresh;
+    }).catch(function () {
+      return caches.match(e.request);
     })
   );
 });
