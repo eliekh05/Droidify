@@ -133,9 +133,6 @@
   }
 
   // ── Service worker ────────────────────────────────────────────────────────
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js').catch(function () {});
-  }
 
   // ── Theme switcher ────────────────────────────────────────────────────────
   const THEME_KEY = 'droidify_theme';

@@ -1040,3 +1040,25 @@ a { transition: color 150ms ease; }
 #watchlist-btn {
   transition: all .2s;
 }
+
+/* ── Navbar overflow fix — prevents GitHub button clipping ── */
+.navbar-end {
+  flex-shrink: 1;
+  min-width: 0;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0;
+}
+.navbar-end .navbar-item,
+.navbar-end > div,
+.navbar-end > a {
+  flex-shrink: 0;
+}
+.auth-signin span:last-child {
+  display: none;
+}
+@media (min-width: 1024px) {
+  .auth-signin span:last-child {
+    display: inline;
+  }
+}

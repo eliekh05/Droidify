@@ -1,37 +1,48 @@
 /**
- * Droidify API client
+ * Droidify API client — ES5 compatible
  * Same-origin fetch with AbortController timeout
  */
-const BASE = '';
+var BASE = '';
 
-async function get(path, params = {}, timeoutMs = 8000) {
-  const qs = new URLSearchParams(
-    Object.fromEntries(Object.entries(params).filter(([, v]) => v != null && v !== ''))
-  ).toString();
-  const url = `${BASE}/api${path}${qs ? '?' + qs : ''}`;
+function get(path, params, timeoutMs) {
+  params    = params    || {};
+  timeoutMs = timeoutMs || 8000;
 
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  var pairs = [];
+  Object.keys(params).forEach(function (k) {
+    if (params[k] != null && params[k] !== '') {
+      pairs.push(encodeURIComponent(k) + '=' + encodeURIComponent(params[k]));
+    }
+  });
+  var qs  = pairs.join('&');
+  var url = BASE + '/api' + path + (qs ? '?' + qs : '');
 
-  try {
-    const res = await fetch(url, { signal: ctrl.signal });
-    clearTimeout(timer);
-    if (!res.ok) throw new Error(`API ${res.status}: ${path}`);
-    return res.json();
-  } catch (e) {
-    clearTimeout(timer);
-    if (e.name === 'AbortError') throw new Error(`Request timed out: ${path}`);
-    throw e;
-  }
+  var ctrl  = new AbortController();
+  var timer = setTimeout(function () { ctrl.abort(); }, timeoutMs);
+
+  return fetch(url, { signal: ctrl.signal })
+    .then(function (res) {
+      clearTimeout(timer);
+      if (!res.ok) throw new Error('API ' + res.status + ': ' + path);
+      return res.json();
+    })
+    .catch(function (e) {
+      clearTimeout(timer);
+      if (e.name === 'AbortError') throw new Error('Request timed out: ' + path);
+      throw e;
+    });
 }
 
-const api = {
-  health:          ()              => get('/health'),
-  devices:         (p = {})       => get('/devices', p),
-  device:          (code, ms)     => get(`/devices/${encodeURIComponent(code)}`, {}, ms || 20000),
-  roms:            (p = {})       => get('/roms', p),
-  recoveries:      (p = {})       => get('/recoveries', p),
-  tools:           ()              => get('/tools'),
-  androidVersions: ()              => get('/android-versions'),
-  guides:          (codename)     => get(`/guides/${encodeURIComponent(codename)}`),
+var api = {
+  health:          function ()           { return get('/health'); },
+  devices:         function (p)          { return get('/devices', p); },
+  device:          function (code, ms)   { return get('/devices/' + encodeURIComponent(code), {}, ms || 20000); },
+  roms:            function (p)          { return get('/roms', p); },
+  recoveries:      function (p)          { return get('/recoveries', p); },
+  tools:           function ()           { return get('/tools'); },
+  androidVersions: function ()           { return get('/android-versions'); },
+  guides:          function (codename)   {
+    if (!codename) return get('/guides', {});
+    return get('/guides/' + encodeURIComponent(codename));
+  },
 };

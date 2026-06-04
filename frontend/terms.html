@@ -17,6 +17,11 @@
   <link rel="stylesheet" href="/css/style.css?v=525120" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="manifest" href="/manifest.json" />
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(function () {});
+    }
+  </script>
 </head>
 <body>
 <div id="connection-overlay"><div class="conn-spinner"></div><p>Checking connection…</p></div>
