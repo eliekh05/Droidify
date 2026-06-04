@@ -976,6 +976,11 @@ a { transition: color 150ms ease; }
 }
 
 /* ── Auth navbar ── */
+#auth-wrap {
+  display: flex;
+  align-items: center;
+  padding: 0 .5rem;
+}
 .auth-signin {
   display: flex;
   align-items: center;
