@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_NAME   = 'droidify-v1780525145';
+const CACHE_NAME = 'droidify-v1780571826';
 const STATIC_URLS  = [
   '/',
   '/index.html',
@@ -14,7 +14,7 @@ const STATIC_URLS  = [
   '/faq.html',
   '/terms.html',
   '/privacy.html',
-  '/not-read.html',
+  '/not-read',
   '/docs.html',
   '/openapi.html',
   '/css/style.css',
