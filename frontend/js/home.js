@@ -51,7 +51,7 @@
       d.has_orangefox  ? '<span class="tag is-warning">OrangeFox</span>' : '',
     ].filter(Boolean).join('');
     return '<div class="column is-6-mobile is-4-tablet is-4-desktop" data-aos="fade-up" data-aos-delay="' + delay + '">' +
-      '<a href="/device.html?c=' + encodeURIComponent(d.codename) + '" class="card" style="display:block">' +
+      '<a href="/device/' + encodeURIComponent(d.codename) + '" class="card" style="display:block">' +
       '<div class="card-content">' +
       '<div class="card-mfr">' + esc(d.manufacturer || 'Unknown') + '</div>' +
       '<p class="title is-6 mb-1">' + esc(d.model_name || d.codename) + '</p>' +
@@ -116,7 +116,7 @@
       var name  = pair[0];
       var count = pair[1];
       return '<div class="column is-6-mobile is-3-tablet" data-aos="fade-up" data-aos-delay="' + (i * 50) + '">' +
-        '<a href="/device.html?c=' + encodeURIComponent(d.codename) + '" class="card" style="display:block">' +
+        '<a href="/device/' + encodeURIComponent(d.codename) + '" class="card" style="display:block">' +
         '<div class="card-content">' +
         '<p class="title is-6 mb-1">' + esc(name) + '</p>' +
         '<p style="color:var(--muted);font-size:.8rem">' + count + ' build' + (count !== 1 ? 's' : '') + '</p>' +
