@@ -9,7 +9,6 @@ const PRECACHE = [
   '/js/terms.js',
   '/js/nav.js',
   '/js/home.js',
-  '/js/device.js',
   '/manifest.json',
   '/favicon.svg',
 ];

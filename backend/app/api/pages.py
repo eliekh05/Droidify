@@ -148,3 +148,33 @@ async def watchlist_remove(codename: str, request: Request):
         from app.db import remove_from_watchlist
         await remove_from_watchlist(session["user_id"], codename)
     return RedirectResponse("/watchlist", status_code=303)
+
+@router.get("/device/{codename}", response_class=HTMLResponse)
+async def device_page(codename: str, request: Request):
+    import re
+    if not re.match(r'^[a-z0-9_-]{1,40}$', codename):
+        return _r(request, "device.html", "devices",
+            title="Device not found — Droidify",
+            device=None, error="Invalid device codename.")
+    try:
+        from app.api.devices import get_device
+        # Reuse the existing API endpoint logic
+        resp = await get_device(codename)
+        device = resp.body if hasattr(resp, 'body') else None
+        import json
+        if hasattr(resp, 'body'):
+            device = json.loads(resp.body)
+        else:
+            device = None
+    except Exception as e:
+        device = None
+
+    if not device:
+        return _r(request, "device.html", "devices",
+            title="Device not found — Droidify",
+            device=None, error=f'Device &ldquo;{codename}&rdquo; not found.')
+
+    name = device.get("model_name") or device.get("codename", codename)
+    return _r(request, "device.html", "devices",
+        title=f'{name} — Droidify',
+        device=device)

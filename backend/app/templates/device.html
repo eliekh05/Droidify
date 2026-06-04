@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block head %}<title>{{ title }}</title>{% endblock %}
+{% block content %}
+{% if not device %}
+<main class="container" style="padding-bottom:3rem">
+  <div class="page-header">
+    <h1 class="title">Device not found</h1>
+    <p class="subtitle" style="color:var(--danger)">{{ error | default('No device specified.') }}</p>
+  </div>
+  <a href="/devices" class="button is-primary">&larr; Back to devices</a>
+</main>
+{% else %}
+<main class="container" style="padding-bottom:3rem">
+  <div class="page-header" data-aos="fade-up">
+    <div class="mb-3"><a href="/devices" class="button is-ghost">&larr; Back</a></div>
+    <p style="font-size:.78rem;color:var(--muted);margin-bottom:.3rem">{{ device.manufacturer | default('') | e }}</p>
+    <h1 class="title">{{ (device.model_name or device.codename) | e }}</h1>
+    <p style="font-family:var(--mono);color:var(--accent);font-size:.9rem">{{ device.codename | e }}</p>
+    {% if device.sources %}
+    <div class="tags mt-3">
+      {% for s in device.sources %}
+      <span class="tag {% if s in ['lineageos','grapheneos'] %}is-success{% elif s in ['twrp','orangefox'] %}is-info{% else %}is-dark{% endif %}">{{ s | e }}</span>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  {# ROMs #}
+  <section class="section pb-0">
+    <div class="section-header" data-aos="fade-up">
+      <h2 class="title is-6">ROMs{% if device.roms %} ({{ device.roms | length }}){% endif %}</h2>
+    </div>
+    <div class="columns is-multiline is-mobile">
+      {% if device.roms %}
+        {% for rom in device.roms %}
+        {% set dl = rom.download_url or (rom.download_urls[0] if rom.download_urls else '') %}
+        <div class="column is-6-mobile is-4-tablet" data-aos="fade-up" data-aos-delay="{{ [loop.index0 * 40, 240] | min }}">
+          <div class="card">
+            <div class="card-content">
+              <div class="card-mfr">{{ (rom.source or 'custom') | e }}</div>
+              <p class="title is-6 mb-1">{{ rom.name | e }}</p>
+              {% if rom.android_base %}<div class="card-codename">Android {{ rom.android_base | e }}</div>{% endif %}
+              {% if rom.version_label %}<p style="font-size:.78rem;color:var(--muted)">{{ rom.version_label | e }}</p>{% endif %}
+              {% if dl %}<a href="{{ dl | e }}" target="_blank" rel="noopener" style="font-size:.78rem;color:var(--accent)">Download &rarr;</a>{% endif %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="column"><div class="empty-state">No ROMs found for this device.</div></div>
+      {% endif %}
+    </div>
+  </section>
+
+  {# Recoveries #}
+  {% if device.recoveries %}
+  <section class="section pb-0">
+    <div class="section-header" data-aos="fade-up">
+      <h2 class="title is-6">Recoveries ({{ device.recoveries | length }})</h2>
+    </div>
+    <div class="columns is-multiline is-mobile">
+      {% for r in device.recoveries %}
+      <div class="column is-6-mobile is-4-tablet" data-aos="fade-up" data-aos-delay="{{ [loop.index0 * 40, 240] | min }}">
+        <div class="card">
+          <div class="card-content">
+            <div class="card-mfr">{{ (r.recovery_type or 'recovery') | e }}</div>
+            <p class="title is-6 mb-1">{{ (r.model_name or r.codename) | e }}</p>
+            {% if r.download_url %}<a href="{{ r.download_url | e }}" target="_blank" rel="noopener" style="font-size:.78rem;color:var(--accent)">Download &rarr;</a>{% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  {# Stock Firmware #}
+  {% if device.stock_firmware %}
+  <section class="section pb-0">
+    <div class="section-header" data-aos="fade-up">
+      <h2 class="title is-6">Stock Firmware</h2>
+    </div>
+    <div class="columns is-multiline is-mobile">
+      {% for f in device.stock_firmware %}
+      <div class="column is-6-mobile is-4-tablet" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 40 }}">
+        <div class="card">
+          <div class="card-content">
+            <div class="card-mfr">Stock Firmware</div>
+            <p class="title is-6 mb-1">{{ f.model | e }}</p>
+            <p style="font-size:.82rem;color:var(--muted);margin:.3rem 0">{{ f.description | e }}</p>
+            <a href="{{ f.download_url | e }}" target="_blank" rel="noopener" style="font-size:.78rem;color:var(--accent)">Download on SamFW &rarr;</a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  {# Links #}
+  {% if device.wiki_url or device.twrp_url or device.orangefox_url %}
+  <section class="section" data-aos="fade-up">
+    <div class="section-header"><h2 class="title is-6">Links</h2></div>
+    <div>
+      {% if device.wiki_url %}<a href="{{ device.wiki_url | e }}" target="_blank" rel="noopener" class="button is-primary mr-2 mb-2">LineageOS Wiki</a>{% endif %}
+      {% if device.twrp_url %}<a href="{{ device.twrp_url | e }}" target="_blank" rel="noopener" class="button is-ghost mr-2 mb-2">TWRP</a>{% endif %}
+      {% if device.orangefox_url %}<a href="{{ device.orangefox_url | e }}" target="_blank" rel="noopener" class="button is-ghost mr-2 mb-2">OrangeFox</a>{% endif %}
+    </div>
+  </section>
+  {% endif %}
+
+</main>
+{% endif %}
+{% endblock %}
