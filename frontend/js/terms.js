@@ -21,11 +21,6 @@
 
     if (check) check.disabled = true;
 
-    // Add padding-bottom so page scrolls past the fixed bar
-    var bar = document.getElementById('terms-agree-bar');
-    var barH = bar ? bar.offsetHeight : 100;
-    document.body.style.paddingBottom = (barH + 16) + 'px';
-
     function unlock() {
       if (reached) return;
       reached = true;
@@ -34,18 +29,30 @@
       if (label) label.classList.add('terms-label-active');
     }
 
+    function getRemaining() {
+      return document.documentElement.scrollHeight
+           - window.innerHeight
+           - window.scrollY;
+    }
+
     function checkScroll() {
-      var remaining = document.documentElement.scrollHeight
-                    - window.innerHeight
-                    - window.scrollY;
-      if (remaining <= 2) {
+      // Use a generous threshold to account for fixed bar, rounding, zoom
+      if (getRemaining() <= 150) {
         unlock();
         window.removeEventListener('scroll', checkScroll);
       }
     }
 
+    // Wait for layout to settle before adding padding and checking scroll
+    window.addEventListener('load', function () {
+      var bar  = document.getElementById('terms-agree-bar');
+      var barH = bar ? bar.getBoundingClientRect().height : 100;
+      document.body.style.paddingBottom = (barH + 24) + 'px';
+      // Re-check after padding is applied
+      checkScroll();
+    });
+
     window.addEventListener('scroll', checkScroll, { passive: true });
-    checkScroll();
 
     if (check) {
       check.addEventListener('change', function () {
@@ -56,16 +63,13 @@
         }
         if (!check.checked) return;
 
-        // Try server-side first (logged in users)
         fetch('/api/terms/agree', { method: 'POST' })
           .then(function (r) { return r.json(); })
-          .then(function (d) {
-            // Always set localStorage too (fallback for anonymous)
+          .then(function () {
             localStorage.setItem(AGREED_KEY, Date.now().toString());
             window.location.href = '/';
           })
           .catch(function () {
-            // Not logged in — localStorage only
             localStorage.setItem(AGREED_KEY, Date.now().toString());
             window.location.href = '/';
           });
@@ -75,19 +79,16 @@
     return;
   }
 
-  // Every other page — gate check
   if (isExempt) return;
 
-  // Check server-side first for logged-in users
   fetch('/api/terms/status')
     .then(function (r) { return r.json(); })
     .then(function (d) {
-      if (d.agreed) return; // server says agreed — let them through
-      if (localStorage.getItem(AGREED_KEY)) return; // anonymous agreed
+      if (d.agreed) return;
+      if (localStorage.getItem(AGREED_KEY)) return;
       window.location.href = TERMS_URL;
     })
     .catch(function () {
-      // Fallback to localStorage if API unreachable
       if (!localStorage.getItem(AGREED_KEY)) {
         window.location.href = TERMS_URL;
       }
