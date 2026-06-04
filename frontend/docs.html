@@ -17,12 +17,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css" />
   <style>
     /* ── Reset Bulma conflicts inside Swagger UI ─────────────────────── */
-    /* Force horizontal text — Swagger sometimes inherits vertical writing mode */
-    #swagger-ui *, #swagger-ui .swagger-ui * {
-      writing-mode: horizontal-tb !important;
-      text-orientation: mixed !important;
-    }
-    #swagger-ui * { box-sizing: border-box; }
+#swagger-ui * { box-sizing: border-box; }
 
     /* Bulma sets table display:table globally — breaks swagger's layout */
     #swagger-ui .swagger-ui table { display: table; width: 100%; }
@@ -200,6 +195,20 @@
 <script src="/js/nav.js?v=525120"></script>
 <script>
 window.addEventListener('load', function() {
+  // Fix vertical text caused by Bulma's writing-mode inheritance
+  (function() {
+    var style = document.createElement('style');
+    style.textContent = [
+      '#swagger-ui .swagger-ui .info .title,',
+      '#swagger-ui .swagger-ui .info p,',
+      '#swagger-ui .swagger-ui .info li,',
+      '#swagger-ui .swagger-ui .info a,',
+      '#swagger-ui .swagger-ui .info span,',
+      '#swagger-ui .swagger-ui .info div { writing-mode: horizontal-tb !important; text-orientation: mixed !important; display: revert !important; }'
+    ].join('');
+    document.head.appendChild(style);
+  })();
+
   SwaggerUIBundle({
     url: "/openapi.json",
     dom_id: "#swagger-ui",
