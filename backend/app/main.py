@@ -14,10 +14,7 @@ from app.api.roms import router as roms_router
 from app.api.recoveries import router as recoveries_router
 from app.api.guides import router as guides_router
 from app.api.auth import router as auth_router
-try:
-    from app.api.not_read import router as not_read_router
-except ModuleNotFoundError:
-    not_read_router = None
+from app.api.not_read import router as not_read_router
 from app.api.terms_api import router as terms_router
 from app.api.watchlist import router as watchlist_router
 
@@ -99,17 +96,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/api-reference", include_in_schema=False)
-async def api_reference():
-    """Human-readable styled API reference page."""
-    import pathlib as _pl2
-    from fastapi.responses import FileResponse as _FR2
-    _static = _pl2.Path(
-        os.environ.get("STATIC_DIR",
-            str(_pl2.Path(__file__).parent.parent.parent / "frontend"))
-    )
-    return _FR2(str(_static / "openapi.html"))
-
 # Reject bodies over 64KB — this is a read-only API, no large payloads expected
 @app.middleware("http")
 async def limit_body_size(request, call_next):
@@ -129,8 +115,7 @@ app.include_router(tools_router,      prefix="/api/tools",            tags=["too
 app.include_router(roms_router,       prefix="/api/roms",             tags=["roms"])
 app.include_router(recoveries_router, prefix="/api/recoveries",       tags=["recoveries"])
 app.include_router(guides_router,     prefix="/api/guides",           tags=["guides"])
-if not_read_router:
-    app.include_router(not_read_router, prefix="/not-read")
+app.include_router(not_read_router, prefix="/not-read")
 app.include_router(auth_router,       prefix="/api/auth",            tags=["auth"])
 app.include_router(terms_router,      prefix="/api/terms",            tags=["auth"])
 app.include_router(watchlist_router,   prefix="/api/watchlist",        tags=["watchlist"])

@@ -1,6 +1,5 @@
 """
 app/api/not_read.py — Serves the punishment page from the backend.
-Removed from frontend so it cannot be cached or bypassed via static file access.
 """
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse

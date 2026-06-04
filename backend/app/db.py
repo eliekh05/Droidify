@@ -6,7 +6,9 @@ import os
 import aiosqlite
 from pathlib import Path
 
-DB_PATH = Path(os.environ.get("DB_PATH", "/tmp/droidify.db"))
+# Use /data if available (HF persistent storage), otherwise /tmp
+_default_db = "/data/droidify.db" if Path("/data").exists() else "/tmp/droidify.db"
+DB_PATH = Path(os.environ.get("DB_PATH", _default_db))
 
 
 async def get_db() -> aiosqlite.Connection:

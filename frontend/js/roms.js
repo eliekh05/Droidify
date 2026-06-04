@@ -7,6 +7,8 @@
     });
   };
 
+  const LIMIT = 20;
+
   const safeUrl = function (u) {
     if (!u) return '#';
     var s = String(u).trim();

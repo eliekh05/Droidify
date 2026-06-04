@@ -10,13 +10,13 @@ from fastapi import Request
 
 # SESSION_SECRET must be set in HF Spaces Secrets
 # Falls back to a fixed string so the app runs — set the secret for production
-SECRET = os.environ.get("SESSION_SECRET", "droidify-default-secret-change-in-hf")
 COOKIE = "droidify_session"
 MAX_AGE = 60 * 60 * 24 * 30  # 30 days
 
 
 def _signer() -> URLSafeTimedSerializer:
-    return URLSafeTimedSerializer(SECRET, salt="session")
+    secret = os.environ.get("SESSION_SECRET", "droidify-default-secret-change-in-hf")
+    return URLSafeTimedSerializer(secret, salt="session")
 
 
 def set_session(response, data: dict) -> None:
@@ -34,7 +34,7 @@ def set_session(response, data: dict) -> None:
 
 def get_session(request: Request) -> dict | None:
     token = request.cookies.get(COOKIE)
-    if not token or not SECRET:
+    if not token:
         return None
     try:
         return _signer().loads(token, max_age=MAX_AGE)

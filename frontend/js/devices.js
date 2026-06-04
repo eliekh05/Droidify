@@ -7,6 +7,8 @@
     });
   };
 
+  const LIMIT = 24;
+
   const grid    = document.getElementById('device-grid');
   const metaEl  = document.getElementById('results-meta');
   const paginEl = document.getElementById('pagination');
