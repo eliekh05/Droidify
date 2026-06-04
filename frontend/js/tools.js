@@ -1,14 +1,9 @@
 (function () {
   'use strict';
-  const esc = s => String(s || '').replace(/[&<>"']/g, c =>
-    ({'&':'&amp;
-// safeUrl: only allow http/https URLs — strips javascript:, data:, etc.
-  const safeUrl = u => {
-    if (!u) return '#';
-    const s = String(u).trim();
-    if (/^https?:\/\//i.test(s)) return s;
-    return '#';
-  };','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  const esc = s => String(s || '').replace(/[&<>"']/g, c => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
 
   const grid  = document.getElementById('tools-grid');
   const input = document.getElementById('search-input');
