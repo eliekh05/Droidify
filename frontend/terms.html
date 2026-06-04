@@ -209,7 +209,6 @@
     </div>
 
 
-  <div id="terms-end" style="height:4px;margin-top:1rem"></div>
   </div>
 </main>
 
@@ -225,12 +224,13 @@
 <script src="https://cdn.jsdelivr.net/npm/@reimujs/aos/dist/aos.umd.js"></script>
 <script>AOS.init({ duration: 500, easing: "ease-out-cubic", once: true, offset: 0 });</script>
 
-<div id="terms-agree-bar" class="terms-agree-bar terms-bar-visible">
-  <div class="terms-agree-inner">
-    <label class="terms-agree-label terms-label-active" id="terms-agree-label">
-      <input type="checkbox" id="terms-agree-check" />
-      <span>I have read and agreed to the Terms of Use</span>
-    </label>
+<div id="terms-progress-bar" style="
+  position:fixed;top:0;left:0;right:0;height:4px;z-index:9999;
+  background:var(--border);pointer-events:none">
+  <div id="terms-progress-fill" style="
+    height:100%;width:0%;
+    background:var(--accent);
+    transition:width .1s linear">
   </div>
 </div>
 </body>

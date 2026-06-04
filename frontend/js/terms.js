@@ -14,9 +14,10 @@
   if (onNotRead) return;
 
   if (onTerms) {
-    var check = document.getElementById('terms-agree-check');
+    var fill = document.getElementById('terms-progress-fill');
+    var agreed = false;
 
-    // Server-side skip for logged-in users who already agreed
+    // Server-side skip for already-agreed logged-in users
     fetch('/api/terms/status')
       .then(function (r) { return r.json(); })
       .then(function (d) {
@@ -27,12 +28,11 @@
       })
       .catch(function () {});
 
-    // Capture phase — intercept nav clicks before Bulma handlers
+    // Nav click intercept — capture phase
+    // If they click away before scrolling to the bottom, punishment page
     document.addEventListener('click', function (e) {
       var node = e.target;
-      while (node && node.tagName !== 'A') {
-        node = node.parentElement;
-      }
+      while (node && node.tagName !== 'A') { node = node.parentElement; }
       if (!node) return;
       var href = node.getAttribute('href') || '';
       if (!href || href === '#' ||
@@ -41,29 +41,51 @@
           href.includes('not-read') ||
           href.includes('privacy') ||
           href.includes('mailto')) return;
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      window.location.href = NOT_READ_URL;
+      if (!agreed) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        window.location.href = NOT_READ_URL;
+      }
     }, true);
 
-    if (check) {
-      check.addEventListener('change', function () {
-        if (!check.checked) return;
-        localStorage.setItem(AGREED_KEY, Date.now().toString());
-        fetch('/api/terms/agree', { method: 'POST' }).catch(function () {});
-        setTimeout(function () { window.location.href = '/'; }, 50);
-      });
+    function onScroll() {
+      var scrolled   = Math.ceil(window.pageYOffset || window.scrollY);
+      var docHeight  = Math.max(
+        document.documentElement.scrollHeight,
+        document.body.scrollHeight
+      );
+      var winHeight  = window.innerHeight;
+      var scrollable = docHeight - winHeight;
+      if (scrollable <= 0) {
+        // Page too short to scroll — agree immediately
+        complete();
+        return;
+      }
+      var pct = Math.min(100, Math.round((scrolled / scrollable) * 100));
+      if (fill) fill.style.width = pct + '%';
+      if (pct >= 100 && !agreed) complete();
     }
 
+    function complete() {
+      if (agreed) return;
+      agreed = true;
+      if (fill) fill.style.width = '100%';
+      localStorage.setItem(AGREED_KEY, Date.now().toString());
+      fetch('/api/terms/agree', { method: 'POST' }).catch(function () {});
+      // Small pause so user sees the bar complete before redirect
+      setTimeout(function () { window.location.href = '/'; }, 400);
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    // Check immediately — handles short pages
+    onScroll();
     return;
   }
 
   if (isExempt) return;
 
-  // Gate — localStorage first
   if (localStorage.getItem(AGREED_KEY)) return;
 
-  // Server check for logged-in users on another device
   fetch('/api/terms/status')
     .then(function (r) { return r.json(); })
     .then(function (d) {
