@@ -66,7 +66,7 @@
   let deferred = null;
   const installWrap = document.getElementById('pwa-install-wrap');
 
-  function showPwaModal(iosMode) {
+  function showPwaModal(iosMode, macSafMode) {
     const existing = document.getElementById('pwa-modal');
     if (existing) existing.remove();
 
@@ -76,9 +76,14 @@
     modal.setAttribute('aria-modal', 'true');
     modal.setAttribute('aria-label', 'Install Droidify');
 
-    const steps = iosMode
-      ? 'Tap the <strong>Share</strong> button (the square with an arrow) at the bottom of your browser, then tap <strong>Add to Home Screen</strong>.'
-      : 'Open your browser menu (the three dots ⋮ or ⋯) and tap <strong>Install app</strong> or <strong>Add to Home Screen</strong>.';
+    var steps;
+    if (isIOS) {
+      steps = 'Tap the <strong>Share</strong> button (the square with an arrow ↑) at the bottom of Safari, then tap <strong>Add to Home Screen</strong>.';
+    } else if (isMacSaf) {
+      steps = 'In Safari, click <strong>File</strong> in the menu bar, then click <strong>Add to Dock</strong>. Or click the <strong>Share</strong> button in the toolbar and select <strong>Add to Dock</strong>.';
+    } else {
+      steps = 'Open your browser menu (the three dots ⋮) and click <strong>Install app</strong> or <strong>Add to Home Screen</strong>.';
+    }
 
     modal.innerHTML =
       '<div class="pwa-modal-overlay" id="pwa-modal-overlay"></div>' +
@@ -115,7 +120,7 @@
           deferred = null;
         });
       } else {
-        showPwaModal(isIOS);
+        showPwaModal(isIOS, isMacSaf);
       }
     });
   }
