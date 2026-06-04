@@ -15,12 +15,11 @@
   if (onNotRead) return;
 
   if (onTerms) {
-    // Mark that the user has seen the terms page
     localStorage.setItem(SEEN_KEY, '1');
 
     var check = document.getElementById('terms-agree-check');
 
-    // If already agreed server-side, skip
+    // Server-side skip for logged-in users who already agreed
     fetch('/api/terms/status')
       .then(function (r) { return r.json(); })
       .then(function (d) {
@@ -31,27 +30,40 @@
       })
       .catch(function () {});
 
-    // Intercept nav link clicks — if they navigate away without agreeing,
-    // send to punishment page
+    // Intercept ALL link clicks on the page
+    // Use capture phase so it fires before any other handler
     document.addEventListener('click', function (e) {
-      var link = e.target.closest('a[href]');
-      if (!link) return;
-      var href = link.getAttribute('href') || '';
-      if (href.startsWith('#') ||
+      // Find the closest anchor
+      var node = e.target;
+      while (node && node.tagName !== 'A') {
+        node = node.parentElement;
+      }
+      if (!node) return;
+
+      var href = node.getAttribute('href') || '';
+      if (!href || href === '#' ||
           href.startsWith('http') ||
           href.includes('terms') ||
           href.includes('not-read') ||
-          href.includes('privacy')) return;
+          href.includes('privacy') ||
+          href.includes('mailto')) return;
+
       e.preventDefault();
+      e.stopImmediatePropagation();
       window.location.href = NOT_READ_URL;
-    });
+    }, true); // true = capture phase, fires first
 
     if (check) {
       check.addEventListener('change', function () {
         if (!check.checked) return;
+        // Set agreed immediately
         localStorage.setItem(AGREED_KEY, Date.now().toString());
+        // Fire and forget server record
         fetch('/api/terms/agree', { method: 'POST' }).catch(function () {});
-        window.location.href = '/';
+        // Small delay so localStorage write completes before navigation
+        setTimeout(function () {
+          window.location.href = '/';
+        }, 50);
       });
     }
 
@@ -60,10 +72,10 @@
 
   if (isExempt) return;
 
-  // Already agreed — let through
+  // Gate — localStorage first, fastest
   if (localStorage.getItem(AGREED_KEY)) return;
 
-  // Server check for logged-in users who agreed on another device
+  // Server check for logged-in users on another device
   fetch('/api/terms/status')
     .then(function (r) { return r.json(); })
     .then(function (d) {
@@ -71,19 +83,13 @@
         localStorage.setItem(AGREED_KEY, Date.now().toString());
         return;
       }
-      // Seen terms but navigated away without agreeing → punishment
-      // Never seen terms yet → send to terms page
-      if (localStorage.getItem(SEEN_KEY)) {
-        window.location.href = NOT_READ_URL;
-      } else {
-        window.location.href = TERMS_URL;
-      }
+      window.location.href = localStorage.getItem(SEEN_KEY)
+        ? NOT_READ_URL
+        : TERMS_URL;
     })
     .catch(function () {
-      if (localStorage.getItem(SEEN_KEY)) {
-        window.location.href = NOT_READ_URL;
-      } else {
-        window.location.href = TERMS_URL;
-      }
+      window.location.href = localStorage.getItem(SEEN_KEY)
+        ? NOT_READ_URL
+        : TERMS_URL;
     });
 })();
