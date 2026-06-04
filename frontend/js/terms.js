@@ -27,32 +27,40 @@
       if (check) check.disabled = false;
       if (lockMsg) lockMsg.textContent = 'Check the box to agree and continue.';
       if (label) label.classList.add('terms-label-active');
-    }
-
-    function getRemaining() {
-      return document.documentElement.scrollHeight
-           - window.innerHeight
-           - window.scrollY;
+      window.removeEventListener('scroll', checkScroll);
     }
 
     function checkScroll() {
-      // Use a generous threshold to account for fixed bar, rounding, zoom
-      if (getRemaining() <= 150) {
-        unlock();
-        window.removeEventListener('scroll', checkScroll);
-      }
+      // MDN recommended pattern — Math.ceil handles subpixel precision
+      // document.body.offsetHeight used as fallback per Stack Overflow consensus
+      // barH accounts for fixed bar covering bottom of viewport
+      var barH      = 100; // safe default, updated on load
+      var bar       = document.getElementById('terms-agree-bar');
+      if (bar) barH = bar.getBoundingClientRect().height;
+
+      var docHeight = Math.max(
+        document.documentElement.scrollHeight,
+        document.body.scrollHeight,
+        document.body.offsetHeight
+      );
+      var scrolled  = Math.ceil(window.pageYOffset || window.scrollY);
+      var remaining = docHeight - window.innerHeight - scrolled;
+
+      // Fire when within (bar height + 10px safety margin) of bottom
+      if (remaining <= barH + 10) unlock();
     }
 
-    // Wait for layout to settle before adding padding and checking scroll
+    window.addEventListener('scroll', checkScroll, { passive: true });
+
+    // Run after full layout including images and fonts
     window.addEventListener('load', function () {
+      // Apply padding so content scrolls past fixed bar
       var bar  = document.getElementById('terms-agree-bar');
       var barH = bar ? bar.getBoundingClientRect().height : 100;
       document.body.style.paddingBottom = (barH + 24) + 'px';
-      // Re-check after padding is applied
+      // Check immediately in case page is short
       checkScroll();
     });
-
-    window.addEventListener('scroll', checkScroll, { passive: true });
 
     if (check) {
       check.addEventListener('change', function () {
