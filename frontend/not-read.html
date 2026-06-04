@@ -1,69 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Hold on — Droidify</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <script>
     (function(){
       const t = localStorage.getItem('droidify_theme');
       if (t && t !== 'system') document.documentElement.setAttribute('data-theme', t);
     })();
   </script>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="robots" content="noindex, nofollow" />
-  <title>You Did Not Read — Droidify</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css?v=525120">
-  <link rel="stylesheet" href="/css/style.css?v=525120" />
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 </head>
 <body>
-<main class="section not-read-page">
-  <div class="container nr-container">
+<main class="section" style="min-height:100vh;display:flex;align-items:center;justify-content:center">
+  <div class="container" style="max-width:600px;text-align:center">
 
-    <div class="not-read-icon">⚠</div>
+    <div style="font-size:3.5rem;margin-bottom:1.5rem">🛑</div>
 
-    <h1 class="title is-3 not-read-title">You did not read the terms.</h1>
+    <h1 class="title is-3" style="color:var(--text);margin-bottom:1rem">
+      You skipped the terms.
+    </h1>
 
-    <p class="not-read-body">
-      There was one condition. Scroll to the bottom. That is it.
-      Not a quiz. Not a test. Just the basic act of reading what you are agreeing to
-      before you agree to it. You did not do that. You clicked the button before you
-      got there, which means you agreed to something you have not read, which is
-      exactly the kind of decision that gets people into trouble when they are flashing
-      their phones.
+    <p style="color:var(--muted);font-size:1rem;line-height:1.75;margin-bottom:1.5rem">
+      Droidify shows you where to find ROMs, recoveries, and root tools for your device.
+      What happens when you flash one of them is entirely on you — not on us, not on the developer
+      who uploaded the file, not on anyone else.
     </p>
 
-    <p class="not-read-body">
-      The terms exist because Knox is permanent. Because data wiped during a format
-      does not come back. Because the developer who uploaded the ROM you are about to
-      flash is the person to talk to when something breaks — not us. Because GitHub
-      issues about bricked devices get closed by a bot before anyone reads them.
-      All of that was on the page you skipped.
+    <p style="color:var(--muted);font-size:1rem;line-height:1.75;margin-bottom:1.5rem">
+      Knox trips the moment you unlock the bootloader. It does not un-trip.
+      Data wiped during a flash does not come back. A bricked device is a bricked device.
+      The terms page covers all of this. It takes about a minute to read.
     </p>
 
-    <p class="not-read-body">
-      I built this project over two to three days. Not so that someone could click
-      past the one page that was actually trying to protect them.
-      The scroll gate exists because reading takes thirty seconds and a bricked device
-      takes a lot longer to deal with.
+    <p style="color:var(--muted);font-size:1rem;line-height:1.75;margin-bottom:2rem">
+      GitHub issues about bricked devices, tripped Knox, or lost data are closed automatically
+      with no reply. The terms page explains why. You navigated away before reading it.
     </p>
 
-    <div class="not-read-warning">
-      The back button works. The terms page is still there.
-      Nothing is stopping you from reading it now.
-    </div>
-
-    <div class="not-read-actions">
-      <a href="/terms.html" class="button is-primary is-medium">← Read the terms</a>
-    </div>
-
-    <p class="not-read-note">
-      Knox warranty. Data loss. Bricked device. Voided warranty. Play Protect.
-      GitHub issues about any of these are closed automatically. No reply. No exceptions.
-      The terms page you were just on explained all of this.
-    </p>
+    <a href="/terms.html" class="button is-primary is-medium">
+      ← Go back and read the terms
+    </a>
 
   </div>
 </main>
-<script src="/js/terms.js?v=525120"></script>
 </body>
 </html>
