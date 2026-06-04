@@ -1,15 +1,10 @@
 (function () {
   'use strict';
 
-  const esc = s => String(s || '').replace(/[&<>"']/g, c => (
-    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
-  ));
-
-  const safeUrl = u => {
-    if (!u) return '#';
-    const s = String(u).trim();
-    if (/^https?:\/\//i.test(s)) return s;
-    return '#';
+  const esc = function (s) {
+    return String(s || '').replace(/[&<>"']/g, function (c) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+    });
   };
 
   // Hero search

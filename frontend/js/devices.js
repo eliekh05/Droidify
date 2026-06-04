@@ -1,14 +1,12 @@
 (function () {
   'use strict';
-  const LIMIT = 24;
-  const esc = s => String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;
-// safeUrl: only allow http/https URLs — strips javascript:, data:, etc.
-  const safeUrl = u => {
-    if (!u) return '#';
-    const s = String(u).trim();
-    if (/^https?:\/\//i.test(s)) return s;
-    return '#';
-  };','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  const esc = function (s) {
+    return String(s || '').replace(/[&<>"']/g, function (c) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+    });
+  };
+
   const grid    = document.getElementById('device-grid');
   const metaEl  = document.getElementById('results-meta');
   const paginEl = document.getElementById('pagination');

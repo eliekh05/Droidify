@@ -1,11 +1,12 @@
 (function () {
   'use strict';
 
-  const esc = s => String(s || '').replace(/[&<>"']/g, c => (
-    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
-  ));
+  const esc = function (s) {
+    return String(s || '').replace(/[&<>"']/g, function (c) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+    });
+  };
 
-  const grid  = document.getElementById('tools-grid');
   const input = document.getElementById('search-input');
   const btn   = document.getElementById('search-btn');
   let allTools = [];

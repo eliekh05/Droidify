@@ -1,14 +1,19 @@
 (function () {
   'use strict';
 
-  const esc = s => String(s || '').replace(/[&<>"']/g, c => (
-    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
-  ));
+  const esc = function (s) {
+    return String(s || '').replace(/[&<>"']/g, function (c) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+    });
+  };
 
-  const safeUrl = u => {
+  const safeUrl = function (u) {
     if (!u) return '#';
-    const s = String(u).trim();
-    if (/^https?:\/\//i.test(s)) return s;
+    var s = String(u).trim();
+    return /^https?:\/\//i.test(s) ? s : '#';
+  };
+
+?:\/\//i.test(s)) return s;
     return '#';
   };
 

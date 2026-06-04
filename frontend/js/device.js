@@ -1,29 +1,18 @@
 (function () {
   'use strict';
 
-  const safeUrl = u => {
-    if (!u || typeof u !== 'string') return '';
-    const s = u.trim();
-    if (/^https?:\/\//i.test(s)) return s;
-    return '';
+  const esc = function (s) {
+    return String(s || '').replace(/[&<>"']/g, function (c) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+    });
   };
 
-  const tagClass = s => {
-    // Only allow known safe source names as CSS class suffixes
-    const safe = ['lineageos','twrp','orangefox','pbrp','shrp','grapheneos',
-                  'calyx','divestos','postmarketos','nethunter','eosbuilds',
-                  'customrombay','pixelexperience','samfw','unknown'];
-    const k = String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
-    return safe.includes(k) ? `is-${k}` : 'is-default';
-  };
-  const esc = s => String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;
-// safeUrl: only allow http/https URLs — strips javascript:, data:, etc.
-  const safeUrl = u => {
+  const safeUrl = function (u) {
     if (!u) return '#';
-    const s = String(u).trim();
-    if (/^https?:\/\//i.test(s)) return s;
-    return '#';
-  };','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    var s = String(u).trim();
+    return /^https?:\/\//i.test(s) ? s : '#';
+  };
+
   const main     = document.getElementById('device-main');
   const codename = new URLSearchParams(location.search).get('c');
 
