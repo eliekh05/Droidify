@@ -1028,3 +1028,15 @@ a { transition: color 150ms ease; }
   color: var(--danger);
   border-color: var(--danger);
 }
+
+/* ── Watchlist ── */
+.watchlist-remove {
+  opacity: 0;
+  transition: opacity .15s;
+}
+.device-card:hover .watchlist-remove {
+  opacity: 1;
+}
+#watchlist-btn {
+  transition: all .2s;
+}

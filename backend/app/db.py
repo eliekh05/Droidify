@@ -40,6 +40,14 @@ async def init_db() -> None:
                 UNIQUE(user_id)
             )
         """)
+        await db.execute("""            CREATE TABLE IF NOT EXISTS watchlist (
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id     INTEGER NOT NULL REFERENCES users(id),
+                codename    TEXT    NOT NULL,
+                added_at    TEXT    DEFAULT (datetime('now')),
+                UNIQUE(user_id, codename)
+            )
+        """)
         await db.commit()
 
 
@@ -92,5 +100,50 @@ async def has_agreed_terms(user_id: int) -> bool:
     async with aiosqlite.connect(DB_PATH) as db:
         cur = await db.execute(
             "SELECT 1 FROM terms_agreements WHERE user_id = ?", (user_id,)
+        )
+        return await cur.fetchone() is not None
+
+
+async def add_to_watchlist(user_id: int, codename: str) -> bool:
+    """Add a device to user's watchlist. Returns False if already exists."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        try:
+            await db.execute(
+                "INSERT INTO watchlist (user_id, codename) VALUES (?, ?)",
+                (user_id, codename)
+            )
+            await db.commit()
+            return True
+        except aiosqlite.IntegrityError:
+            return False
+
+
+async def remove_from_watchlist(user_id: int, codename: str) -> bool:
+    """Remove a device from user's watchlist. Returns False if not found."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        cur = await db.execute(
+            "DELETE FROM watchlist WHERE user_id = ? AND codename = ?",
+            (user_id, codename)
+        )
+        await db.commit()
+        return cur.rowcount > 0
+
+
+async def get_watchlist(user_id: int) -> list[str]:
+    """Get all codenames in user's watchlist, newest first."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        cur = await db.execute(
+            "SELECT codename FROM watchlist WHERE user_id = ? ORDER BY added_at DESC",
+            (user_id,)
+        )
+        rows = await cur.fetchall()
+        return [row[0] for row in rows]
+
+
+async def is_in_watchlist(user_id: int, codename: str) -> bool:
+    async with aiosqlite.connect(DB_PATH) as db:
+        cur = await db.execute(
+            "SELECT 1 FROM watchlist WHERE user_id = ? AND codename = ?",
+            (user_id, codename)
         )
         return await cur.fetchone() is not None

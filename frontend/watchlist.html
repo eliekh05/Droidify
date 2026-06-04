@@ -9,40 +9,33 @@
   </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Custom ROMs, recoveries and guides for your Android device." />
-  <meta name="theme-color" content="#3dd68c" />
-  <title>Device — Droidify</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css?v=525120">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@reimujs/aos/dist/aos.css">
-  <link rel="stylesheet" href="/css/style.css?v=525120" />
+  <title>Watchlist — Droidify</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css" />
+  <link rel="stylesheet" href="/css/style.css?v=1" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-  <link rel="manifest" href="/manifest.json" />
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 </head>
 <body>
 <div id="connection-overlay"><div class="conn-spinner"></div><p>Checking connection…</p></div>
 <div id="offline-banner">⚠ You are offline — showing cached data</div>
+
 <nav class="navbar" role="navigation" aria-label="main navigation">
   <div class="container">
     <div class="navbar-brand">
       <a href="/" class="droidify-logo">&#8203;<strong class="accent-text">Droid</strong>ify</a>
       <a role="button" class="navbar-burger" id="nav-toggle" aria-label="menu" aria-expanded="false" data-target="main-nav">
-        <span aria-hidden="true"></span>
-        <span aria-hidden="true"></span>
-        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
       </a>
     </div>
     <div id="main-nav" class="navbar-menu">
       <div class="navbar-start">
-      <a href="/" class="navbar-item">Home</a>
-      <a href="/devices.html" class="navbar-item  is-active">Devices</a>
-      <a href="/roms.html" class="navbar-item">ROMs</a>
-      <a href="/recoveries.html" class="navbar-item">Recoveries</a>
-      <a href="/tools.html" class="navbar-item">Tools</a>
-      <a href="/android.html" class="navbar-item">Android</a>
-      <a href="/guides.html" class="navbar-item">Guides</a>
-        <a href="/watchlist.html" class="navbar-item">Watchlist</a>
+        <a href="/" class="navbar-item">Home</a>
+        <a href="/devices.html" class="navbar-item">Devices</a>
+        <a href="/roms.html" class="navbar-item">ROMs</a>
+        <a href="/recoveries.html" class="navbar-item">Recoveries</a>
+        <a href="/tools.html" class="navbar-item">Tools</a>
+        <a href="/android.html" class="navbar-item">Android</a>
+        <a href="/guides.html" class="navbar-item">Guides</a>
+        <a href="/watchlist.html" class="navbar-item is-active">Watchlist</a>
       </div>
       <div class="navbar-end">
         <div id="auth-wrap"></div>
@@ -58,22 +51,22 @@
     </div>
   </div>
 </nav>
-<main class="container" id="device-main">
-  <div style="padding:3rem 0;text-align:center">
-    <div class="spinner"></div>
-    <p style="color:var(--muted)">Loading…</p>
+
+<main class="section">
+  <div class="container" style="max-width:860px">
+    <div class="page-header" data-aos="fade-up">
+      <h1 class="title is-3">Your Watchlist</h1>
+      <p class="subtitle" id="watchlist-subtitle">Saved devices appear here.</p>
+    </div>
+    <div id="watchlist-grid" class="device-grid"></div>
   </div>
 </main>
-<footer class="site-footer">
-  <div class="container">
-    <p>Droidify &mdash; Live Android ecosystem indexer &middot; Free &amp; open sources only &middot; Account optional &middot; <a href="/privacy.html">Privacy</a> &middot; <a href="/terms.html">Terms</a> &middot; <a href="/faq.html">FAQ</a></p>
-  </div>
-</footer>
-<script src="/js/terms.js?v=525120"></script>
-<script src="/js/api.js?v=525120"></script>
-<script src="/js/nav.js?v=525120"></script>
+
+<script src="/js/terms.js?v=1"></script>
+<script src="/js/api.js?v=1"></script>
+<script src="/js/nav.js?v=1"></script>
+<script src="/js/watchlist.js?v=1"></script>
 <script src="https://cdn.jsdelivr.net/npm/@reimujs/aos/dist/aos.umd.js"></script>
-<script>AOS.init({ duration: 500, easing: "ease-out-cubic", once: true, offset: 40 });</script>
-<script src="/js/device.js?v=525120"></script>
+<script>AOS.init({ duration: 500, easing: "ease-out-cubic", once: true });</script>
 </body>
 </html>

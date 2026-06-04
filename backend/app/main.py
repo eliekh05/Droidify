@@ -19,6 +19,7 @@ try:
 except ModuleNotFoundError:
     not_read_router = None
 from app.api.terms_api import router as terms_router
+from app.api.watchlist import router as watchlist_router
 
 logging.basicConfig(
     level=logging.WARNING,
@@ -132,3 +133,4 @@ if not_read_router:
     app.include_router(not_read_router, prefix="/not-read")
 app.include_router(auth_router,       prefix="/api/auth",            tags=["auth"])
 app.include_router(terms_router,      prefix="/api/terms",            tags=["auth"])
+app.include_router(watchlist_router,   prefix="/api/watchlist",        tags=["watchlist"])
