@@ -1,20 +1,17 @@
 (function () {
   'use strict';
-  const esc = s => String(s || '').replace(/[&<>"']/g, c =>
-    ({'&':'&amp;
-// safeUrl: only allow http/https URLs — strips javascript:, data:, etc.
+
+  const esc = s => String(s || '').replace(/[&<>"']/g, c => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+
   const safeUrl = u => {
     if (!u) return '#';
     const s = String(u).trim();
     if (/^https?:\/\//i.test(s)) return s;
     return '#';
-  };','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  };
 
-  const grid  = document.getElementById('guides-grid');
-  const input = document.getElementById('codename-input');
-  const btn   = document.getElementById('search-btn');
-
-  // Load and render global guides on page load
   async function loadGlobal() {
     try {
       const data  = await api.guides('');

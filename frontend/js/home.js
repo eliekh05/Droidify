@@ -1,13 +1,16 @@
 (function () {
   'use strict';
-  const esc = s => String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;
-// safeUrl: only allow http/https URLs — strips javascript:, data:, etc.
+
+  const esc = s => String(s || '').replace(/[&<>"']/g, c => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+
   const safeUrl = u => {
     if (!u) return '#';
     const s = String(u).trim();
     if (/^https?:\/\//i.test(s)) return s;
     return '#';
-  };','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  };
 
   // Hero search
   const heroInput = document.getElementById('hero-search');
