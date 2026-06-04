@@ -109,16 +109,6 @@ async def api_reference():
     )
     return _FR2(str(_static / "openapi.html"))
 
-@app.get("/docs", include_in_schema=False)
-async def custom_docs():
-    import pathlib as _pl
-    from fastapi.responses import FileResponse as _FR
-    _static2 = _pl.Path(
-        os.environ.get("STATIC_DIR",
-            str(_pl.Path(__file__).parent.parent.parent / "frontend"))
-    )
-    return _FR(str(_static2 / "docs.html"))
-
 # Reject bodies over 64KB — this is a read-only API, no large payloads expected
 @app.middleware("http")
 async def limit_body_size(request, call_next):
