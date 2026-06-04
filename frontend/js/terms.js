@@ -2,13 +2,13 @@
   'use strict';
 
   const AGREED_KEY   = 'droidify_terms_agreed_v1';
-  const NOT_READ_URL = '/not-read.html';
+  const NOT_READ_URL = '/not-read';
   const TERMS_URL    = '/terms.html';
 
   const path      = window.location.pathname;
   const onTerms   = path.endsWith('terms.html')    || path === '/terms';
   const onNotRead = path.endsWith('not-read.html') || path === '/not-read';
-  const exempt    = ['/terms.html', '/not-read.html', '/privacy.html'];
+  const exempt    = ['/terms.html', '/not-read', '/privacy.html'];
   const isExempt  = exempt.some(function (p) { return path.endsWith(p); });
 
   if (onNotRead) return;

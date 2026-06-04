@@ -14,6 +14,7 @@ from app.api.roms import router as roms_router
 from app.api.recoveries import router as recoveries_router
 from app.api.guides import router as guides_router
 from app.api.auth import router as auth_router
+from app.api.not_read import router as not_read_router
 from app.api.terms_api import router as terms_router
 
 logging.basicConfig(
@@ -134,5 +135,6 @@ app.include_router(tools_router,      prefix="/api/tools",            tags=["too
 app.include_router(roms_router,       prefix="/api/roms",             tags=["roms"])
 app.include_router(recoveries_router, prefix="/api/recoveries",       tags=["recoveries"])
 app.include_router(guides_router,     prefix="/api/guides",           tags=["guides"])
+app.include_router(not_read_router, prefix="")
 app.include_router(auth_router,       prefix="/api/auth",            tags=["auth"])
 app.include_router(terms_router,      prefix="/api/terms",            tags=["auth"])
