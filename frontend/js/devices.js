@@ -25,13 +25,13 @@
       d.has_orangefox  ? '<span class="tag is-warning">OrangeFox</span>' : '',
     ].filter(Boolean).join('');
     return '<div class="column is-6-mobile is-4-tablet is-4-desktop" data-aos="fade-up" data-aos-delay="' + Math.min(i, 6) * 60 + '">' +
-      '<div class="card" style="cursor:pointer" onclick="location.href='/device.html?c=' + esc(d.codename) + ''">' +
+      '<a href="/device.html?c=' + encodeURIComponent(d.codename) + '" class="card" style="display:block">' +
       '<div class="card-content">' +
       '<div class="card-mfr">' + esc(d.manufacturer || 'Unknown') + '</div>' +
       '<p class="title is-6 mb-1">' + esc(d.model_name || d.codename) + '</p>' +
       '<div class="card-codename">' + esc(d.codename) + '</div>' +
       (tags ? '<div class="tags">' + tags + '</div>' : '') +
-      '</div></div></div>';
+      '</div></a></div>';
   }
 
   function renderPagination(total, offset) {
