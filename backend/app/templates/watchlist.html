@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="section">
+  <div class="container" style="max-width:860px">
+    <div class="page-header" data-aos="fade-up">
+      <h1 class="title is-3">Your Watchlist</h1>
+      <p class="subtitle" id="watchlist-subtitle">
+        {% if not user %}Sign in with GitHub to save devices to your watchlist.
+        {% elif not watchlist %}No saved devices yet.
+        {% else %}{{ watchlist | length }} saved device{{ 's' if watchlist | length != 1 }}{% endif %}
+      </p>
+    </div>
+    {% if user and watchlist %}
+    <div class="device-grid">
+      {% for d in watchlist %}
+      <div class="card device-card" style="position:relative">
+        <div class="card-content">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div>
+              <p class="card-codename">{{ d.codename | e }}</p>
+              {% if d.model %}<p class="card-model">{{ d.model | e }}</p>{% endif %}
+              {% if d.manufacturer %}<p style="font-size:.78rem;color:var(--muted)">{{ d.manufacturer | e }}</p>{% endif %}
+            </div>
+            <form method="post" action="/watchlist/{{ d.codename | urlencode }}/remove" style="margin:0">
+              <button type="submit" class="watchlist-remove" title="Remove from watchlist"
+                style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:1.1rem;padding:.25rem">&#x2715;</button>
+            </form>
+          </div>
+          <div style="margin-top:.6rem;display:flex;flex-wrap:wrap;gap:.3rem">
+            {% if d.has_lineageos %}<span class="tag is-small" style="background:var(--accent-dim);color:var(--accent)">LineageOS</span>{% endif %}
+            {% if d.has_twrp %}<span class="tag is-small" style="background:var(--accent-dim);color:var(--accent)">TWRP</span>{% endif %}
+            {% if d.has_orangefox %}<span class="tag is-small" style="background:var(--accent-dim);color:var(--accent)">OrangeFox</span>{% endif %}
+          </div>
+          <div style="margin-top:.75rem">
+            <a href="/device/{{ d.codename | urlencode }}" class="button is-small is-ghost" style="padding:0;color:var(--accent)">View device &rarr;</a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% elif not user %}
+    <div class="empty-state" style="text-align:center;padding:3rem 1rem;color:var(--muted)">
+      <div style="font-size:3rem;margin-bottom:1rem">&#128203;</div>
+      <p><a href="/api/auth/login" class="button is-primary">Sign in with GitHub</a></p>
+    </div>
+    {% else %}
+    <div class="empty-state" style="text-align:center;padding:3rem 1rem;color:var(--muted)">
+      <div style="font-size:3rem;margin-bottom:1rem">&#128203;</div>
+      <p>Browse devices and click the bookmark icon to save them here.</p>
+    </div>
+    {% endif %}
+  </div>
+</main>
+{% endblock %}

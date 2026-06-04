@@ -60,11 +60,24 @@
       '</div></a></div>';
   }
 
+  function apiFetch(path, params) {
+    var pairs = [];
+    if (params) Object.keys(params).forEach(function (k) {
+      if (params[k] != null && params[k] !== '') pairs.push(encodeURIComponent(k) + '=' + encodeURIComponent(params[k]));
+    });
+    var qs  = pairs.join('&');
+    var url = '/api' + path + (qs ? '?' + qs : '');
+    return fetch(url).then(function (r) {
+      if (!r.ok) throw new Error('API ' + r.status);
+      return r.json();
+    });
+  }
+
   var featuredEl = document.getElementById('featured-devices');
   var romFamEl   = document.getElementById('rom-families');
   var pillsEl    = document.getElementById('android-pills');
 
-  api.devices({ limit: 24 }).then(function (d) {
+  apiFetch('/devices', { limit: 24 }).then(function (d) {
     updateStat('stat-devices', d.total);
     if (!featuredEl) return;
     var shuffled = d.devices.slice().sort(function () { return Math.random() - 0.5; }).slice(0, 6);
@@ -74,11 +87,11 @@
     if (featuredEl) featuredEl.innerHTML = '<p class="empty-state">Could not load devices.</p>';
   });
 
-  api.roms({ limit: 1 }).then(function (d) { updateStat('stat-roms', d.total); }).catch(function () {});
-  api.recoveries({ limit: 1 }).then(function (d) { updateStat('stat-recoveries', d.total); }).catch(function () {});
-  api.tools().then(function (d) { updateStat('stat-tools', d.total); }).catch(function () {});
+  apiFetch('/roms', { limit: 1 }).then(function (d) { updateStat('stat-roms', d.total); }).catch(function () {});
+  apiFetch('/recoveries', { limit: 1 }).then(function (d) { updateStat('stat-recoveries', d.total); }).catch(function () {});
+  apiFetch('/tools').then(function (d) { updateStat('stat-tools', d.total); }).catch(function () {});
 
-  api.androidVersions().then(function (d) {
+  apiFetch('/android-versions').then(function (d) {
     updateStat('stat-android', d.total);
     if (!pillsEl) return;
     var recent = d.versions.slice().reverse().slice(0, 8);
@@ -91,7 +104,7 @@
     if (window.AOS) AOS.refresh();
   }).catch(function () {});
 
-  api.roms({ limit: 20 }).then(function (d) {
+  apiFetch('/roms', { limit: 20 }).then(function (d) {
     if (!romFamEl) return;
     var counts = {};
     d.roms.forEach(function (r) { counts[r.name] = (counts[r.name] || 0) + 1; });

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="container" style="padding-bottom:3rem">
+  <div class="page-header" data-aos="fade-up">
+    <h1 class="title">Recoveries</h1>
+    <p class="subtitle">
+      {% if total %}{{ total | int | format_number }} recovery build{{ 's' if total != 1 }}{% endif %}
+    </p>
+  </div>
+  <form method="get" action="/recoveries" class="field has-addons mb-4">
+    <div class="control is-expanded">
+      <input class="input" type="search" name="q" value="{{ q | e }}"
+             placeholder="Search by device codename or model…" autocomplete="off" />
+    </div>
+    <div class="control">
+      <button class="button is-primary" type="submit">Search</button>
+    </div>
+  </form>
+  <div class="columns is-multiline is-mobile">
+    {% for r in recoveries %}
+    <div class="column is-6-mobile is-4-tablet" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 40 if loop.index0 < 7 else 0 }}">
+      <div class="card">
+        <div class="card-content">
+          <div class="card-mfr">{{ (r.recovery_type or 'recovery') | e }}</div>
+          <p class="title is-6 mb-1">{{ (r.model_name or r.codename) | e }}</p>
+          <div class="card-codename">{{ r.codename | e }}</div>
+          {% if r.download_url %}<a href="{{ r.download_url | e }}" target="_blank" rel="noopener" style="font-size:.78rem;color:var(--accent)">Download &rarr;</a>{% endif %}
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="column"><div class="empty-state">No recoveries found.</div></div>
+    {% endfor %}
+  </div>
+  {% if total > limit %}
+  <nav class="pagination mt-4" role="navigation">
+    {% if offset > 0 %}<a href="/recoveries?q={{ q | urlencode }}&offset={{ [offset - limit, 0] | max }}" class="pagination-previous button">Prev</a>{% endif %}
+    {% if offset + limit < total %}<a href="/recoveries?q={{ q | urlencode }}&offset={{ offset + limit }}" class="pagination-next button">Next</a>{% endif %}
+  </nav>
+  {% endif %}
+</main>
+{% endblock %}

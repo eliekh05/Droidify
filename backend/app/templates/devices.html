@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="container" style="padding-bottom:3rem">
+  <div class="page-header" data-aos="fade-up">
+    <h1 class="title">Devices</h1>
+    <p class="subtitle" id="results-meta">
+      {% if total %}{{ total | int | format_number }} device{{ 's' if total != 1 }}{% if q %} for &ldquo;{{ q | e }}&rdquo;{% endif %}{% endif %}
+    </p>
+  </div>
+  <form method="get" action="/devices" class="field has-addons mb-4">
+    <div class="control is-expanded">
+      <input class="input" type="search" name="q" value="{{ q | e }}"
+             placeholder="Search by device name, codename or manufacturer…" autocomplete="off" />
+    </div>
+    <div class="control">
+      <button class="button is-primary" type="submit">Search</button>
+    </div>
+  </form>
+  <div class="columns is-multiline is-mobile">
+    {% for d in devices %}
+    <div class="column is-6-mobile is-4-tablet is-4-desktop" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 40 if loop.index0 < 7 else 0 }}">
+      <a href="/device/{{ d.codename | urlencode }}" class="card" style="display:block">
+        <div class="card-content">
+          <div class="card-mfr">{{ d.manufacturer | default('Unknown') | e }}</div>
+          <p class="title is-6 mb-1">{{ (d.model_name or d.codename) | e }}</p>
+          <div class="card-codename">{{ d.codename | e }}</div>
+          <div class="tags mt-1">
+            {% if d.has_lineageos %}<span class="tag is-success">LineageOS</span>{% endif %}
+            {% if d.has_grapheneos %}<span class="tag is-info">GrapheneOS</span>{% endif %}
+            {% if d.has_twrp %}<span class="tag is-info">TWRP</span>{% endif %}
+            {% if d.has_orangefox %}<span class="tag is-warning">OrangeFox</span>{% endif %}
+          </div>
+        </div>
+      </a>
+    </div>
+    {% else %}
+    <div class="column"><div class="empty-state">No devices found{% if q %} for &ldquo;{{ q | e }}&rdquo;{% endif %}.</div></div>
+    {% endfor %}
+  </div>
+  {% if total > limit %}
+  <nav class="pagination mt-4" role="navigation">
+    {% if offset > 0 %}
+    <a href="/devices?q={{ q | urlencode }}&offset={{ [offset - limit, 0] | max }}" class="pagination-previous button">Prev</a>
+    {% endif %}
+    {% if offset + limit < total %}
+    <a href="/devices?q={{ q | urlencode }}&offset={{ offset + limit }}" class="pagination-next button">Next</a>
+    {% endif %}
+  </nav>
+  {% endif %}
+</main>
+{% endblock %}

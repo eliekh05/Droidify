@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="container" style="padding-bottom:3rem">
+  <div class="page-header" data-aos="fade-up">
+    <h1 class="title">Guides</h1>
+    <p class="subtitle">Flashing, rooting, and Android modding guides</p>
+  </div>
+  <form method="get" action="/guides" class="field has-addons mb-4">
+    <div class="control is-expanded">
+      <input class="input" type="search" name="q" value="{{ q | e }}"
+             placeholder="Search by codename (e.g. beryllium)…" autocomplete="off" />
+    </div>
+    <div class="control">
+      <button class="button is-primary" type="submit">Search</button>
+    </div>
+  </form>
+  <div class="columns is-multiline is-mobile">
+    {% if not q %}
+    <div class="column is-12"><p class="section-label">Universal guides</p></div>
+    {% endif %}
+    {% for g in guides %}
+    <div class="column is-6-mobile is-4-tablet" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 50 if loop.index0 < 7 else 0 }}">
+      <div class="card">
+        <div class="card-content">
+          <div class="card-mfr">{{ (g.guide_type or g.category or 'guide') | e }}</div>
+          <p class="title is-6 mb-1">{{ (g.title or 'Guide') | e }}</p>
+          {% if g.description %}<p class="card-sub">{{ g.description | e }}</p>{% endif %}
+          {% if g.steps %}
+          <details class="guide-steps mt-2">
+            <summary class="card-link">Steps ({{ g.steps | length }})</summary>
+            <ol class="guide-ol">
+              {% for step in g.steps %}<li>{{ step | e }}</li>{% endfor %}
+            </ol>
+            {% if g.notes %}<p class="guide-notes">{{ g.notes | e }}</p>{% endif %}
+          </details>
+          {% endif %}
+          {% set url = g.source_url or g.url %}
+          {% if url %}<a href="{{ url | e }}" target="_blank" rel="noopener" class="card-link">Read guide &rarr;</a>{% endif %}
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="column"><div class="empty-state">No guides found{% if q %} for &ldquo;{{ q | e }}&rdquo;{% endif %}.</div></div>
+    {% endfor %}
+  </div>
+</main>
+{% endblock %}

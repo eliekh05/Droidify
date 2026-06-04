@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="container" style="padding-bottom:3rem">
+  <div class="page-header" data-aos="fade-up">
+    <h1 class="title">Tools</h1>
+    <p class="subtitle">{{ tools | length }} tool{{ 's' if tools | length != 1 }}</p>
+  </div>
+  <form method="get" action="/tools" class="field has-addons mb-4">
+    <div class="control is-expanded">
+      <input class="input" type="search" name="q" value="{{ q | e }}"
+             placeholder="Search tools…" autocomplete="off" />
+    </div>
+    <div class="control">
+      <button class="button is-primary" type="submit">Search</button>
+    </div>
+  </form>
+  <div class="columns is-multiline is-mobile">
+    {% for t in tools %}
+    <div class="column is-6-mobile is-4-tablet" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 40 if loop.index0 < 7 else 0 }}">
+      <div class="card">
+        <div class="card-content">
+          <div class="card-mfr">{{ (t.category or '') | e }}</div>
+          <p class="title is-6 mb-1">
+            {{ t.name | e }}
+            {% if t.status == 'discontinued' %}<span class="tag is-danger is-light ml-1">discontinued</span>{% endif %}
+          </p>
+          {% if t.description %}<p class="card-sub">{{ t.description | e }}</p>{% endif %}
+          {% if t.latest_version %}<div class="card-codename">{{ t.latest_version | e }}</div>{% endif %}
+          {% set dl = (t.download_urls or [None])[0] or t.release_url or t.official_url %}
+          {% if dl %}<a href="{{ dl | e }}" target="_blank" rel="noopener" class="card-link">Download &rarr;</a>{% endif %}
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="column"><div class="empty-state">No tools found.</div></div>
+    {% endfor %}
+  </div>
+</main>
+{% endblock %}

@@ -120,6 +120,23 @@
     if (window.AOS) AOS.refresh();
   }
 
+  function fetchDevice(codename, timeoutMs) {
+    timeoutMs = timeoutMs || 20000;
+    var ctrl  = new AbortController();
+    var timer = setTimeout(function () { ctrl.abort(); }, timeoutMs);
+    return fetch('/api/devices/' + encodeURIComponent(codename), { signal: ctrl.signal })
+      .then(function (r) {
+        clearTimeout(timer);
+        if (!r.ok) throw new Error('API ' + r.status + ': /devices/' + codename);
+        return r.json();
+      })
+      .catch(function (e) {
+        clearTimeout(timer);
+        if (e.name === 'AbortError') throw new Error('Request timed out: /devices/' + codename);
+        throw e;
+      });
+  }
+
   function load(retry) {
     if (!retry && main) {
       main.innerHTML = '<div style="padding:3rem 0;text-align:center">' +
@@ -127,7 +144,7 @@
         '<p style="color:var(--muted)">Loading device data...</p>' +
       '</div>';
     }
-    api.device(codename, 20000).then(function (device) {
+    fetchDevice(codename, 20000).then(function (device) {
       render(device);
       if (!retry && (!device.roms || !device.roms.length)) {
         setTimeout(function () { load(true); }, 3000);

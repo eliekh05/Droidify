@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="container" style="padding-bottom:3rem">
+  <div class="page-header" data-aos="fade-up">
+    <h1 class="title">Android Versions</h1>
+    <p class="subtitle">{{ versions | length }} versions tracked</p>
+  </div>
+  <div class="table-container">
+    <table class="table is-fullwidth is-hoverable">
+      <thead>
+        <tr><th>Version</th><th>Codename</th><th>API</th><th>Year</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        {% for v in versions %}
+        <tr data-aos="fade-up" data-aos-delay="{{ loop.index0 * 30 if loop.index0 < 13 else 0 }}">
+          <td style="font-weight:600">Android {{ v.version_number | e }}</td>
+          <td style="color:var(--muted)">{{ (v.codename or '—') | e }}</td>
+          <td style="font-family:var(--mono);color:var(--info)">{{ (v.api_level or '—') | string | e }}</td>
+          <td style="color:var(--muted)">{{ (v.release_year or '—') | string | e }}</td>
+          <td>
+            {% if v.status == 'active' %}<span class="tag is-success">ACTIVE</span>
+            {% elif v.status == 'partial' %}<span class="tag is-warning">PREVIEW</span>
+            {% else %}<span class="tag is-dark">EOL</span>{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</main>
+{% endblock %}
