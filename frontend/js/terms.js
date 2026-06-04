@@ -14,24 +14,38 @@
   if (onNotRead) return;
 
   if (onTerms) {
-    const bar      = document.getElementById('terms-agree-bar');
-    const btn      = document.getElementById('terms-agree-btn');
-    const lockMsg  = document.getElementById('terms-lock-msg');
-    const sentinel = document.getElementById('terms-end');
-    let   reached  = false;
+    const btn     = document.getElementById('terms-agree-btn');
+    const lockMsg = document.getElementById('terms-lock-msg');
+    let   reached = false;
 
-    if (sentinel && btn) {
-      var obs = new IntersectionObserver(function (entries) {
-        if (entries[0].isIntersecting && !reached) {
-          reached = true;
-          btn.disabled = false;
-          btn.classList.remove('is-light');
-          btn.classList.add('is-success');
-          if (lockMsg) lockMsg.style.display = 'none';
-        }
-      }, { threshold: 0.1, rootMargin: "0px 0px -80px 0px" });
-      obs.observe(sentinel);
+    // Disable via JS so click events always fire regardless of disabled state
+    if (btn) {
+      btn.disabled = true;
     }
+
+    function unlock() {
+      if (reached) return;
+      reached = true;
+      if (btn) {
+        btn.disabled = false;
+        btn.classList.remove('is-light');
+        btn.classList.add('is-success');
+      }
+      if (lockMsg) lockMsg.style.display = 'none';
+      window.removeEventListener('scroll', checkScroll);
+    }
+
+    function checkScroll() {
+      // MDN recommended pattern — tolerates rounding differences
+      var remaining = document.documentElement.scrollHeight
+                    - window.innerHeight
+                    - window.scrollY;
+      if (remaining <= 2) unlock();
+    }
+
+    window.addEventListener('scroll', checkScroll, { passive: true });
+    // Check immediately — unlocks if page is too short to scroll
+    checkScroll();
 
     if (btn) {
       btn.addEventListener('click', function () {
@@ -44,7 +58,6 @@
       });
     }
 
-    // bar is already visible via HTML class
     return;
   }
 
