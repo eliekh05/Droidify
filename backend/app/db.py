@@ -1,0 +1,96 @@
+"""
+app/db.py — SQLite database for user accounts and terms agreements.
+Uses aiosqlite for async access. Single file, no migrations needed.
+"""
+import os
+import aiosqlite
+from pathlib import Path
+
+DB_PATH = Path(os.environ.get("DB_PATH", "/tmp/droidify.db"))
+
+
+async def get_db() -> aiosqlite.Connection:
+    db = await aiosqlite.connect(DB_PATH)
+    db.row_factory = aiosqlite.Row
+    await db.execute("PRAGMA journal_mode=WAL")
+    await db.execute("PRAGMA foreign_keys=ON")
+    return db
+
+
+async def init_db() -> None:
+    """Create tables if they do not exist."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                github_id   INTEGER UNIQUE NOT NULL,
+                login       TEXT    NOT NULL,
+                name        TEXT,
+                avatar_url  TEXT,
+                created_at  TEXT    DEFAULT (datetime('now'))
+            )
+        """)
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS terms_agreements (
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id     INTEGER NOT NULL REFERENCES users(id),
+                agreed_at   TEXT    DEFAULT (datetime('now')),
+                ip          TEXT,
+                user_agent  TEXT,
+                UNIQUE(user_id)
+            )
+        """)
+        await db.commit()
+
+
+async def upsert_user(github_id: int, login: str,
+                      name: str | None, avatar_url: str | None) -> int:
+    """Insert or update a user. Returns the local user id."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        await db.execute("""
+            INSERT INTO users (github_id, login, name, avatar_url)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(github_id) DO UPDATE SET
+                login      = excluded.login,
+                name       = excluded.name,
+                avatar_url = excluded.avatar_url
+        """, (github_id, login, name, avatar_url))
+        await db.commit()
+        cur = await db.execute(
+            "SELECT id FROM users WHERE github_id = ?", (github_id,)
+        )
+        row = await cur.fetchone()
+        return row["id"]
+
+
+async def get_user_by_id(user_id: int) -> dict | None:
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        cur = await db.execute(
+            "SELECT * FROM users WHERE id = ?", (user_id,)
+        )
+        row = await cur.fetchone()
+        return dict(row) if row else None
+
+
+async def record_terms_agreement(user_id: int, ip: str, ua: str) -> None:
+    """Record that a user has agreed to the terms. Upserts."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("""
+            INSERT INTO terms_agreements (user_id, ip, user_agent)
+            VALUES (?, ?, ?)
+            ON CONFLICT(user_id) DO UPDATE SET
+                agreed_at  = datetime('now'),
+                ip         = excluded.ip,
+                user_agent = excluded.user_agent
+        """, (user_id, ip, ua))
+        await db.commit()
+
+
+async def has_agreed_terms(user_id: int) -> bool:
+    async with aiosqlite.connect(DB_PATH) as db:
+        cur = await db.execute(
+            "SELECT 1 FROM terms_agreements WHERE user_id = ?", (user_id,)
+        )
+        return await cur.fetchone() is not None

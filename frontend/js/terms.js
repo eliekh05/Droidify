@@ -19,7 +19,6 @@
     var label   = document.getElementById('terms-agree-label');
     var reached = false;
 
-    // Starts disabled — enabled only after scrolling to bottom
     if (check) check.disabled = true;
 
     // Add padding-bottom so page scrolls past the fixed bar
@@ -55,18 +54,42 @@
           window.location.href = NOT_READ_URL;
           return;
         }
-        if (check.checked) {
-          localStorage.setItem(AGREED_KEY, Date.now().toString());
-          window.location.href = '/';
-        }
+        if (!check.checked) return;
+
+        // Try server-side first (logged in users)
+        fetch('/api/terms/agree', { method: 'POST' })
+          .then(function (r) { return r.json(); })
+          .then(function (d) {
+            // Always set localStorage too (fallback for anonymous)
+            localStorage.setItem(AGREED_KEY, Date.now().toString());
+            window.location.href = '/';
+          })
+          .catch(function () {
+            // Not logged in — localStorage only
+            localStorage.setItem(AGREED_KEY, Date.now().toString());
+            window.location.href = '/';
+          });
       });
     }
 
     return;
   }
 
+  // Every other page — gate check
   if (isExempt) return;
-  if (!localStorage.getItem(AGREED_KEY)) {
-    window.location.href = TERMS_URL;
-  }
+
+  // Check server-side first for logged-in users
+  fetch('/api/terms/status')
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (d.agreed) return; // server says agreed — let them through
+      if (localStorage.getItem(AGREED_KEY)) return; // anonymous agreed
+      window.location.href = TERMS_URL;
+    })
+    .catch(function () {
+      // Fallback to localStorage if API unreachable
+      if (!localStorage.getItem(AGREED_KEY)) {
+        window.location.href = TERMS_URL;
+      }
+    });
 })();
