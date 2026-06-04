@@ -151,30 +151,63 @@ async def watchlist_remove(codename: str, request: Request):
 
 @router.get("/device/{codename}", response_class=HTMLResponse)
 async def device_page(codename: str, request: Request):
-    import re
-    if not re.match(r'^[a-z0-9_-]{1,40}$', codename):
+    import re as _re
+    if not _re.match(r'^[a-zA-Z0-9_-]{1,64}$', codename):
         return _r(request, "device.html", "devices",
             title="Device not found — Droidify",
             device=None, error="Invalid device codename.")
     try:
-        from app.api.devices import get_device
-        # Reuse the existing API endpoint logic
-        resp = await get_device(codename)
-        device = resp.body if hasattr(resp, 'body') else None
-        import json
-        if hasattr(resp, 'body'):
-            device = json.loads(resp.body)
-        else:
-            device = None
-    except Exception as e:
-        device = None
+        import asyncio as _aio
+        from app.scrapers.devices import get_device_detail
+        from app.scrapers.roms import get_roms_for_device
+        from app.scrapers.recoveries import get_recovery_for_device
+        from app.scrapers.samfw import get_samfw_for_device
+        from app.api.devices import LOS_BRANCH_TO_ANDROID
 
-    if not device:
+        device, roms, recoveries, samfw = await _aio.gather(
+            get_device_detail(codename),
+            get_roms_for_device(codename),
+            get_recovery_for_device(codename),
+            get_samfw_for_device(codename),
+            return_exceptions=True,
+        )
+
+        # Handle exceptions from gather
+        device     = device     if isinstance(device, dict)     else None
+        roms       = roms       if isinstance(roms, list)       else []
+        recoveries = recoveries if isinstance(recoveries, list) else []
+        samfw      = samfw      if isinstance(samfw, list)      else []
+
+        if not device:
+            return _r(request, "device.html", "devices",
+                title="Device not found — Droidify",
+                device=None, error=f'Device "{codename}" not found.')
+
+        # Build LineageOS ROM entries
+        if device.get("has_lineageos"):
+            los_roms = []
+            for branch in device.get("lineageos_branches", []):
+                android = LOS_BRANCH_TO_ANDROID.get(branch, "?")
+                los_roms.append({
+                    "name": "LineageOS",
+                    "source": "lineageos",
+                    "codename": codename,
+                    "android_base": android,
+                    "version_label": f"Branch: {branch}",
+                    "download_url": f"https://download.lineageos.org/devices/{codename}/builds",
+                })
+            roms = los_roms + [r for r in roms if r.get("source") != "lineageos"]
+
+        device["roms"]           = roms
+        device["recoveries"]     = recoveries
+        device["stock_firmware"] = samfw
+
+        name = device.get("model_name") or device.get("codename", codename)
+        return _r(request, "device.html", "devices",
+            title=f'{name} — Droidify',
+            device=device)
+
+    except Exception as e:
         return _r(request, "device.html", "devices",
             title="Device not found — Droidify",
-            device=None, error=f'Device &ldquo;{codename}&rdquo; not found.')
-
-    name = device.get("model_name") or device.get("codename", codename)
-    return _r(request, "device.html", "devices",
-        title=f'{name} — Droidify',
-        device=device)
+            device=None, error=f'Could not load device "{codename}". Please try again.')
