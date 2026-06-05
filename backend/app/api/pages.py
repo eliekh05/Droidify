@@ -19,6 +19,33 @@ _tpl_dir = Path(__file__).parent.parent / "templates"
 templates = Jinja2Templates(directory=str(_tpl_dir))
 _V = os.environ.get("BUILD_TS", str(int(time.time())))
 
+async def _gate(request: Request) -> bool:
+    """
+    Returns True if the user is allowed through (agreed to terms).
+    Logic:
+      - localStorage is checked client-side (terms.js).
+      - Here we do the server-side check:
+        * Anonymous user   → block (terms.js handles redirect)
+        * Signed-in user who agreed → allow
+        * Signed-in user who hasn't agreed → block
+    We return True to allow, False to redirect to /terms.html.
+    Anonymous users are NOT blocked server-side — terms.js handles them
+    so the page loads fast on cache hit. Signed-in users get server check
+    so agreeing on one device unlocks all devices immediately.
+    """
+    session = get_session(request)
+    if not session:
+        # Anonymous — let terms.js handle it client-side
+        return True
+    from app.db import has_agreed_terms
+    return await has_agreed_terms(session["user_id"])
+
+
+def _terms_redirect():
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse("/terms.html", status_code=302)
+
+
 def _format_number(value):
     try: return "{:,}".format(int(value))
     except: return str(value)
@@ -35,6 +62,7 @@ def _r(request, name, active, **kw):
 
 @router.get("/devices", response_class=HTMLResponse)
 async def devices_page(request: Request, q: str = "", limit: int = 24, offset: int = 0):
+    if not await _gate(request): return _terms_redirect()
     from app.scrapers.devices import get_devices
     try:
         data = await get_devices(q=q or None, limit=limit, offset=offset)
@@ -49,6 +77,7 @@ async def devices_page(request: Request, q: str = "", limit: int = 24, offset: i
 
 @router.get("/roms", response_class=HTMLResponse)
 async def roms_page(request: Request, q: str = "", limit: int = 20, offset: int = 0):
+    if not await _gate(request): return _terms_redirect()
     from app.scrapers.roms import get_all_roms as get_roms
     try:
         data = await get_roms(q=q or None, limit=limit, offset=offset)
@@ -63,6 +92,7 @@ async def roms_page(request: Request, q: str = "", limit: int = 20, offset: int 
 
 @router.get("/recoveries", response_class=HTMLResponse)
 async def recoveries_page(request: Request, q: str = "", limit: int = 20, offset: int = 0):
+    if not await _gate(request): return _terms_redirect()
     from app.scrapers.recoveries import get_recoveries
     try:
         data = await get_recoveries(q=q or None, limit=limit, offset=offset)
@@ -77,6 +107,7 @@ async def recoveries_page(request: Request, q: str = "", limit: int = 20, offset
 
 @router.get("/tools", response_class=HTMLResponse)
 async def tools_page(request: Request, q: str = ""):
+    if not await _gate(request): return _terms_redirect()
     from app.scrapers.tools import get_tools
     try:
         data    = await get_tools()
@@ -111,6 +142,7 @@ async def guides_page(request: Request, q: str = ""):
 
 @router.get("/android", response_class=HTMLResponse)
 async def android_page(request: Request):
+    if not await _gate(request): return _terms_redirect()
     from app.scrapers.android_versions import get_android_versions
     try:
         data     = await get_android_versions()
@@ -123,6 +155,7 @@ async def android_page(request: Request):
 
 @router.get("/watchlist", response_class=HTMLResponse)
 async def watchlist_page(request: Request):
+    if not await _gate(request): return _terms_redirect()
     import asyncio
     session   = get_session(request)
     user      = None
@@ -137,8 +170,13 @@ async def watchlist_page(request: Request):
                 watchlist = list(await asyncio.gather(
                     *[_fetch_device_info(c) for c in codenames]
                 ))
+    alerts = []
+    if user:
+        from app.db import get_unread_alerts
+        alerts = await get_unread_alerts(session["user_id"])
+
     return _r(request, "watchlist.html", "watchlist",
-        title="Watchlist — Droidify", user=user, watchlist=watchlist)
+        title="Watchlist — Droidify", user=user, watchlist=watchlist, alerts=alerts)
 
 
 @router.post("/watchlist/{codename}/remove")
@@ -151,6 +189,7 @@ async def watchlist_remove(codename: str, request: Request):
 
 @router.get("/device/{codename}", response_class=HTMLResponse)
 async def device_page(codename: str, request: Request):
+    if not await _gate(request): return _terms_redirect()
     import re as _re
     if not _re.match(r'^[a-zA-Z0-9_-]{1,64}$', codename):
         return _r(request, "device.html", "devices",
@@ -239,3 +278,33 @@ async def device_unsave(codename: str, request: Request):
         from app.db import remove_from_watchlist
         await remove_from_watchlist(session["user_id"], codename)
     return RedirectResponse(f"/device/{codename}", status_code=303)
+
+
+@router.get("/perks", response_class=HTMLResponse)
+async def perks_page(request: Request):
+    return _r(request, "perks.html", "",
+        title="Signed out vs Signed in — Droidify")
+
+@router.get("/faq", response_class=HTMLResponse)
+async def faq_page(request: Request):
+    return _r(request, "faq.html", "", title="FAQ — Droidify")
+
+
+@router.get("/privacy", response_class=HTMLResponse)
+async def privacy_page(request: Request):
+    return _r(request, "privacy.html", "", title="Privacy — Droidify")
+
+
+@router.get("/terms", response_class=HTMLResponse)
+async def terms_page(request: Request):
+    return _r(request, "terms.html", "", title="Terms — Droidify")
+
+
+@router.post("/watchlist/alerts/read")
+async def watchlist_mark_alerts_read(request: Request):
+    from fastapi.responses import RedirectResponse
+    session = get_session(request)
+    if session:
+        from app.db import mark_alerts_read
+        await mark_alerts_read(session["user_id"])
+    return RedirectResponse("/watchlist", status_code=303)

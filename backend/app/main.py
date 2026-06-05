@@ -19,6 +19,7 @@ from app.api.not_read import router as not_read_router
 from app.api.terms_api import router as terms_router
 from app.api.watchlist import router as watchlist_router
 from app.api.pages import router as pages_router
+from app.api.alerts import router as alerts_router
 
 logging.basicConfig(
     level=logging.WARNING,
@@ -66,6 +67,8 @@ async def lifespan(app: FastAPI):
     _log.warning("Cache restored: %d entries from disk", restored)
 
     asyncio.get_event_loop().create_task(_warm())
+    from app.services.alerts import run_alert_loop
+    asyncio.get_event_loop().create_task(run_alert_loop())
     yield
 
     # Save cache to disk on shutdown
@@ -116,6 +119,7 @@ app.include_router(auth_router,       prefix="/api/auth",            tags=["auth
 app.include_router(terms_router,      prefix="/api/terms",            tags=["auth"])
 app.include_router(watchlist_router,   prefix="/api/watchlist",        tags=["watchlist"])
 app.include_router(pages_router)
+app.include_router(alerts_router, prefix="/api/alerts", tags=["alerts"])
 
 # Serve frontend static files — must be last so API routes take priority
 _static_dir = os.environ.get("STATIC_DIR",

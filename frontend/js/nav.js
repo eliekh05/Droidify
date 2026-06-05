@@ -1,28 +1,6 @@
 (function () {
   'use strict';
 
-  // ── Mobile hamburger ──────────────────────────────────────────────────────
-  const toggle = document.getElementById('nav-toggle');
-  const nav    = document.getElementById('main-nav');
-  if (toggle && nav) {
-    function doToggle(e) {
-      e.preventDefault();
-      toggle.classList.toggle('is-active');
-      nav.classList.toggle('is-active');
-      toggle.setAttribute('aria-expanded',
-        nav.classList.contains('is-active') ? 'true' : 'false');
-    }
-    toggle.addEventListener('click',      doToggle);
-    toggle.addEventListener('touchstart', doToggle, { passive: false });
-    nav.addEventListener('click', e => {
-      if (e.target.closest('a')) {
-        toggle.classList.remove('is-active');
-        nav.classList.remove('is-active');
-        toggle.setAttribute('aria-expanded', 'false');
-      }
-    });
-  }
-
   // ── Connection overlay ────────────────────────────────────────────────────
   const overlay       = document.getElementById('connection-overlay');
   const offlineBanner = document.getElementById('offline-banner');
@@ -202,5 +180,47 @@
   }
 
   setupAuth();
+
+
+  // ── ROM alert badge ────────────────────────────────────────────────────────
+  function updateAlertBadge() {
+    fetch('/api/alerts/count')
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        var count = d.count || 0;
+        // Find Watchlist link in navbar
+        var links = document.querySelectorAll('a.navbar-item');
+        var wl    = null;
+        for (var i = 0; i < links.length; i++) {
+          if (links[i].getAttribute('href') === '/watchlist') { wl = links[i]; break; }
+        }
+        if (!wl) return;
+        var existing = wl.querySelector('.alert-badge');
+        if (count > 0) {
+          if (!existing) {
+            var badge = document.createElement('span');
+            badge.className = 'alert-badge';
+            badge.style.cssText = [
+              'display:inline-flex', 'align-items:center', 'justify-content:center',
+              'background:#ff3860', 'color:#fff', 'border-radius:999px',
+              'font-size:.6rem', 'font-weight:700', 'min-width:1.1rem', 'height:1.1rem',
+              'padding:0 .25rem', 'margin-left:.35rem', 'vertical-align:middle',
+              'line-height:1'
+            ].join(';');
+            wl.appendChild(badge);
+            existing = badge;
+          }
+          existing.textContent = count > 9 ? '9+' : String(count);
+        } else if (existing) {
+          existing.remove();
+        }
+      })
+      .catch(function () {});
+  }
+
+  // Only fetch if user might be logged in (cookie present)
+  if (document.cookie.indexOf('droidify_session') !== -1) {
+    updateAlertBadge();
+  }
 
 })();

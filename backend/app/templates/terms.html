@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block head %}
+<div id="terms-progress-bar" style="position:fixed;top:0;left:0;right:0;height:4px;z-index:9999;background:var(--border);pointer-events:none">
+  <div id="terms-progress-fill" style="height:100%;width:0%;background:var(--accent);transition:width .1s linear"></div>
+</div>
+{% endblock %}
+{% block content %}
+<main class="container" style="padding-bottom:4rem;max-width:640px">
+
+  <div style="padding:3rem 0 2rem" data-aos="fade-up">
+    <h1 class="title" style="font-size:2rem;margin-bottom:.4rem">Terms</h1>
+    <p style="color:var(--muted);font-size:.88rem">Plain language. Scroll to the bottom. Last updated June 2026.</p>
+  </div>
+
+  <div class="page-prose">
+
+    <div class="prose-card" data-aos="fade-up">
+      <div class="pc-title">&#128269; What Droidify is</div>
+      <p>A free index. Fetches publicly available data about Android ROMs, recoveries, tools, and devices from third-party sources. Does not host, own, or distribute any firmware or ROM file. Every download link goes directly to whoever made it.</p>
+    </div>
+
+    <div class="prose-card warn-card" data-aos="fade-up">
+      <div class="pc-title">&#9888;&#65039; The stuff that actually matters</div>
+      <div style="display:flex;flex-direction:column;gap:.75rem;margin-top:.25rem">
+        <div class="perk-row" style="padding:.4rem 0"><span class="pi">&#128275;</span><div><strong>Bootloader unlock wipes your device.</strong> Everything. Gone. Back up first.<br><small>Not negotiable. Every manufacturer. Every device.</small></div></div>
+        <div class="perk-row" style="padding:.4rem 0"><span class="pi">&#128683;</span><div><strong>Samsung Knox is permanent.</strong> Unlock the bootloader = Knox trips to 0x1 forever. No stock flash, no service centre undoes it. Knox, Samsung Pay, Secure Folder stop working permanently.<br><small>If you care about any of those — do not unlock.</small></div></div>
+        <div class="perk-row" style="padding:.4rem 0"><span class="pi">&#128244;</span><div><strong>Play Protect and banking apps.</strong> Rooting or uncertified ROMs can break certification. Banking apps and streaming services may stop working.<br><small>That conversation is with the ROM developer, not us.</small></div></div>
+        <div class="perk-row" style="padding:.4rem 0"><span class="pi">&#128220;</span><div><strong>Warranty.</strong> Unlocking voids it on most devices. Some let you re-lock to recover it.<br><small>Check before you proceed.</small></div></div>
+        <div class="perk-row" style="padding:.4rem 0"><span class="pi">&#128247;</span><div><strong>Bricked device.</strong> Wrong file, wrong variant, interrupted flash = permanent brick.<br><small>Go to XDA or the ROM&rsquo;s Telegram. They know how to unbrick. We don&rsquo;t.</small></div></div>
+      </div>
+    </div>
+
+    <div class="prose-card" data-aos="fade-up">
+      <div class="pc-title">&#128190; The files we link to</div>
+      <p>Every file was uploaded by its developer to their own infrastructure. We didn&rsquo;t upload it. If a file causes problems: the developer who uploaded it is who you need. Always check the SHA256 checksum before flashing.</p>
+    </div>
+
+    <div class="prose-card" data-aos="fade-up">
+      <div class="pc-title">&#128030; GitHub issues — what gets auto-closed</div>
+      <ul>
+        <li>Tripped Knox / voided warranty</li>
+        <li>Failed Play Protect certification</li>
+        <li>Data loss from flashing</li>
+        <li>Bricked device</li>
+        <li>Complaints about a ROM or recovery file</li>
+        <li>Requests to recover data or unbrick</li>
+      </ul>
+    </div>
+
+    <div class="prose-card" data-aos="fade-up">
+      <div class="pc-title">&#128279; No affiliation</div>
+      <p>Independent project. No relationship with LineageOS, Google, Samsung, OrangeFox, TWRP, Xiaomi, or anyone else on the site. All trademarks belong to their owners.</p>
+    </div>
+
+    <div class="prose-card" data-aos="fade-up">
+      <div class="pc-title">&#128196; Open source</div>
+      <p>Source on <a href="https://github.com/eliekh05/Droidify" target="_blank" rel="noopener" style="color:var(--accent)">GitHub</a> under MIT. Fork it, self-host it, modify freely. MIT means no warranty and no liability &mdash; exactly what it says.</p>
+    </div>
+
+    <div class="honest-box accent-card" data-aos="fade-up">
+      <strong>Short version:</strong>
+      <span>Free index. Every flash decision is yours alone. Knox stays tripped. Data stays gone. Warranties stay void. Talk to the developer who made the file &mdash; not us.</span>
+    </div>
+
+  </div>
+</main>
+{% endblock %}
+{% block scripts %}
+<script src="/js/terms.js?v=525120"></script>
+{% endblock %}

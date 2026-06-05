@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="container" style="padding-bottom:4rem;max-width:640px">
+
+  <div style="text-align:center;padding:3rem 0 2.5rem" data-aos="fade-up">
+    <h1 class="title" style="font-size:2rem;margin-bottom:.5rem">What you get</h1>
+    <p style="color:var(--muted);font-size:.95rem">No tiers. No credit card. No catch.</p>
+  </div>
+
+  <div class="columns is-mobile is-variable is-3" data-aos="fade-up">
+    <div class="column">
+      <p style="font-weight:700;font-size:.85rem;color:var(--muted);margin-bottom:1rem;text-transform:uppercase;letter-spacing:.06em">Now</p>
+      <div style="display:flex;flex-direction:column;gap:.1rem">
+        <div class="perk-row"><span class="pi">&#128269;</span><div>Search everything<br><small>All devices, ROMs, guides, tools</small></div></div>
+        <div class="perk-row perk-no"><span class="pi">&#128203;</span><div>No watchlist<br><small>Can't save devices</small></div></div>
+        <div class="perk-row perk-no"><span class="pi">&#128241;</span><div>Read terms every new device<br><small>Browser memory only</small></div></div>
+        <div class="perk-row perk-no"><span class="pi">&#128276;</span><div>No ROM alerts<br><small>Sign in to enable</small></div></div>
+      </div>
+    </div>
+    <div class="column">
+      <p style="font-weight:700;font-size:.85rem;color:var(--accent);margin-bottom:1rem;text-transform:uppercase;letter-spacing:.06em">After signing in</p>
+      <div style="display:flex;flex-direction:column;gap:.1rem">
+        <div class="perk-row perk-yes"><span class="pi">&#128269;</span><div>Search everything<br><small>Same as before</small></div></div>
+        <div class="perk-row perk-yes"><span class="pi">&#128203;</span><div>Watchlist — up to 20 devices<br><small>Synced across all your devices</small></div></div>
+        <div class="perk-row perk-yes"><span class="pi">&#128241;</span><div>Terms once, anywhere<br><small>New device just opens the site</small></div></div>
+        <div class="perk-row perk-yes"><span class="pi">&#128276;</span><div>ROM alerts<br><small>Badge on watchlist when new builds drop</small></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="honest-box" data-aos="fade-up">
+    <strong>The honest bit:</strong>
+    <span>&#128275; Sign in uses GitHub OAuth. We read your public username and avatar. Nothing else.</span>
+    <span>&#128683; We don't store your email, password, or any private GitHub data.</span>
+    <span>&#9888;&#65039; Watchlist cap is 20 devices. Not 20 &ldquo;for free&rdquo; &mdash; just 20.</span>
+    <span>&#128276; ROM alerts are live. Badge appears on Watchlist when new ROM builds are found for your saved devices.</span>
+  </div>
+
+  <div style="text-align:center" data-aos="fade-up">
+    <a href="/api/auth/login" class="button is-primary is-medium">Sign in with GitHub &rarr;</a>
+    <p style="margin-top:.75rem;font-size:.8rem;color:var(--muted)">2 seconds. No forms.</p>
+  </div>
+
+</main>
+{% endblock %}

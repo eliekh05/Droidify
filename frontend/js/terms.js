@@ -1,35 +1,35 @@
 (function () {
   'use strict';
 
-  const AGREED_KEY   = 'droidify_terms_agreed_v1';
-  const NOT_READ_URL = '/not-read';
-  const TERMS_URL    = '/terms.html';
+  var AGREED_KEY   = 'droidify_terms_agreed_v1';
+  var NOT_READ_URL = '/not-read';
+  var TERMS_URL    = '/terms';
 
-  const path      = window.location.pathname;
-  const onTerms   = path.endsWith('terms.html')    || path === '/terms';
-  const onNotRead = path.endsWith('not-read.html') || path === '/not-read';
-  const exempt    = ['/terms.html', '/not-read', '/privacy.html'];
-  const isExempt  = exempt.some(function (p) { return path.endsWith(p); });
+  var path      = window.location.pathname;
+  var onTerms   = path === '/terms';
+  var onNotRead = path.endsWith('not-read.html') || path === '/not-read';
+  var exempt    = ['/terms', '/not-read', '/privacy', '/faq'];
+  var isExempt  = exempt.some(function (p) { return path === p || path.endsWith(p); });
 
   if (onNotRead) return;
 
+  // ── Terms page — scroll-to-agree ──────────────────────────────────────────
   if (onTerms) {
-    var fill = document.getElementById('terms-progress-fill');
+    var fill   = document.getElementById('terms-progress-fill');
     var agreed = false;
 
-    // Server-side skip for already-agreed logged-in users
+    // Signed-in users who already agreed elsewhere — skip immediately
     fetch('/api/terms/status')
       .then(function (r) { return r.json(); })
       .then(function (d) {
         if (d.agreed) {
           localStorage.setItem(AGREED_KEY, Date.now().toString());
-          window.location.href = '/';
+          window.location.replace('/');
         }
       })
       .catch(function () {});
 
-    // Nav click intercept — capture phase
-    // If they click away before scrolling to the bottom, punishment page
+    // Block nav clicks until scroll complete
     document.addEventListener('click', function (e) {
       var node = e.target;
       while (node && node.tagName !== 'A') { node = node.parentElement; }
@@ -40,6 +40,7 @@
           href.includes('terms') ||
           href.includes('not-read') ||
           href.includes('privacy') ||
+          href.includes('faq') ||
           href.includes('mailto')) return;
       if (!agreed) {
         e.preventDefault();
@@ -56,11 +57,7 @@
       );
       var winHeight  = window.innerHeight;
       var scrollable = docHeight - winHeight;
-      if (scrollable <= 0) {
-        // Page too short to scroll — agree immediately
-        complete();
-        return;
-      }
+      if (scrollable <= 0) { complete(); return; }
       var pct = Math.min(100, Math.round((scrolled / scrollable) * 100));
       if (fill) fill.style.width = pct + '%';
       if (pct >= 100 && !agreed) complete();
@@ -72,30 +69,34 @@
       if (fill) fill.style.width = '100%';
       localStorage.setItem(AGREED_KEY, Date.now().toString());
       fetch('/api/terms/agree', { method: 'POST' }).catch(function () {});
-      // Small pause so user sees the bar complete before redirect
-      setTimeout(function () { window.location.href = '/'; }, 400);
+      setTimeout(function () { window.location.replace('/'); }, 400);
     }
 
     window.addEventListener('scroll', onScroll, { passive: true });
-    // Check immediately — handles short pages
     onScroll();
     return;
   }
 
+  // ── All other pages — gate check ──────────────────────────────────────────
   if (isExempt) return;
 
+  // Fast path — localStorage already set on this device
   if (localStorage.getItem(AGREED_KEY)) return;
 
+  // Slow path — check server (handles signed-in users on new devices)
   fetch('/api/terms/status')
     .then(function (r) { return r.json(); })
     .then(function (d) {
       if (d.agreed) {
+        // Signed in and agreed on another device — unlock this device too
         localStorage.setItem(AGREED_KEY, Date.now().toString());
         return;
       }
-      window.location.href = TERMS_URL;
+      // Not agreed anywhere — send to terms
+      window.location.replace(TERMS_URL);
     })
     .catch(function () {
-      window.location.href = TERMS_URL;
+      // Network error — send to terms to be safe
+      window.location.replace(TERMS_URL);
     });
 })();

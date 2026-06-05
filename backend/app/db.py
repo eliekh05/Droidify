@@ -50,6 +50,27 @@ async def init_db() -> None:
                 UNIQUE(user_id, codename)
             )
         """)
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS rom_snapshots (
+                user_id     INTEGER NOT NULL REFERENCES users(id),
+                codename    TEXT    NOT NULL,
+                rom_count   INTEGER NOT NULL DEFAULT 0,
+                checked_at  TEXT    DEFAULT (datetime('now')),
+                PRIMARY KEY (user_id, codename)
+            )
+        """)
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS alerts (
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id     INTEGER NOT NULL REFERENCES users(id),
+                codename    TEXT    NOT NULL,
+                message     TEXT    NOT NULL,
+                old_count   INTEGER DEFAULT 0,
+                new_count   INTEGER DEFAULT 0,
+                created_at  TEXT    DEFAULT (datetime('now')),
+                read        INTEGER DEFAULT 0
+            )
+        """)
         await db.commit()
 
 
@@ -149,3 +170,76 @@ async def is_in_watchlist(user_id: int, codename: str) -> bool:
             (user_id, codename)
         )
         return await cur.fetchone() is not None
+
+
+async def get_unread_alerts(user_id: int) -> list[dict]:
+    """Get unread alerts for a user."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        cur = await db.execute(
+            """SELECT * FROM alerts WHERE user_id = ? AND read = 0
+               ORDER BY created_at DESC LIMIT 50""",
+            (user_id,)
+        )
+        rows = await cur.fetchall()
+        return [dict(r) for r in rows]
+
+
+async def mark_alerts_read(user_id: int) -> None:
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            "UPDATE alerts SET read = 1 WHERE user_id = ?", (user_id,)
+        )
+        await db.commit()
+
+
+async def get_rom_snapshot(user_id: int, codename: str) -> int:
+    """Get last known ROM count for a device. Returns -1 if never checked."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        cur = await db.execute(
+            "SELECT rom_count FROM rom_snapshots WHERE user_id = ? AND codename = ?",
+            (user_id, codename)
+        )
+        row = await cur.fetchone()
+        return row[0] if row else -1
+
+
+async def update_rom_snapshot(user_id: int, codename: str, rom_count: int) -> None:
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("""
+            INSERT INTO rom_snapshots (user_id, codename, rom_count)
+            VALUES (?, ?, ?)
+            ON CONFLICT(user_id, codename) DO UPDATE SET
+                rom_count  = excluded.rom_count,
+                checked_at = datetime('now')
+        """, (user_id, codename, rom_count))
+        await db.commit()
+
+
+async def create_alert(user_id: int, codename: str,
+                       message: str, old_count: int, new_count: int) -> None:
+    async with aiosqlite.connect(DB_PATH) as db:
+        # Avoid duplicate alerts within 24 hours for the same device
+        cur = await db.execute("""
+            SELECT 1 FROM alerts
+            WHERE user_id = ? AND codename = ? AND read = 0
+              AND created_at > datetime('now', '-24 hours')
+        """, (user_id, codename))
+        if await cur.fetchone():
+            return
+        await db.execute("""
+            INSERT INTO alerts (user_id, codename, message, old_count, new_count)
+            VALUES (?, ?, ?, ?, ?)
+        """, (user_id, codename, message, old_count, new_count))
+        await db.commit()
+
+
+async def get_all_watchlisted_users() -> list[dict]:
+    """Return all user_id+codename pairs across all watchlists."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        cur = await db.execute(
+            "SELECT DISTINCT user_id, codename FROM watchlist ORDER BY user_id"
+        )
+        rows = await cur.fetchall()
+        return [dict(r) for r in rows]

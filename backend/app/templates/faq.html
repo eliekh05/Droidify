@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="container" style="padding-bottom:4rem;max-width:640px">
+
+  <div style="padding:3rem 0 2rem" data-aos="fade-up">
+    <h1 class="title" style="font-size:2rem;margin-bottom:.4rem">FAQ</h1>
+    <p style="color:var(--muted);font-size:.88rem">Short answers. No padding.</p>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:.25rem">
+
+    <p class="section-slug">The site</p>
+
+    <details class="faq-item"><summary>What is Droidify?</summary><p>A live index of custom ROMs, recoveries, root tools, and guides for Android devices. Pulls from 20+ public sources in real time. No account needed.</p></details>
+    <details class="faq-item"><summary>Is it free?</summary><p>Completely. No subscription, no paywall, no ads. MIT-licensed on <a href="https://github.com/eliekh05/Droidify" target="_blank" rel="noopener">GitHub</a>.</p></details>
+    <details class="faq-item"><summary>Is Droidify affiliated with LineageOS, TWRP, or any ROM project?</summary><p>No. Independent project. Reads their public APIs the same way a browser would.</p></details>
+    <details class="faq-item"><summary>Why is the first page load slow?</summary><p>Cold start fetches data from 20+ sources simultaneously. Takes about two minutes. After that, everything is cached and fast.</p></details>
+    <details class="faq-item"><summary>How often does data refresh?</summary><p>Most sources every two hours. Stock firmware every 24 hours.</p></details>
+    <details class="faq-item"><summary>Can I trust the download links?</summary><p>Links go directly to the project&rsquo;s own servers. We don&rsquo;t proxy or modify files. Always verify the SHA256 checksum before flashing.</p></details>
+
+    <p class="section-slug">My device</p>
+
+    <details class="faq-item"><summary>Why does my device show zero ROMs?</summary><p>Four possibilities: the ROM only exists as a forum post or Drive link (can&rsquo;t be indexed), the cache hasn&rsquo;t populated yet (wait two minutes), the device has no community ROM support, or the ROM uses a different codename. <a href="https://github.com/eliekh05/Droidify/issues" target="_blank" rel="noopener">Open an issue</a> with the codename and download URL if a ROM should be showing.</p></details>
+    <details class="faq-item"><summary>Why does a ROM show &ldquo;Android unknown&rdquo;?</summary><p>Some sources don&rsquo;t publish which Android version a build targets. We show &ldquo;unknown&rdquo; instead of guessing.</p></details>
+    <details class="faq-item"><summary>Where does the data come from?</summary><p>LineageOS API and wiki, OrangeFox API, TWRP search.json, crDroid website, SourceForge file listings, GrapheneOS, postmarketOS GitLab, DivestOS, CalyxOS, /e/OS, Ubuntu Touch, NetHunter, customrombay.org, and more.</p></details>
+
+    <p class="section-slug">Flashing basics</p>
+
+    <details class="faq-item"><summary>What is a custom ROM?</summary><p>A version of Android built by a community developer instead of your manufacturer. Replaces stock firmware entirely. Examples: LineageOS (clean), GrapheneOS (privacy), crDroid (feature-rich), /e/OS (no Google).</p></details>
+    <details class="faq-item"><summary>What is a custom recovery?</summary><p>Replaces the stock recovery partition. Lets you flash ZIPs, create backups, and wipe partitions. Usually the first thing you flash after unlocking the bootloader. Common ones: TWRP, OrangeFox.</p></details>
+    <details class="faq-item"><summary>What does rooting mean?</summary><p>Superuser access &mdash; like administrator on a PC. Lets you modify system files, remove bloatware, and run apps that need privileged access. Tools: Magisk (most compatible), KernelSU (kernel-level), APatch.</p></details>
+    <details class="faq-item"><summary>What does bootloader unlock mean?</summary><p>The bootloader runs first on power-on and only allows manufacturer-signed software by default. Unlocking lets you flash anything. <strong>Wipes your device completely.</strong> On some devices it&rsquo;s permanently blocked by the carrier.</p></details>
+    <details class="faq-item"><summary>Will flashing void my warranty?</summary><p>On most devices yes. Samsung Knox trips permanently on unlock &mdash; no way back. Google Pixels can re-lock to restore security state. Check your device before proceeding.</p></details>
+
+    <p class="section-slug">Contributing</p>
+
+    <details class="faq-item"><summary>Can I request a missing ROM or device?</summary><p><a href="https://github.com/eliekh05/Droidify/issues" target="_blank" rel="noopener">Open an issue</a> with the codename and the ROM&rsquo;s public download URL or API endpoint. Single-file Drive links or forum posts can&rsquo;t be indexed automatically.</p></details>
+    <details class="faq-item"><summary>Can I contribute code?</summary><p>Open an issue first before writing code. Unsolicited PRs are closed without review.</p></details>
+
+  </div>
+</main>
+{% endblock %}

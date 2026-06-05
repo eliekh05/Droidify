@@ -3,13 +3,34 @@
 <main class="section">
   <div class="container" style="max-width:860px">
     <div class="page-header" data-aos="fade-up">
-      <h1 class="title is-3">Your Watchlist</h1>
-      <p class="subtitle" id="watchlist-subtitle">
-        {% if not user %}Sign in with GitHub to save devices to your watchlist.
+      <h1 class="title is-3">Watchlist</h1>
+      <p class="subtitle">
+        {% if not user %}Sign in with GitHub to save devices.
         {% elif not watchlist %}No saved devices yet.
         {% else %}{{ watchlist | length }} saved device{{ 's' if watchlist | length != 1 }}{% endif %}
       </p>
     </div>
+
+    {% if alerts %}
+    <div style="margin-bottom:1.5rem" data-aos="fade-up">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+        <p style="font-weight:700;font-size:.85rem;color:var(--accent)">&#128276; New ROM builds found</p>
+        <form method="post" action="/watchlist/alerts/read" style="margin:0">
+          <button type="submit" class="button is-ghost" style="font-size:.78rem;padding:.2rem .6rem">Mark all read</button>
+        </form>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.4rem">
+        {% for a in alerts %}
+        <div style="background:var(--card);border:1px solid var(--accent);border-radius:var(--radius);padding:.75rem 1rem;font-size:.88rem">
+          <span style="color:var(--accent);font-weight:600">{{ a.codename | e }}</span>
+          <span style="color:var(--muted)"> &mdash; {{ a.message | e }}</span>
+          <a href="/device/{{ a.codename | urlencode }}" style="color:var(--accent);margin-left:.5rem;font-size:.8rem">View &rarr;</a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
     {% if user and watchlist %}
     <div class="device-grid">
       {% for d in watchlist %}
@@ -22,7 +43,7 @@
               {% if d.manufacturer %}<p style="font-size:.78rem;color:var(--muted)">{{ d.manufacturer | e }}</p>{% endif %}
             </div>
             <form method="post" action="/watchlist/{{ d.codename | urlencode }}/remove" style="margin:0">
-              <button type="submit" class="watchlist-remove" title="Remove from watchlist"
+              <button type="submit" class="watchlist-remove" title="Remove"
                 style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:1.1rem;padding:.25rem">&#x2715;</button>
             </form>
           </div>
@@ -39,12 +60,12 @@
       {% endfor %}
     </div>
     {% elif not user %}
-    <div class="empty-state" style="text-align:center;padding:3rem 1rem;color:var(--muted)">
+    <div style="text-align:center;padding:3rem 1rem;color:var(--muted)">
       <div style="font-size:3rem;margin-bottom:1rem">&#128203;</div>
       <p><a href="/api/auth/login" class="button is-primary">Sign in with GitHub</a></p>
     </div>
     {% else %}
-    <div class="empty-state" style="text-align:center;padding:3rem 1rem;color:var(--muted)">
+    <div style="text-align:center;padding:3rem 1rem;color:var(--muted)">
       <div style="font-size:3rem;margin-bottom:1rem">&#128203;</div>
       <p>Browse devices and click the bookmark icon to save them here.</p>
     </div>

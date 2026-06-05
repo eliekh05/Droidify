@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="container" style="padding-bottom:4rem;max-width:640px">
+
+  <div style="padding:3rem 0 2rem" data-aos="fade-up">
+    <h1 class="title" style="font-size:2rem;margin-bottom:.4rem">Privacy</h1>
+    <p style="color:var(--muted);font-size:.88rem">Plain language. No legal padding. Last updated June 2026.</p>
+  </div>
+
+  <div class="page-prose">
+
+    <div class="prose-card" data-aos="fade-up">
+      <div class="pc-title">&#128683; If you never sign in</div>
+      <p>We collect nothing. No cookies. No analytics. No fingerprinting. You browse, we serve pages. That&rsquo;s the entire relationship.</p>
+    </div>
+
+    <div class="prose-card" data-aos="fade-up">
+      <div class="pc-title">&#128275; If you sign in with GitHub</div>
+      <p>GitHub sends us three things and we store all three:</p>
+      <ul>
+        <li><strong>Your GitHub username</strong> &mdash; shown in the navbar.</li>
+        <li><strong>Your avatar URL</strong> &mdash; shown next to your username. It&rsquo;s a GitHub CDN link, not the image itself.</li>
+        <li><strong>Your GitHub numeric ID</strong> &mdash; internal identifier so we know it&rsquo;s you across sessions.</li>
+      </ul>
+      <p style="margin-top:.5rem">That&rsquo;s it. No email, no followers, no repos, no private data. GitHub OAuth with <code>read:user</code> scope only reads public profile data.</p>
+    </div>
+
+    <div class="prose-card" data-aos="fade-up">
+      <div class="pc-title">&#128203; Your watchlist</div>
+      <p>Stored in our database tied to your GitHub ID. Up to 20 device codenames. Delete individual devices from the watchlist page. To delete your account entirely, open a GitHub issue.</p>
+    </div>
+
+    <div class="prose-card" data-aos="fade-up">
+      <div class="pc-title">&#128276; ROM alerts</div>
+      <p>When new ROM builds are found for a device in your watchlist, an alert is created in our database and shown as a badge on the Watchlist nav item. No emails, no push notifications. In-app only.</p>
+    </div>
+
+    <div class="prose-card" data-aos="fade-up">
+      <div class="pc-title">&#127850; Cookies</div>
+      <p>One cookie. A signed session token that keeps you logged in. Expires in 30 days. No tracking cookies. No third-party cookies.</p>
+    </div>
+
+    <div class="prose-card" data-aos="fade-up">
+      <div class="pc-title">&#127758; Third parties</div>
+      <ul>
+        <li><strong>GitHub OAuth</strong> &mdash; for sign-in. Their privacy policy applies during that flow.</li>
+        <li><strong>Bulma CSS</strong> from jsDelivr CDN &mdash; stylesheet only, no tracking.</li>
+        <li><strong>HuggingFace</strong> &mdash; where the server runs. They see standard server logs (IP, timestamp, URL).</li>
+      </ul>
+    </div>
+
+    <div class="prose-card" data-aos="fade-up">
+      <div class="pc-title">&#128337; How long we keep data</div>
+      <p>Your account stays until you ask us to delete it. Open a GitHub issue to request deletion.</p>
+    </div>
+
+    <div class="honest-box accent-card" data-aos="fade-up">
+      <strong>Short version:</strong>
+      <span>Sign in = we store your GitHub username, avatar URL, and numeric ID. Never sign in = we store nothing. No ads. No tracking. No selling data. Ever.</span>
+    </div>
+
+    <p style="font-size:.82rem;color:var(--muted);text-align:center">Questions? <a href="https://github.com/eliekh05/Droidify/issues" target="_blank" rel="noopener" style="color:var(--accent)">Open a GitHub issue</a>.</p>
+
+  </div>
+</main>
+{% endblock %}
