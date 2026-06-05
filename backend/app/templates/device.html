@@ -1,6 +1,21 @@
 {% extends "base.html" %}
 {% block head %}<title>{{ title }}</title>{% endblock %}
 {% block content %}
+
+{% set source_labels = {
+  "customrombay":"CustomRomBay","lineageos_official":"LineageOS",
+  "lineageos_wiki":"LineageOS Wiki","grapheneos":"GrapheneOS",
+  "divestos":"DivestOS","calyxos":"CalyxOS","eos":"/e/OS",
+  "pixelexperience":"PixelExperience","sourceforge":"SourceForge",
+  "eosbuilds":"EOSBuilds","eosbuilds_community":"EOSBuilds",
+  "postmarketos":"postmarketOS","nethunter":"NetHunter",
+  "ubuntu_touch":"Ubuntu Touch","replicant":"Replicant",
+  "twrp":"TWRP","orangefox":"OrangeFox","pbrp":"PBRP",
+  "unofficial_twrp":"Unofficial TWRP","crdroid":"crDroid",
+  "crdroid_web":"crDroid","los_microg":"LineageOS MicroG",
+  "axpos":"AXP.OS","axp_os":"AXP.OS","ubports":"Ubuntu Touch",
+} %}
+
 {% if not device %}
 <main class="container" style="padding-bottom:3rem">
   <div class="page-header">
@@ -11,6 +26,7 @@
 </main>
 {% else %}
 <main class="container" style="padding-bottom:3rem">
+
   <div class="page-header" data-aos="fade-up">
     <div class="mb-3"><a href="/devices" class="button is-ghost">&larr; Back</a></div>
     <p style="font-size:.78rem;color:var(--muted);margin-bottom:.3rem">{{ device.manufacturer | default('') | e }}</p>
@@ -25,30 +41,49 @@
     {% endif %}
   </div>
 
+  {# Actions — watchlist + guides #}
+  <div class="mb-5" data-aos="fade-up" style="display:flex;flex-wrap:wrap;gap:.5rem;align-items:center">
+    {% if user %}
+      {% if saved %}
+      <form method="post" action="/watchlist/{{ device.codename | urlencode }}/remove" style="margin:0">
+        <button type="submit" class="button is-success">&#128203; Saved</button>
+      </form>
+      {% else %}
+      <form method="post" action="/device/{{ device.codename | urlencode }}/save" style="margin:0">
+        <button type="submit" class="button is-ghost">&#128203; Save to Watchlist</button>
+      </form>
+      {% endif %}
+    {% else %}
+      <a href="/api/auth/login" class="button is-ghost">&#128203; Sign in to save</a>
+    {% endif %}
+    <a href="/guides?q={{ device.codename | urlencode }}" class="button is-ghost">&#128218; Guides</a>
+  </div>
+
   {# ROMs #}
   <section class="section pb-0">
     <div class="section-header" data-aos="fade-up">
       <h2 class="title is-6">ROMs{% if device.roms %} ({{ device.roms | length }}){% endif %}</h2>
     </div>
     <div class="columns is-multiline is-mobile">
-      {% if device.roms %}
-        {% for rom in device.roms %}
-        {% set dl = rom.download_url or (rom.download_urls[0] if rom.download_urls else '') %}
-        <div class="column is-6-mobile is-4-tablet" data-aos="fade-up" data-aos-delay="{{ [loop.index0 * 40, 240] | min }}">
-          <div class="card">
-            <div class="card-content">
-              <div class="card-mfr">{{ (rom.source or 'custom') | e }}</div>
-              <p class="title is-6 mb-1">{{ rom.name | e }}</p>
-              {% if rom.android_base %}<div class="card-codename">Android {{ rom.android_base | e }}</div>{% endif %}
-              {% if rom.version_label %}<p style="font-size:.78rem;color:var(--muted)">{{ rom.version_label | e }}</p>{% endif %}
-              {% if dl %}<a href="{{ dl | e }}" target="_blank" rel="noopener" style="font-size:.78rem;color:var(--accent)">Download &rarr;</a>{% endif %}
-            </div>
+      {% set clean_roms = device.roms | selectattr('source', 'defined') | rejectattr('source', 'in', ['twrp','orangefox','pbrp','unofficial_twrp']) | list if device.roms else [] %}
+      {% for rom in clean_roms %}
+      {% set dl = rom.download_url or (rom.download_urls[0] if rom.download_urls else '') %}
+      <div class="column is-6-mobile is-4-tablet" data-aos="fade-up" data-aos-delay="{{ [loop.index0 * 40, 240] | min }}">
+        <div class="card">
+          <div class="card-content">
+            <div class="card-mfr">{{ source_labels.get(rom.source, (rom.source or 'Custom') | title) | e }}</div>
+            <p class="title is-6 mb-1">{{ (rom.name or '') | e }}</p>
+            {% if rom.android_base and rom.android_base not in ['unknown','linux','?',''] %}
+            <div class="card-codename">Android {{ rom.android_base | e }}</div>
+            {% endif %}
+            {% if rom.version_label %}<p style="font-size:.78rem;color:var(--muted)">{{ rom.version_label | e }}</p>{% endif %}
+            {% if dl %}<a href="{{ dl | e }}" target="_blank" rel="noopener" style="font-size:.78rem;color:var(--accent)">Download &rarr;</a>{% endif %}
           </div>
         </div>
-        {% endfor %}
+      </div>
       {% else %}
-        <div class="column"><div class="empty-state">No ROMs found for this device.</div></div>
-      {% endif %}
+      <div class="column"><div class="empty-state">No ROMs found for this device.</div></div>
+      {% endfor %}
     </div>
   </section>
 
@@ -63,7 +98,7 @@
       <div class="column is-6-mobile is-4-tablet" data-aos="fade-up" data-aos-delay="{{ [loop.index0 * 40, 240] | min }}">
         <div class="card">
           <div class="card-content">
-            <div class="card-mfr">{{ (r.recovery_type or 'recovery') | e }}</div>
+            <div class="card-mfr">{{ source_labels.get(r.recovery_type, r.recovery_type or 'Recovery') | e }}</div>
             <p class="title is-6 mb-1">{{ (r.model_name or r.codename) | e }}</p>
             {% if r.download_url %}<a href="{{ r.download_url | e }}" target="_blank" rel="noopener" style="font-size:.78rem;color:var(--accent)">Download &rarr;</a>{% endif %}
           </div>
@@ -85,7 +120,7 @@
       <div class="column is-6-mobile is-4-tablet" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 40 }}">
         <div class="card">
           <div class="card-content">
-            <div class="card-mfr">Stock Firmware</div>
+            <div class="card-mfr">Samsung / SamFW</div>
             <p class="title is-6 mb-1">{{ f.model | e }}</p>
             <p style="font-size:.82rem;color:var(--muted);margin:.3rem 0">{{ f.description | e }}</p>
             <a href="{{ f.download_url | e }}" target="_blank" rel="noopener" style="font-size:.78rem;color:var(--accent)">Download on SamFW &rarr;</a>

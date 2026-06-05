@@ -202,12 +202,40 @@ async def device_page(codename: str, request: Request):
         device["recoveries"]     = recoveries
         device["stock_firmware"] = samfw
 
-        name = device.get("model_name") or device.get("codename", codename)
+        # Auth — watchlist status
+        name    = device.get("model_name") or device.get("codename", codename)
+        session = get_session(request)
+        user    = None
+        saved   = False
+        if session:
+            user = await get_user_by_id(session["user_id"])
+            if user:
+                from app.db import is_in_watchlist
+                saved = await is_in_watchlist(session["user_id"], codename)
+
         return _r(request, "device.html", "devices",
             title=f'{name} — Droidify',
-            device=device)
+            device=device, user=user, saved=saved)
 
     except Exception as e:
         return _r(request, "device.html", "devices",
             title="Device not found — Droidify",
             device=None, error=f'Could not load device "{codename}". Please try again.')
+
+@router.post("/device/{codename}/save")
+async def device_save(codename: str, request: Request):
+    from fastapi.responses import RedirectResponse
+    session = get_session(request)
+    if session:
+        from app.db import add_to_watchlist
+        await add_to_watchlist(session["user_id"], codename)
+    return RedirectResponse(f"/device/{codename}", status_code=303)
+
+@router.post("/device/{codename}/unsave")
+async def device_unsave(codename: str, request: Request):
+    from fastapi.responses import RedirectResponse
+    session = get_session(request)
+    if session:
+        from app.db import remove_from_watchlist
+        await remove_from_watchlist(session["user_id"], codename)
+    return RedirectResponse(f"/device/{codename}", status_code=303)

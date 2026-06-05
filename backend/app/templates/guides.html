@@ -3,44 +3,75 @@
 <main class="container" style="padding-bottom:3rem">
   <div class="page-header" data-aos="fade-up">
     <h1 class="title">Guides</h1>
-    <p class="subtitle">Flashing, rooting, and Android modding guides</p>
+    <p class="subtitle">Step-by-step Android modding guides</p>
   </div>
-  <form method="get" action="/guides" class="field has-addons mb-4">
+
+  <form method="get" action="/guides" class="field has-addons mb-5">
     <div class="control is-expanded">
       <input class="input" type="search" name="q" value="{{ q | e }}"
-             placeholder="Search by codename (e.g. beryllium)…" autocomplete="off" />
+             placeholder="Device codename for specific guides (e.g. beryllium, j7elte)&#8230;"
+             autocomplete="off" />
     </div>
     <div class="control">
       <button class="button is-primary" type="submit">Search</button>
     </div>
   </form>
+
+  {% if q %}
+  <p class="mb-4" style="color:var(--muted)">
+    Showing guides for <strong>{{ q | e }}</strong> &mdash;
+    <a href="/guides">show all guides</a>
+  </p>
+  {% endif %}
+
+  {% set type_meta = {
+    'bootloader-unlock': ('🔓', 'Bootloader Unlock', 'is-warning',  '1'),
+    'install-recovery':  ('🛠',  'Install Recovery',  'is-info',     '2'),
+    'install-rom':       ('📦', 'Install ROM',        'is-success',  '3'),
+    'root':              ('⚡', 'Root',               'is-danger',   '4'),
+    'restore':           ('🔄', 'Restore / Unbrick',  'is-dark',     '5'),
+    'sell-buy':          ('💰', 'Buy &amp; Sell',     'is-primary',  '6'),
+  } %}
+
   <div class="columns is-multiline is-mobile">
-    {% if not q %}
-    <div class="column is-12"><p class="section-label">Universal guides</p></div>
-    {% endif %}
     {% for g in guides %}
-    <div class="column is-6-mobile is-4-tablet" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 50 if loop.index0 < 7 else 0 }}">
-      <div class="card">
+    {% set tm = type_meta.get(g.guide_type, ('📋', g.guide_type or 'Guide', 'is-light', '')) %}
+    <div class="column is-12-mobile is-6-tablet is-4-desktop"
+         data-aos="fade-up" data-aos-delay="{{ [loop.index0 * 40, 200] | min }}">
+      <div class="card" style="height:100%">
         <div class="card-content">
-          <div class="card-mfr">{{ (g.guide_type or g.category or 'guide') | e }}</div>
-          <p class="title is-6 mb-1">{{ (g.title or 'Guide') | e }}</p>
-          {% if g.description %}<p class="card-sub">{{ g.description | e }}</p>{% endif %}
+          <div class="mb-2">
+            <span class="tag {{ tm[2] }}">{{ tm[0] | safe }} {{ tm[1] | safe }}</span>
+          </div>
+          <p class="title is-6 mb-2">{{ (g.title or 'Guide') | e }}</p>
+          {% if g.notes %}
+          <p style="font-size:.8rem;color:var(--muted);margin-bottom:.6rem">
+            {{ g.notes | e }}
+          </p>
+          {% endif %}
           {% if g.steps %}
           <details class="guide-steps mt-2">
-            <summary class="card-link">Steps ({{ g.steps | length }})</summary>
-            <ol class="guide-ol">
-              {% for step in g.steps %}<li>{{ step | e }}</li>{% endfor %}
+            <summary style="cursor:pointer;font-weight:600;font-size:.875rem;list-style:none;display:flex;justify-content:space-between">
+              <span>{{ g.steps | length }} steps</span>
+              <span style="color:var(--accent)">&#9660;</span>
+            </summary>
+            <ol style="padding-left:1.25rem;margin-top:.6rem">
+              {% for step in g.steps %}
+              <li style="margin-bottom:.5rem;font-size:.85rem;line-height:1.5">{{ step | e }}</li>
+              {% endfor %}
             </ol>
-            {% if g.notes %}<p class="guide-notes">{{ g.notes | e }}</p>{% endif %}
           </details>
           {% endif %}
-          {% set url = g.source_url or g.url %}
-          {% if url %}<a href="{{ url | e }}" target="_blank" rel="noopener" class="card-link">Read guide &rarr;</a>{% endif %}
         </div>
       </div>
     </div>
     {% else %}
-    <div class="column"><div class="empty-state">No guides found{% if q %} for &ldquo;{{ q | e }}&rdquo;{% endif %}.</div></div>
+    <div class="column">
+      <div class="empty-state">
+        No guides found{% if q %} for &ldquo;{{ q | e }}&rdquo;{% endif %}.
+        {% if q %}<br><a href="/guides">View all guides</a>{% endif %}
+      </div>
+    </div>
     {% endfor %}
   </div>
 </main>

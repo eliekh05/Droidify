@@ -5,29 +5,78 @@
     <h1 class="title">Tools</h1>
     <p class="subtitle">{{ tools | length }} tool{{ 's' if tools | length != 1 }}</p>
   </div>
-  <form method="get" action="/tools" class="field has-addons mb-4">
+
+  <form method="get" action="/tools" class="field has-addons mb-5">
     <div class="control is-expanded">
       <input class="input" type="search" name="q" value="{{ q | e }}"
-             placeholder="Search tools…" autocomplete="off" />
+             placeholder="Search tools&#8230;" autocomplete="off" />
     </div>
     <div class="control">
       <button class="button is-primary" type="submit">Search</button>
     </div>
   </form>
+
+  {% set cat_labels = {
+    'root':     ('⚡', 'Root'),
+    'xposed':   ('🔧', 'Xposed'),
+    'flashing': ('💾', 'Flashing'),
+    'recovery': ('🛠',  'Recovery'),
+    'utility':  ('🔍', 'Utility'),
+  } %}
+
   <div class="columns is-multiline is-mobile">
     {% for t in tools %}
-    <div class="column is-6-mobile is-4-tablet" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 40 if loop.index0 < 7 else 0 }}">
-      <div class="card">
+    <div class="column is-6-mobile is-4-tablet is-3-desktop"
+         data-aos="fade-up" data-aos-delay="{{ [loop.index0 * 30, 200] | min }}">
+      <div class="card" style="height:100%">
         <div class="card-content">
-          <div class="card-mfr">{{ (t.category or '') | e }}</div>
-          <p class="title is-6 mb-1">
-            {{ t.name | e }}
-            {% if t.status == 'discontinued' %}<span class="tag is-danger is-light ml-1">discontinued</span>{% endif %}
-          </p>
-          {% if t.description %}<p class="card-sub">{{ t.description | e }}</p>{% endif %}
-          {% if t.latest_version %}<div class="card-codename">{{ t.latest_version | e }}</div>{% endif %}
-          {% set dl = (t.download_urls or [None])[0] or t.release_url or t.official_url %}
-          {% if dl %}<a href="{{ dl | e }}" target="_blank" rel="noopener" class="card-link">Download &rarr;</a>{% endif %}
+
+          {# Category badge #}
+          {% set ci = cat_labels.get(t.category, ('📋', t.category | title)) %}
+          <div class="mb-2" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.3rem">
+            <span class="tag is-light">{{ ci[0] }} {{ ci[1] }}</span>
+            {% if t.status == 'discontinued' %}
+            <span class="tag is-danger is-light" style="font-size:.7rem">discontinued</span>
+            {% endif %}
+          </div>
+
+          {# Name + version #}
+          <p class="title is-6 mb-1">{{ t.name | e }}</p>
+          {% if t.latest_version %}
+          <div class="card-codename mb-1">
+            {{ t.latest_version | e }}
+            {% if not t.live_data %}<span style="color:var(--muted);font-size:.7rem"> (cached)</span>{% endif %}
+          </div>
+          {% endif %}
+
+          {# Description #}
+          {% if t.description %}
+          <p class="card-sub" style="font-size:.82rem;margin-bottom:.6rem">{{ t.description | e }}</p>
+          {% endif %}
+
+          {# Platform tags #}
+          {% if t.platforms %}
+          <div class="mb-2" style="display:flex;flex-wrap:wrap;gap:.25rem">
+            {% for p in t.platforms %}
+            <span class="tag is-light is-small" style="font-size:.7rem">
+              {{ 'macOS' if p == 'macos' else p | title }}
+            </span>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          {# Download / View link #}
+          {% set dl = (t.download_urls or [None])[0] if t.download_urls else t.release_url or t.official_url %}
+          {% if dl %}
+            {% if dl.endswith('.zip') or dl.endswith('.apk') or dl.endswith('.exe') or dl.endswith('.dmg') %}
+            <a href="{{ dl | e }}" target="_blank" rel="noopener" class="card-link">Download &rarr;</a>
+            {% elif 'github.com' in dl and '/releases' in dl %}
+            <a href="{{ dl | e }}" target="_blank" rel="noopener" class="card-link">Releases &rarr;</a>
+            {% else %}
+            <a href="{{ dl | e }}" target="_blank" rel="noopener" class="card-link">Visit &rarr;</a>
+            {% endif %}
+          {% endif %}
+
         </div>
       </div>
     </div>
