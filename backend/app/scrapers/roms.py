@@ -289,6 +289,10 @@ async def _build_lookup() -> dict[str, list[dict]]:
                 keys_to_add.add(cn_lower.rsplit("_", 1)[0])
                 keys_to_add.add(_NORM(cn_lower.rsplit("_", 1)[0]))
 
+            # Skip recovery entries — they carry rom_type='recovery' from their scrapers
+            if (item.get('rom_type') or '').lower() == 'recovery':
+                continue
+
             for key in keys_to_add:
                 k = key.lower() if key else ""
                 if not k: continue
@@ -318,6 +322,8 @@ async def get_all_roms(
         flat = [rom for roms in lookup.values() for rom in roms]
         # Deduplicate by (name, codename)
         seen: set[tuple] = set()
+        # Ensure every ROM has a source field
+        flat = [{**r, 'source': r.get('source') or 'unknown'} for r in flat]
         deduped = []
         for r in flat:
             key = (r.get("name",""), r.get("codename",""))

@@ -62,10 +62,10 @@
   {# ROMs #}
   <section class="section pb-0">
     <div class="section-header" data-aos="fade-up">
-      <h2 class="title is-6">ROMs{% if device.roms %} ({{ device.roms | length }}){% endif %}</h2>
+      {% set clean_roms = device.roms | rejectattr('rom_type', 'equalto', 'recovery') | list if device.roms else [] %}
+      <h2 class="title is-6">ROMs{% if clean_roms %} ({{ clean_roms | length }}){% endif %}</h2>
     </div>
     <div class="columns is-multiline is-mobile">
-      {% set clean_roms = device.roms | selectattr('source', 'defined') | rejectattr('source', 'in', ['twrp','orangefox','pbrp','unofficial_twrp']) | list if device.roms else [] %}
       {% for rom in clean_roms %}
       {% set dl = rom.download_url or (rom.download_urls[0] if rom.download_urls else '') %}
       <div class="column is-6-mobile is-4-tablet" data-aos="fade-up" data-aos-delay="{{ [loop.index0 * 40, 240] | min }}">

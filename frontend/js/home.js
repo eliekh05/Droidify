@@ -1,40 +1,72 @@
 (function () {
   'use strict';
 
-  var esc = function (s) {
+  // ── Escape helper ──────────────────────────────────────────────────────────
+  function esc(s) {
     return String(s || '').replace(/[&<>"']/g, function (c) {
       return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
     });
-  };
+  }
 
+  // ── PWA install button ─────────────────────────────────────────────────────
+  var deferredPrompt = null;
+  var installWrap    = document.getElementById('pwa-install-wrap');
+  var installBtn     = document.getElementById('pwa-install-btn');
+
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (installWrap) installWrap.style.display = 'flex';
+  });
+
+  if (installBtn) {
+    installBtn.addEventListener('click', function () {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(function () {
+        deferredPrompt = null;
+        if (installWrap) installWrap.style.display = 'none';
+      });
+    });
+  }
+
+  window.addEventListener('appinstalled', function () {
+    deferredPrompt = null;
+    if (installWrap) installWrap.style.display = 'none';
+  });
+
+  // ── Hero search ────────────────────────────────────────────────────────────
   var heroInput = document.getElementById('hero-search');
   var heroBtn   = document.getElementById('hero-search-btn');
 
   function doSearch() {
     var q = heroInput ? heroInput.value.trim() : '';
-    window.location.href = q ? '/devices.html?q=' + encodeURIComponent(q) : '/devices.html';
+    window.location.href = q ? '/devices?q=' + encodeURIComponent(q) : '/devices';
   }
   if (heroBtn)   heroBtn.addEventListener('click', doSearch);
-  if (heroInput) heroInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') doSearch(); });
+  if (heroInput) heroInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') doSearch();
+  });
 
+  // ── Animated stat counter ──────────────────────────────────────────────────
   function rollNumber(el, target, duration) {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      el.textContent = Number(target).toLocaleString(); return;
+      el.textContent = Number(target).toLocaleString();
+      return;
     }
     var start = performance.now();
     var from  = parseInt(el.textContent.replace(/,/g, '')) || 0;
-    function step(now) {
+    (function step(now) {
       var p    = Math.min((now - start) / duration, 1);
       var ease = 1 - Math.pow(1 - p, 3);
       el.textContent = Math.round(from + (target - from) * ease).toLocaleString();
-      if (p >= 1) {
+      if (p < 1) {
+        requestAnimationFrame(step);
+      } else {
         el.classList.add('popped');
         setTimeout(function () { el.classList.remove('popped'); }, 400);
-      } else {
-        requestAnimationFrame(step);
       }
-    }
-    requestAnimationFrame(step);
+    })(start);
   }
 
   function updateStat(id, val) {
@@ -43,14 +75,30 @@
     rollNumber(el, Number(val), 1200);
   }
 
-  function deviceColHTML(d, delay) {
+  // ── API fetch helper ───────────────────────────────────────────────────────
+  function apiFetch(path, params) {
+    var pairs = [];
+    if (params) Object.keys(params).forEach(function (k) {
+      if (params[k] != null && params[k] !== '')
+        pairs.push(encodeURIComponent(k) + '=' + encodeURIComponent(params[k]));
+    });
+    var url = '/api' + path + (pairs.length ? '?' + pairs.join('&') : '');
+    return fetch(url).then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    });
+  }
+
+  // ── Device card HTML ───────────────────────────────────────────────────────
+  function deviceCardHTML(d, delay) {
     var tags = [
-      d.has_lineageos  ? '<span class="tag is-success">LineageOS</span>' : '',
-      d.has_grapheneos ? '<span class="tag is-info">GrapheneOS</span>'   : '',
-      d.has_twrp       ? '<span class="tag is-info">TWRP</span>'         : '',
-      d.has_orangefox  ? '<span class="tag is-warning">OrangeFox</span>' : '',
+      d.has_lineageos  ? '<span class="tag is-success">LineageOS</span>'  : '',
+      d.has_grapheneos ? '<span class="tag is-info">GrapheneOS</span>'    : '',
+      d.has_twrp       ? '<span class="tag is-info">TWRP</span>'          : '',
+      d.has_orangefox  ? '<span class="tag is-warning">OrangeFox</span>'  : '',
     ].filter(Boolean).join('');
-    return '<div class="column is-6-mobile is-4-tablet is-4-desktop" data-aos="fade-up" data-aos-delay="' + delay + '">' +
+    return '<div class="column is-6-mobile is-4-tablet is-4-desktop"' +
+      ' data-aos="fade-up" data-aos-delay="' + delay + '">' +
       '<a href="/device/' + encodeURIComponent(d.codename) + '" class="card" style="display:block">' +
       '<div class="card-content">' +
       '<div class="card-mfr">' + esc(d.manufacturer || 'Unknown') + '</div>' +
@@ -60,43 +108,46 @@
       '</div></a></div>';
   }
 
-  function apiFetch(path, params) {
-    var pairs = [];
-    if (params) Object.keys(params).forEach(function (k) {
-      if (params[k] != null && params[k] !== '') pairs.push(encodeURIComponent(k) + '=' + encodeURIComponent(params[k]));
-    });
-    var qs  = pairs.join('&');
-    var url = '/api' + path + (qs ? '?' + qs : '');
-    return fetch(url).then(function (r) {
-      if (!r.ok) throw new Error('API ' + r.status);
-      return r.json();
-    });
-  }
-
   var featuredEl = document.getElementById('featured-devices');
   var romFamEl   = document.getElementById('rom-families');
   var pillsEl    = document.getElementById('android-pills');
 
+  // ── Featured devices ───────────────────────────────────────────────────────
   apiFetch('/devices', { limit: 24 }).then(function (d) {
     updateStat('stat-devices', d.total);
     if (!featuredEl) return;
-    var shuffled = d.devices.slice().sort(function () { return Math.random() - 0.5; }).slice(0, 6);
-    featuredEl.innerHTML = shuffled.map(function (dev, i) { return deviceColHTML(dev, i * 60); }).join('');
+    var shuffled = d.devices.slice()
+      .sort(function () { return Math.random() - 0.5; })
+      .slice(0, 6);
+    featuredEl.innerHTML = shuffled.map(function (dev, i) {
+      return deviceCardHTML(dev, i * 60);
+    }).join('');
     if (window.AOS) AOS.refresh();
   }).catch(function () {
     if (featuredEl) featuredEl.innerHTML = '<p class="empty-state">Could not load devices.</p>';
   });
 
-  apiFetch('/roms', { limit: 1 }).then(function (d) { updateStat('stat-roms', d.total); }).catch(function () {});
-  apiFetch('/recoveries', { limit: 1 }).then(function (d) { updateStat('stat-recoveries', d.total); }).catch(function () {});
-  apiFetch('/tools').then(function (d) { updateStat('stat-tools', d.total); }).catch(function () {});
+  // ── Stats ──────────────────────────────────────────────────────────────────
+  apiFetch('/roms', { limit: 1 }).then(function (d) {
+    updateStat('stat-roms', d.total);
+  }).catch(function () {});
 
+  apiFetch('/recoveries', { limit: 1 }).then(function (d) {
+    updateStat('stat-recoveries', d.total);
+  }).catch(function () {});
+
+  apiFetch('/tools').then(function (d) {
+    updateStat('stat-tools', d.total);
+  }).catch(function () {});
+
+  // ── Android version pills ──────────────────────────────────────────────────
   apiFetch('/android-versions').then(function (d) {
     updateStat('stat-android', d.total);
     if (!pillsEl) return;
-    var recent = d.versions.slice().reverse().slice(0, 8);
+    var versions = Array.isArray(d.versions) ? d.versions : [];
+    var recent = versions.slice().reverse().slice(0, 8);
     pillsEl.innerHTML = recent.map(function (v) {
-      return '<a href="/android.html" class="android-pill" data-aos="zoom-in">' +
+      return '<a href="/android" class="android-pill" data-aos="zoom-in">' +
         '<span class="v-num">Android ' + esc(v.version_number) + '</span>' +
         '<span class="v-name">' + esc(v.codename || '-') + '</span>' +
         '</a>';
@@ -104,24 +155,29 @@
     if (window.AOS) AOS.refresh();
   }).catch(function () {});
 
-  apiFetch('/roms', { limit: 20 }).then(function (d) {
+  // ── ROM families ───────────────────────────────────────────────────────────
+  apiFetch('/roms', { limit: 50 }).then(function (d) {
     if (!romFamEl) return;
     var counts = {};
-    d.roms.forEach(function (r) { counts[r.name] = (counts[r.name] || 0) + 1; });
+    (d.roms || []).forEach(function (r) {
+      var name = r.name || r.source || 'Unknown';
+      counts[name] = (counts[name] || 0) + 1;
+    });
     var families = Object.keys(counts)
-      .map(function (name) { return [name, counts[name]]; })
-      .sort(function (a, b) { return b[1] - a[1]; })
+      .map(function (name) { return { name: name, count: counts[name] }; })
+      .sort(function (a, b) { return b.count - a.count; })
       .slice(0, 8);
-    romFamEl.innerHTML = families.map(function (pair, i) {
-      var name  = pair[0];
-      var count = pair[1];
-      return '<div class="column is-6-mobile is-3-tablet" data-aos="fade-up" data-aos-delay="' + (i * 50) + '">' +
-        '<a href="/device/' + encodeURIComponent(d.codename) + '" class="card" style="display:block">' +
+    romFamEl.innerHTML = families.map(function (fam, i) {
+      return '<div class="column is-6-mobile is-3-tablet"' +
+        ' data-aos="fade-up" data-aos-delay="' + (i * 50) + '">' +
+        '<a href="/roms?q=' + encodeURIComponent(fam.name) + '" class="card" style="display:block">' +
         '<div class="card-content">' +
-        '<p class="title is-6 mb-1">' + esc(name) + '</p>' +
-        '<p style="color:var(--muted);font-size:.8rem">' + count + ' build' + (count !== 1 ? 's' : '') + '</p>' +
-        '</div></a></div>';
+        '<p class="title is-6 mb-1">' + esc(fam.name) + '</p>' +
+        '<p style="color:var(--muted);font-size:.8rem">' +
+        fam.count + ' build' + (fam.count !== 1 ? 's' : '') +
+        '</p></div></a></div>';
     }).join('');
     if (window.AOS) AOS.refresh();
   }).catch(function () {});
+
 })();
