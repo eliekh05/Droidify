@@ -43,7 +43,7 @@
       <a href="/tools" class="navbar-item">Tools</a>
       <a href="/android" class="navbar-item">Android</a>
       <a href="/guides" class="navbar-item">Guides</a>
-        <a href="/watchlist" class="navbar-item">Watchlist</a>
+        <a href="/watchlist" class="navbar-item">Watchlist<span class="alert-badge" id="alert-badge"></span></a>
       </div>
       <div class="navbar-end">
         <div id="auth-wrap"></div>
@@ -121,7 +121,7 @@
 </main>
 <footer class="site-footer">
   <div class="container">
-    <p>Droidify &mdash; Live Android ecosystem indexer &middot; Free &amp; open sources only &middot; Account optional &middot; <a href="/privacy">Privacy</a> &middot; <a href="/terms">Terms</a> &middot; <a href="/faq">FAQ</a></p>
+    <p>Droidify &mdash; Live Android ecosystem indexer &middot; Free &amp; open sources only &middot; Account optional &middot; <a href="/privacy">Privacy</a> &middot; <a href="/terms?read=1">Terms</a> &middot; <a href="/faq">FAQ</a> &middot; <a href="/perks">Perks</a></p>
   </div>
 </footer>
 <script src="/js/terms.js?v=525120"></script>
@@ -129,5 +129,21 @@
 <script src="https://cdn.jsdelivr.net/npm/@reimujs/aos/dist/aos.umd.js"></script>
 <script>AOS.init({ duration: 500, easing: "ease-out-cubic", once: true, offset: 40 });</script>
 <script src="/js/home.js?v=525120"></script>
+<script>
+(function(){
+  function checkAlerts(){
+    fetch('/api/alerts/count')
+      .then(function(r){return r.json();})
+      .then(function(d){
+        var badge=document.getElementById('alert-badge');
+        if(!badge)return;
+        badge.textContent=d.count;
+        badge.style.display=d.count>0?'inline':'none';
+      }).catch(function(){});
+  }
+  checkAlerts();
+  setInterval(checkAlerts,5*60*1000);
+})();
+</script>
 </body>
 </html>

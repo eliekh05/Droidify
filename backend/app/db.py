@@ -127,10 +127,18 @@ async def has_agreed_terms(user_id: int) -> bool:
         return await cur.fetchone() is not None
 
 
+WATCHLIST_CAP = 20
+
 async def add_to_watchlist(user_id: int, codename: str) -> bool:
-    """Add a device to user's watchlist. Returns False if already exists."""
+    """Add a device to user's watchlist. Returns False if already exists or cap reached."""
     async with aiosqlite.connect(DB_PATH) as db:
         try:
+            cur = await db.execute(
+                "SELECT COUNT(*) FROM watchlist WHERE user_id = ?", (user_id,)
+            )
+            row = await cur.fetchone()
+            if row and row[0] >= WATCHLIST_CAP:
+                return False
             await db.execute(
                 "INSERT INTO watchlist (user_id, codename) VALUES (?, ?)",
                 (user_id, codename)

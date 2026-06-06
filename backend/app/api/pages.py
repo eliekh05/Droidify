@@ -268,6 +268,7 @@ async def device_save(codename: str, request: Request):
     if session:
         from app.db import add_to_watchlist
         await add_to_watchlist(session["user_id"], codename)
+        # cap enforced inside add_to_watchlist — returns False if over cap, ignored here
     return RedirectResponse(f"/device/{codename}", status_code=303)
 
 @router.post("/device/{codename}/unsave")
@@ -282,8 +283,10 @@ async def device_unsave(codename: str, request: Request):
 
 @router.get("/perks", response_class=HTMLResponse)
 async def perks_page(request: Request):
-    return _r(request, "perks.html", "",
-        title="Signed out vs Signed in — Droidify")
+    session = get_session(request)
+    user = await get_user_by_id(session["user_id"]) if session else None
+    return _r(request, "perks.html", "perks",
+        title="Perks — Droidify", user=user)
 
 @router.get("/faq", response_class=HTMLResponse)
 async def faq_page(request: Request):

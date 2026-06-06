@@ -90,8 +90,8 @@ a { transition: color 150ms ease; }
   flex: 1;
 }
 .navbar-item {
-  font-size: .82rem;
-  padding: .4rem .6rem;
+  font-size: .78rem;
+  padding: .35rem .45rem;
   white-space: nowrap;
 }
 .navbar-burger { display: none !important; }

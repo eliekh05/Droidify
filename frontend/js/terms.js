@@ -17,17 +17,25 @@
   if (onTerms) {
     var fill   = document.getElementById('terms-progress-fill');
     var agreed = false;
+    // ?read=1 means user just wants to read — no redirect, no gate
+    var readOnly = window.location.search.indexOf('read=1') !== -1;
 
-    // Signed-in users who already agreed elsewhere — skip immediately
-    fetch('/api/terms/status')
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
-        if (d.agreed) {
-          localStorage.setItem(AGREED_KEY, Date.now().toString());
-          window.location.replace('/');
-        }
-      })
-      .catch(function () {});
+    // If already agreed (localStorage or server) — just show the page, no redirect
+    if (localStorage.getItem(AGREED_KEY)) {
+      agreed = true;
+      if (fill) fill.style.width = '100%';
+    } else if (!readOnly) {
+      fetch('/api/terms/status')
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (d.agreed) {
+            localStorage.setItem(AGREED_KEY, Date.now().toString());
+            agreed = true;
+            if (fill) fill.style.width = '100%';
+          }
+        })
+        .catch(function () {});
+    }
 
     // Block nav clicks until scroll complete
     document.addEventListener('click', function (e) {
@@ -67,6 +75,7 @@
       if (agreed) return;
       agreed = true;
       if (fill) fill.style.width = '100%';
+      if (readOnly) return; // just reading — don't redirect or fire agree
       localStorage.setItem(AGREED_KEY, Date.now().toString());
       fetch('/api/terms/agree', { method: 'POST' }).catch(function () {});
       setTimeout(function () { window.location.replace('/'); }, 400);

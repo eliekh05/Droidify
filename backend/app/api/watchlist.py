@@ -65,8 +65,9 @@ async def add_device(codename: str, request: Request):
     if not _CODENAME_RE.match(codename):
         return JSONResponse({"detail": "Invalid codename"}, status_code=400)
     existing = await get_watchlist(user_id)
-    if len(existing) >= 20:
-        return JSONResponse({"detail": "Watchlist limit reached (20 devices)"}, status_code=400)
+    from app.db import WATCHLIST_CAP
+    if len(existing) >= WATCHLIST_CAP:
+        return JSONResponse({"detail": f"Watchlist limit is {WATCHLIST_CAP} devices."}, status_code=400)
     added = await add_to_watchlist(user_id, codename)
     return JSONResponse({"ok": True, "added": added, "codename": codename})
 

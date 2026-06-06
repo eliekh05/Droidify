@@ -37,8 +37,17 @@
   </div>
 
   <div style="text-align:center" data-aos="fade-up">
+    {% if user %}
+    <div style="display:flex;align-items:center;justify-content:center;gap:.75rem;padding:.75rem 1.25rem;background:var(--card);border:1px solid var(--accent);border-radius:var(--radius);display:inline-flex">
+      {% if user.avatar_url %}<img src="{{ user.avatar_url | e }}" style="width:2rem;height:2rem;border-radius:50%">{% endif %}
+      <span style="font-weight:600">{{ user.login | e }}</span>
+      <span style="color:var(--muted);font-size:.85rem">&mdash; signed in &#10003;</span>
+    </div>
+    <p style="margin-top:.75rem;font-size:.8rem;color:var(--muted)"><a href="/api/auth/logout" style="color:var(--muted)">Sign out</a></p>
+    {% else %}
     <a href="/api/auth/login" class="button is-primary is-medium">Sign in with GitHub &rarr;</a>
     <p style="margin-top:.75rem;font-size:.8rem;color:var(--muted)">2 seconds. No forms.</p>
+    {% endif %}
   </div>
 
 </main>
