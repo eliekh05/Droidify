@@ -1,12 +1,16 @@
 ---
 name: Bug report
-about: Something is broken or showing wrong data
+about: Something is broken or not working as expected
 labels: bug
 ---
 
+<!--
+This project should never have issues. If it does we want to know and we will reach out.
+-->
+
 ## What is broken
 
-## What you expected
+## What you expected to happen
 
 ## What actually happened
 
@@ -20,9 +24,9 @@ labels: bug
 
 - Browser:
 - OS:
-- Self-hosting (`docker compose up`)?
+- Self-hosted? If yes, paste `docker compose logs` output:
 
-## Checklist
+## Does this happen on the live site?
 
-- [ ] Tried [eliekh05-droidify.hf.space](https://droidify.app)
-- [ ] Checked `docker compose logs` for errors
+- [ ] Yes — [eliekh05-droidify-hf.hf.space](https://eliekh05-droidify-hf.hf.space)
+- [ ] No — only on my self-hosted instance

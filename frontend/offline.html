@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#3dd68c" />
+  <title>Offline — Droidify</title>
+  <style>
+    :root {
+      --bg: #0b0f14; --surface: #111820; --card: #141c26;
+      --border: #1e2d42; --text: #e8eef5; --muted: #4a6080;
+      --accent: #3dd68c;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: system-ui,-apple-system,'Segoe UI',sans-serif;
+      min-height: 100vh; display: flex; align-items: center;
+      justify-content: center; text-align: center; padding: 2rem;
+    }
+    .wrap { max-width: 400px; }
+    .logo { font-size: 1.8rem; font-weight: 800; letter-spacing: -.04em; margin-bottom: 2rem; }
+    .logo span { color: var(--accent); }
+    .icon { font-size: 4rem; margin-bottom: 1.5rem; display: block; }
+    h1 { font-size: 1.4rem; font-weight: 700; margin-bottom: .6rem; }
+    p { color: var(--muted); font-size: .9rem; line-height: 1.6; margin-bottom: 1.5rem; }
+    button {
+      background: var(--accent); color: #0b0f14;
+      border: none; border-radius: 9px; font-weight: 700;
+      font-size: .9rem; padding: .65rem 1.5rem; cursor: pointer;
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+    button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(61,214,140,.3); }
+    button:active { transform: none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="logo"><span>Droid</span>ify</div>
+    <span class="icon">&#128683;</span>
+    <h1>You are offline</h1>
+    <p>No internet connection. Previously visited pages are available from cache — try navigating to a page you've opened before.</p>
+    <button onclick="window.location.reload()">Try again</button>
+  </div>
+</body>
+</html>

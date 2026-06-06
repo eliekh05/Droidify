@@ -5,22 +5,33 @@ labels: auto-closed
 ---
 
 <!--
-STOP. Read this before submitting.
+This issue will be closed automatically.
 
-This issue will be automatically closed by a bot the moment it is opened.
+Droidify is a read-only index. It showed you information and a link.
+It did not flash anything, did not touch your device, and made no decisions for you.
+Everything that happened after you read the page was your own choice.
 
-Droidify is a read-only index. It does not flash anything, does not upload
-files, and does not touch your device. It showed you a link. You made the
-decision to flash.
+WHERE TO GET ACTUAL HELP:
 
-WHO TO TALK TO:
-- Tripped Knox → Samsung cannot help. Nobody can. It is permanent.
-- Warranty voided → Read your warranty terms. Droidify cannot reverse it.
-- Lost data → The developer who made the ROM/recovery you flashed.
-              Find them on XDA, GitHub, or Telegram.
-- Bricked device → Same — go to the XDA thread for your device.
-- Play Protect / banking apps broken → The ROM developer, not us.
+Knox tripped:
+No one can undo this. Not Samsung. Not us. Not anyone.
+Knox is a one-way hardware fuse. The moment you unlocked the bootloader it tripped.
+It is permanent. There is no workaround, no hidden menu, no service centre fix.
 
-If you still open this issue it will be closed automatically with a bot
-comment linking to Terms of Use. Save everyone's time — go to the right place.
+Warranty voided:
+Read your manufacturer's warranty terms. We cannot reverse it.
+
+Lost data:
+Go to the developer who made the ROM or recovery you flashed.
+Find them on XDA, their GitHub, or their Telegram group for your device.
+
+Bricked device:
+Same — XDA thread or Telegram group for your exact device model.
+They know the unbrick procedure. We do not.
+
+Play Protect or banking apps stopped working:
+The ROM developer made those choices about certification. Talk to them.
+
+Opening this issue will not help you.
+If you open it anyway it will be closed with a link to the Terms of Use.
 -->

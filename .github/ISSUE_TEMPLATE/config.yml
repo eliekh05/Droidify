@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Hosted version (no Docker needed)
-    url: https://droidify.app
-    about: Use the live hosted version if Docker is blocked on your network.
+  - name: Live site
+    url: https://eliekh05-droidify-hf.hf.space
+    about: Use the hosted version — no setup needed.
+  - name: DMCA and takedown policy
+    url: https://github.com/eliekh05/Droidify/blob/main/DMCA.md
+    about: Read before filing a takedown or DMCA notice.
