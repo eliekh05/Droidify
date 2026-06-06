@@ -54,32 +54,29 @@
 <body>
 <div id="connection-overlay"><div class="conn-spinner"></div><p>Checking connection…</p></div>
 <div id="offline-banner">⚠ You are offline — showing cached data</div>
+<input type="checkbox" id="nav-toggle-cb" style="display:none">
 <nav class="navbar" role="navigation" aria-label="main navigation">
   <div class="container">
     <div class="navbar-brand">
       <a href="/" class="droidify-logo">&#8203;<strong class="accent-text">Droid</strong>ify</a>
-
+      <label for="nav-toggle-cb" class="nav-burger" aria-label="menu">
+        <span></span><span></span><span></span>
+      </label>
     </div>
-    <div id="main-nav" class="navbar-menu">
-      <div class="navbar-start">
-        <a href="/" class="navbar-item{% if active == 'home' %} is-active{% endif %}">Home</a>
-        <a href="/devices" class="navbar-item{% if active == 'devices' %} is-active{% endif %}">Devices</a>
-        <a href="/roms" class="navbar-item{% if active == 'roms' %} is-active{% endif %}">ROMs</a>
-        <a href="/recoveries" class="navbar-item{% if active == 'recoveries' %} is-active{% endif %}">Recoveries</a>
-        <a href="/tools" class="navbar-item{% if active == 'tools' %} is-active{% endif %}">Tools</a>
-        <a href="/android" class="navbar-item{% if active == 'android' %} is-active{% endif %}">Android</a>
-        <a href="/guides" class="navbar-item{% if active == 'guides' %} is-active{% endif %}">Guides</a>
-        <a href="/watchlist" class="navbar-item{% if active == 'watchlist' %} is-active{% endif %}">Watchlist<span class="alert-badge" id="alert-badge"></span></a>
-      </div>
-      <div class="navbar-end">
+    <div class="nav-links">
+      <a href="/" class="navbar-item{% if active == 'home' %} is-active{% endif %}">Home</a>
+      <a href="/devices" class="navbar-item{% if active == 'devices' %} is-active{% endif %}">Devices</a>
+      <a href="/roms" class="navbar-item{% if active == 'roms' %} is-active{% endif %}">ROMs</a>
+      <a href="/recoveries" class="navbar-item{% if active == 'recoveries' %} is-active{% endif %}">Recoveries</a>
+      <a href="/tools" class="navbar-item{% if active == 'tools' %} is-active{% endif %}">Tools</a>
+      <a href="/android" class="navbar-item{% if active == 'android' %} is-active{% endif %}">Android</a>
+      <a href="/guides" class="navbar-item{% if active == 'guides' %} is-active{% endif %}">Guides</a>
+      <a href="/watchlist" class="navbar-item{% if active == 'watchlist' %} is-active{% endif %}">Watchlist<span class="alert-badge" id="alert-badge"></span></a>
+      <div class="nav-end">
         <div id="auth-wrap"></div>
         <div class="navbar-item theme-switcher" id="theme-switcher"></div>
         <div class="navbar-item" id="pwa-install-wrap" style="display:none"></div>
-        <div class="navbar-item">
-          <a href="https://github.com/eliekh05/Droidify" class="button is-ghost" target="_blank" rel="noopener">
-            <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></span>
-          </a>
-        </div>
+        <a href="https://github.com/eliekh05/Droidify" class="button is-ghost navbar-item" target="_blank" rel="noopener"><span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></span></a>
       </div>
     </div>
   </div>

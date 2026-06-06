@@ -8,7 +8,7 @@ async def list_roms(
     q:            str | None = Query(None, description="Search by name or codename"),
     android_base: str | None = Query(None, description="Filter by Android version, e.g. '16'"),
     rom_type:     str | None = Query(None, description="custom | stock | gsi"),
-    limit:        int = Query(100, ge=1, le=500),
+    limit:        int = Query(100, ge=1, le=50),
     offset:       int = Query(0, ge=0),
 ):
     """

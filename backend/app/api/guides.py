@@ -1,87 +1,39 @@
+"""
+guides.py — API endpoints for flashing, rooting, and modding guides.
+"""
 import re
-
-_CODENAME_RE = re.compile(r"^[a-z0-9_-]{1,40}$")
-
-"""
-guides.py — API endpoints for flashing, rooting, and resale guides.
-"""
 from fastapi import APIRouter, Query, HTTPException
 from app.scrapers.guides import get_guides_for_device, get_all_guides
-from app.scrapers.resell_guides import get_resell_guides
 
 router = APIRouter()
+_CODENAME_RE = re.compile(r"^[a-z0-9_-]{1,40}$")
+
 
 @router.get("")
 async def list_guides(
-    guide_type: str | None = Query(
-        None,
-        description=(
-            "Filter by type: install | upgrade | root | bootloader-unlock | "
-            "recovery | unbrick | buy | sell"
-        ),
-    ),
-    manufacturer: str | None = Query(
-        None,
-        description="Filter buy/sell guides by manufacturer (Samsung, Xiaomi, Google…)",
-    ),
+    guide_type: str | None = Query(None, description=(
+        "Filter by type: bootloader-unlock | install-recovery | install-rom | "
+        "root | restore | sell-buy"
+    )),
 ):
-    """Universal guides not tied to a specific device."""
-    tech_guides = await get_all_guides()
-    tech_list   = tech_guides.get("guides", [])
+    """Universal guides — all types."""
+    data   = await get_all_guides()
+    guides = data.get("guides", [])
+    if guide_type:
+        guides = [g for g in guides if g.get("guide_type") == guide_type]
+    return {"total": len(guides), "guides": guides}
 
-    resale = get_resell_guides(
-        guide_type=guide_type if guide_type in ("buy", "sell") else None,
-        manufacturer=manufacturer,
-    )
-
-    all_guides = tech_list + resale
-
-    if guide_type and guide_type not in ("buy", "sell"):
-        all_guides = [g for g in tech_list if g.get("guide_type") == guide_type]
-    elif guide_type in ("buy", "sell"):
-        all_guides = resale
-
-    return {"total": len(all_guides), "guides": all_guides}
 
 @router.get("/{codename}")
-async def device_guides(
-    codename: str,
-    manufacturer: str | None = Query(
-        None,
-        description="Manufacturer name — improves guide accuracy",
-    ),
-    guide_type: str | None = Query(
-        None,
-        description=(
-            "Filter by type: install | upgrade | root | bootloader-unlock | "
-            "recovery | unbrick | buy | sell"
-        ),
-    ),
-):
-    """All guides for a specific device."""
+async def device_guides(codename: str, guide_type: str | None = Query(None)):
+    """All guides for a specific device codename."""
     if not _CODENAME_RE.match(codename):
         raise HTTPException(status_code=400, detail="Invalid codename")
-    device_specific = await get_guides_for_device(
-        codename=codename,
-        manufacturer=manufacturer,
-    )
-
-    resale = get_resell_guides(manufacturer=manufacturer)
-
-    all_guides = device_specific + resale
-
-    if not all_guides:
-        raise HTTPException(
-            status_code=404,
-            detail=f"No guides found for '{codename}'",
-        )
-
+    guides = await get_guides_for_device(codename=codename)
+    if not guides:
+        raise HTTPException(status_code=404, detail=f"No guides found for '{codename}'")
     if guide_type:
-        all_guides = [g for g in all_guides if g.get("guide_type") == guide_type]
-        if not all_guides:
-            raise HTTPException(
-                status_code=404,
-                detail=f"No '{guide_type}' guide found for '{codename}'",
-            )
-
-    return {"codename": codename, "total": len(all_guides), "guides": all_guides}
+        guides = [g for g in guides if g.get("guide_type") == guide_type]
+        if not guides:
+            raise HTTPException(status_code=404, detail=f"No '{guide_type}' guide for '{codename}'")
+    return {"codename": codename, "total": len(guides), "guides": guides}

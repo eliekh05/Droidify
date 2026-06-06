@@ -5,6 +5,7 @@ import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -88,6 +89,7 @@ app = FastAPI(
 
 # CORS
 _cors = [o.strip() for o in os.environ.get("CORS_ORIGINS", "https://eliekh05-droidify-hf.hf.space").split(",") if o.strip()]
+app.add_middleware(GZipMiddleware, minimum_size=500)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors,

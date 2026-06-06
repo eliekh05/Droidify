@@ -8,7 +8,7 @@ async def list_recoveries(
     q:            str | None = Query(None, description="Search by codename or model"),
     recovery:     str | None = Query(None, description="TWRP | OrangeFox"),
     manufacturer: str | None = Query(None, description="Filter by manufacturer"),
-    limit:        int = Query(50, ge=1, le=500),
+    limit:        int = Query(50, ge=1, le=50),
     offset:       int = Query(0, ge=0),
 ):
     """

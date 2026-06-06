@@ -197,6 +197,13 @@ async def _get_all_devices() -> dict[str, dict]:
     await cache_set(ck, merged, ttl=3600)
     return merged
 
+
+
+def _trim_device(d: dict) -> dict:
+    """Remove heavy fields not needed in list/search results."""
+    heavy = {"lineageos_branches", "raw_data", "extra", "specs", "full_name"}
+    return {k: v for k, v in d.items() if k not in heavy}
+
 async def get_devices(
     q: str | None = None,
     manufacturer: str | None = None,
@@ -236,7 +243,7 @@ async def get_devices(
         "total":   total,
         "offset":  offset,
         "limit":   limit,
-        "devices": devices[offset: offset + limit],
+        "devices": [_trim_device(d) for d in devices[offset: offset + limit]],
     }
 
 async def get_device_by_codename(codename: str) -> dict | None:

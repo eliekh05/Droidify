@@ -18,7 +18,7 @@ _SAFE_CN = re.compile(r"[^a-zA-Z0-9_\-]")
 async def list_devices(
     q:            str | None = Query(None, min_length=1, max_length=64,  description="Search by model, codename, or manufacturer"),
     manufacturer: str | None = Query(None, min_length=1, max_length=64,  description="Filter by manufacturer"),
-    limit:        int        = Query(50,   ge=1, le=200),
+    limit:        int        = Query(50,   ge=1, le=50),
     offset:       int        = Query(0,    ge=0),
 ):
     # Strip any character that has no business being in a device search
