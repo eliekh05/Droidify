@@ -146,7 +146,9 @@ async def android_page(request: Request):
     from app.scrapers.android_versions import get_android_versions
     try:
         data     = await get_android_versions()
-        versions = list(reversed(data.get("versions", [])))
+        # get_android_versions returns a list directly
+        raw      = data if isinstance(data, list) else data.get("versions", [])
+        versions = list(reversed(raw))
     except Exception:
         versions = []
     return _r(request, "android.html", "android",
