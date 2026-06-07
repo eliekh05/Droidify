@@ -153,29 +153,3 @@ _static_dir = os.environ.get("STATIC_DIR",
 # html=True serves index.html as SPA fallback — does NOT enable directory listing
 # Starlette StaticFiles has no directory listing feature whatsoever
 app.mount("/", StaticFiles(directory=_static_dir, html=True), name="static")
-@app.get("/.well-known/assetlinks.json")
-async def assetlinks():
-    """
-    Digital Asset Links — required for TWA (Android APK) to verify this domain
-    and hide the browser address bar inside the app.
-
-    IMPORTANT: Replace sha256_cert_fingerprints with the fingerprint from
-    PWABuilder when generating the Android APK. PWABuilder shows it in the
-    package options under "Signing key" → "SHA-256 fingerprint".
-
-    Until the APK is generated this returns an empty array which is fine
-    for PWA install — it only matters for the TWA APK verification.
-    """
-    from fastapi.responses import JSONResponse
-    return JSONResponse([
-        {
-            "relation": ["delegate_permission/common.handle_all_urls"],
-            "target": {
-                "namespace": "android_app",
-                "package_name": "com.droidify.app",
-                "sha256_cert_fingerprints": [
-                    "REPLACE_WITH_FINGERPRINT_FROM_PWABUILDER"
-                ]
-            }
-        }
-    ])
