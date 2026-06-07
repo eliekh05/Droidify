@@ -1,6 +1,6 @@
 # Droidify
 
-One place for Android modding. Search any device and see every custom ROM, recovery, root tool, and guide available for it — pulled live from 20+ public sources. No account needed. No ads. No paywalls.
+One place for Android modding. Search any device and see every custom ROM, recovery, root tool, and guide available for it — all pulled from 20+ public sources in real time. No account. No ads. No paywalls.
 
 **Live site:** [eliekh05-droidify-hf.hf.space](https://eliekh05-droidify-hf.hf.space)
 
@@ -8,77 +8,64 @@ One place for Android modding. Search any device and see every custom ROM, recov
 
 ## Why this exists
 
-Since Android 1.0 there has never been a single place to find what is available for your device. You had to check the LineageOS wiki, then TWRP, then OrangeFox, then XDA, then SourceForge, then crDroid — each one separate, none connected. You had to already know what existed to find it. That is useless for anyone just starting out.
+Since Android 1.0 there has never been a single place to find what is available for your device. You had to check the LineageOS wiki, then TWRP, then OrangeFox, then XDA, then SourceForge, then crDroid — each one completely separate, none of them talking to each other. You had to already know what existed in order to find it, which is completely useless for anyone who is just getting started.
 
-All of that data has been publicly available the entire time. LineageOS has had a JSON API for years. TWRP has had a search endpoint for years. OrangeFox has had structured CDN data for years. Nobody built the aggregator. So we did.
-
----
-
-## Our promise on data
-
-Everything shown on Droidify is fetched live from the original source. We do not invent data, approximate it, or silently serve old cached values as if they were current. If a live fetch fails you will see it marked as unavailable or cached — never presented as fresh when it is not.
-
-We hardcode data in exactly one situation: when the live source goes down too often, responds too slowly to be usable, or does not exist at all. When that happens it is documented and visible. It is never the easy way out.
-
-The one current example is the Android versions page — explained below.
+All of that data has been publicly accessible the whole time. LineageOS has had a JSON API for years. TWRP has had a search endpoint for years. OrangeFox has had structured CDN data for years. Nobody built the aggregator. So we did.
 
 ---
 
-## Why there is an Android versions page
+## The data
 
-Most people do not know what Android version their device runs or what version a ROM targets. The problem is made worse by how Android is named and numbered.
+Everything you see on Droidify is fetched live from the original source. Nothing is made up, approximated, or served as current when it is actually old. If something fails to fetch you will see it clearly marked — it will never quietly pretend to be fresh data when it is not.
 
-When someone sees Android 14, a lot of people think that is storage — like 14GB. Others think it is the API level, which is actually 34. Others think Android 15 came after Android 9 because the numbers skipped — Android went from 9 (Pie) to 10, dropping dessert names entirely. Android 12L was a surprise release between 12 and 13 that most people have never heard of. Android versions, API levels, codenames, and release years are four completely separate things that almost no website explains together in one place.
-
-We built the Android versions page so that when someone sees a ROM listed as targeting Android 14, they can immediately look up what that means — the API level, the codename, when it was released, and whether their device can run it. Without that page, users are left Googling "is Android 14 good for my device" and getting results that are either wrong, outdated, or about phone storage.
-
-The data on this page is seeded from a reference table and updated when new versions are released. We do this because the live sources that publish Android version history are inconsistent and sometimes slow enough to make the page time out. A complete reliable table is more useful than a live scrape that occasionally returns half the list. This is intentional, documented, and the right tradeoff.
+There is one exception. The Android versions page uses a hardcoded reference table instead of scraping a live source. The reason is explained below.
 
 ---
 
-## What it does
+## The Android versions page
 
-- **945+ devices** — search by name, codename, or manufacturer
+Most websites that cover Android versions only list the major releases — Android 10, 11, 12, 13, 14, 15. They skip the subversions that actually shipped on real hardware. Things like 2.3.1 through 2.3.7, 4.0 through 4.0.4, 4.1 through 4.1.2, 4.4 through 4.4.4, 5.0 through 5.0.2, and so on. Those versions existed. Devices shipped with them. People still have phones running them. They deserve to be listed.
+
+The other problem is the naming. When someone sees a ROM targeting Android 14, a lot of people assume that means 14GB of storage. Others confuse it with the API level, which is 34. Android went from version 9 (Pie) straight to 10 and dropped the dessert naming scheme entirely, which trips up anyone who learned the old system. Android 12L appeared between 12 and 13 and most people have never even heard of it. The version number, the API level, the internal codename, and the release year are four completely different things and almost no site puts them all in one place clearly.
+
+We built this page so anyone can look up what a version actually means — not just the number but the API level, the codename, when it was released, and its current support status.
+
+The data is hardcoded because the live sources that publish Android version history — primarily Wikipedia and apilevels.com — do not reliably include all subversions, and their format changes without warning which breaks scrapers. A carefully maintained reference table is more accurate and more stable than a live scrape that might return an incomplete list or fail entirely. Every entry has been verified against the official Android SDK documentation and source.android.com build numbers. New versions are added as Google announces them.
+
+---
+
+## What it covers
+
+- **946+ devices** — search by name, codename, or manufacturer
 - **Custom ROMs** — LineageOS, GrapheneOS, crDroid, /e/OS, CalyxOS, DivestOS, postmarketOS, PixelExperience, and more
 - **Recoveries** — TWRP, OrangeFox, PBRP, SHRP, unofficial builds
 - **Root tools** — Magisk, KernelSU, APatch, LSPosed — versions fetched live from GitHub
-- **Flashing tools** — Odin, ADB/Fastboot, SP Flash Tool, Mi Flash, QFIL — live versions, nothing hardcoded
+- **Flashing tools** — Odin, ADB/Fastboot, SP Flash Tool, Mi Flash, QFIL — live versions
 - **Guides** — Unlock bootloader → install recovery → flash ROM → root → restore → buy/sell. In that order, every time.
-- **Android versions** — every version from 1.0 to the latest, with API levels, codenames, and release dates in one place
+- **Android versions** — every version from 1.0 to the latest including all subversions, with API levels, codenames, and release dates
 - **Watchlist + ROM alerts** — save devices, get notified when new builds drop
-- **PWA** — installable on any device directly from the browser, works offline from cache
-- **Android APK** — installable as a native Android app via PWABuilder TWA. No Play Store needed for sideload.
+- **PWA** — install directly from the browser on any device
 
 ---
 
 ## Install
 
-**Browser — any device:**
-Open [eliekh05-droidify-hf.hf.space](https://eliekh05-droidify-hf.hf.space) in Chrome or Edge. An install button appears in the address bar or at the top of the page when the browser decides the app is ready to install. Tap it. Done. Works on Android, Windows, macOS, and Linux. On iOS use Safari → Share → Add to Home Screen.
+**Browser — the best option for everyone:**
+Open the site in Chrome or Edge. An install button appears when the browser is ready. Tap it. Works on Android, Windows, macOS, and Linux. On iOS open in Safari → Share → Add to Home Screen. This is the smoothest install experience on every platform — no warnings, no friction, instant updates.
 
-**Android APK — sideload:**
-A native Android APK is available built using TWA (Trusted Web Activity). Same site, full screen, no browser address bar, works offline from cache. No Play Store account needed to sideload.
+**Android APK:**
+Download [Droidify.apk](https://github.com/eliekh05/Droidify/releases/download/v1.0.0/Droidify.apk) from Releases. Enable unknown sources, install, done. Full screen, no browser chrome. This is a TWA (Trusted Web Activity) — a thin native shell that opens the website directly. When the site updates, the app updates. No new APK needed for any content or feature change.
 
-1. Download the APK from the [Releases page](https://github.com/eliekh05/Droidify/releases)
-2. On your Android device: Settings → Security → Install unknown apps → allow your browser or file manager
-3. Open the APK file and install
-4. Droidify appears on your home screen like any other app
+**Windows:**
+Download [Droidify.msix](https://github.com/eliekh05/Droidify/releases/download/v1.0.0/Droidify.msix) from Releases and double click to install.
 
-**What is a TWA and why does it matter?**
+> ⚠️ Expect SmartScreen warnings on Windows. The package is not signed through the Microsoft Store, so Windows will complain about it. Click "More info" then "Run anyway" if it gets blocked. The app is safe and the source code is right above. That said — installing through Chrome or Edge using the browser install button is a significantly better experience on Windows with none of this friction, and Microsoft has no ability to interfere with that. Use the browser install if you can.
 
-A Trusted Web Activity (TWA) is a thin native Android shell that opens your website full screen — no browser address bar, no browser chrome, just the app. The APK itself contains almost no code. It is a verified pointer to the website.
-
-This means:
-- When the site is updated on HuggingFace, every user who opens the app gets the update immediately — no new APK, no Play Store release, no user action required
-- It works exactly like pushing a Docker image to a registry — the container (APK) stays the same, the content inside (the website) is always the latest version
-- The APK only needs to be regenerated if the package name, signing key, or app metadata changes — not for any content, data, or feature update
-- Storage, battery, and memory usage is minimal because the app delegates everything to Chrome
-
-The only thing that requires a new APK release is a change to the native shell itself — for example, updating the app icon, changing the package name, or modifying the splash screen.
+---
 
 ## Issues
 
-This project should never have issues. If it does, open one and we will reach out. We do not close issues without explaining why. We do not ignore reports. If something is broken we will fix it. If it cannot be fixed we will tell you exactly why.
+This project should not have issues. If it does, open one and we will reach out. Nothing gets closed without an explanation. If something is broken we will fix it. If it cannot be fixed we will tell you exactly why.
 
 ---
 
@@ -101,12 +88,12 @@ Public. No authentication required. All GET.
 
 | Endpoint | Description |
 |---|---|
-| `GET /api/devices` | Search 945+ devices |
+| `GET /api/devices` | Search 946+ devices |
 | `GET /api/devices/{codename}` | Device detail — ROMs, recoveries, firmware |
 | `GET /api/roms` | ROM index |
 | `GET /api/recoveries` | Recovery index |
 | `GET /api/tools` | Root and flashing tools with live versions |
-| `GET /api/android-versions` | Android version history with API levels and codenames |
+| `GET /api/android-versions` | Full Android version history including all subversions |
 | `GET /api/guides` | Universal guides |
 | `GET /api/guides/{codename}` | Device-specific guides |
 | `GET /api/health` | Health check |

@@ -146,52 +146,70 @@
 })();
 </script>
 
-<!-- PWA / APK Install Banner -->
+<!-- Install Banner -->
 <div id="install-banner" style="display:none" aria-live="polite">
   <div class="install-banner-inner">
     <button class="install-banner-close" id="install-banner-close" aria-label="Dismiss">&times;</button>
-    <div class="install-sections">
+    <p class="install-banner-title">Install Droidify</p>
+    <div class="install-banner-body">
 
-      <!-- PWA section -->
-      <div class="install-section">
-        <div class="install-section-icon">&#128241;</div>
-        <div class="install-section-body">
-          <p class="install-section-title">Install Droidify</p>
-          <p class="install-section-sub">Add to home screen — works offline</p>
-        </div>
-        <button id="pwa-install-btn" class="install-btn install-btn-primary">Install</button>
+      <!-- Left tabs -->
+      <div class="install-tabs">
+        <button class="install-tab active" data-tab="browser">&#127760; Browser</button>
+        <button class="install-tab" data-tab="android">&#129302; Android</button>
+        <button class="install-tab" data-tab="windows">&#128759; Windows</button>
       </div>
 
-      <div class="install-divider"></div>
+      <!-- Right panels -->
+      <div class="install-panels">
 
-      <!-- APK section -->
-      <div class="install-section">
-        <div class="install-section-icon">&#129302;</div>
-        <div class="install-section-body">
-          <p class="install-section-title">Android APK</p>
-          <p class="install-section-sub">Native app, no browser chrome</p>
+        <div class="install-panel active" id="tab-browser">
+          <p class="install-panel-title">Install from browser</p>
+          <p class="install-panel-sub">Best option on every platform. No warnings, no friction. Works on Android, Windows, macOS and Linux.</p>
+          <button id="pwa-install-btn" class="install-btn install-btn-primary">Install</button>
+          <p class="install-panel-note" id="install-sub"></p>
         </div>
-        <a href="https://github.com/eliekh05/Droidify/releases/download/v1.0.0/Droidify.apk" target="_blank" rel="noopener" class="install-btn install-btn-ghost">Download</a>
-      </div>
 
+        <div class="install-panel" id="tab-android">
+          <p class="install-panel-title">Android APK</p>
+          <p class="install-panel-sub">Full screen, no browser chrome. TWA — app updates automatically when the site updates.</p>
+          <a href="https://github.com/eliekh05/Droidify/releases/download/v1.0.0/Droidify.apk" target="_blank" rel="noopener" class="install-btn install-btn-primary">Download APK</a>
+          <p class="install-panel-note">Enable unknown sources in Settings → Security before installing.</p>
+        </div>
+
+        <div class="install-panel" id="tab-windows">
+          <p class="install-panel-title">Windows</p>
+          <p class="install-panel-sub">Expect SmartScreen warnings — the package is not signed through the Microsoft Store. Use the browser install above for a smoother experience.</p>
+          <a href="https://github.com/eliekh05/Droidify/releases/download/v1.0.0/Droidify.msix" target="_blank" rel="noopener" class="install-btn install-btn-ghost">Download .msix</a>
+          <p class="install-panel-note">If blocked: click "More info" → "Run anyway".</p>
+        </div>
+
+      </div>
     </div>
   </div>
 </div>
 <!-- End Install Banner -->
 
-<script>
-// ── Install banner ────────────────────────────────────────────────────────────
-(function () {
+<script>(function () {
   var DISMISSED_KEY = 'droidify_install_dismissed';
-  var banner      = document.getElementById('install-banner');
-  var closeBtn    = document.getElementById('install-banner-close');
-  var installBtn  = document.getElementById('pwa-install-btn');
+  var banner     = document.getElementById('install-banner');
+  var closeBtn   = document.getElementById('install-banner-close');
+  var installBtn = document.getElementById('pwa-install-btn');
+  var sub        = document.getElementById('install-sub');
   var deferredPrompt = null;
 
+  document.querySelectorAll('.install-tab').forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      document.querySelectorAll('.install-tab').forEach(function (t) { t.classList.remove('active'); });
+      document.querySelectorAll('.install-panel').forEach(function (p) { p.classList.remove('active'); });
+      tab.classList.add('active');
+      var panel = document.getElementById('tab-' + tab.dataset.tab);
+      if (panel) panel.classList.add('active');
+    });
+  });
+
   function showBanner() {
-    if (!banner) return;
-    if (sessionStorage.getItem(DISMISSED_KEY)) return;
-    // Small delay so it doesn't pop immediately on load
+    if (!banner || sessionStorage.getItem(DISMISSED_KEY)) return;
     setTimeout(function () {
       banner.style.display = 'block';
       requestAnimationFrame(function () {
@@ -207,46 +225,47 @@
     sessionStorage.setItem(DISMISSED_KEY, '1');
   }
 
-  // Close button
   if (closeBtn) closeBtn.addEventListener('click', hideBanner);
+  window.addEventListener('appinstalled', hideBanner);
 
-  // PWA install
   window.addEventListener('beforeinstallprompt', function (e) {
     e.preventDefault();
     deferredPrompt = e;
-    showBanner();
   });
 
   if (installBtn) {
     installBtn.addEventListener('click', function () {
-      if (!deferredPrompt) return;
-      hideBanner();
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then(function () { deferredPrompt = null; });
+      if (deferredPrompt) {
+        hideBanner();
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(function () { deferredPrompt = null; });
+      }
     });
   }
 
-  // If already installed, hide banner
-  window.addEventListener('appinstalled', hideBanner);
-
-  // Show banner on ALL browsers after delay unless already installed or dismissed
-  // Safari/Firefox never fire beforeinstallprompt so we show regardless
-  var isStandalone = window.matchMedia('(display-mode: standalone)').matches
-    || navigator.standalone === true;
-  var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-  var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+  var isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  var isIOS     = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  var isSafari  = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  var isAndroid = /android/i.test(navigator.userAgent);
+  var isWindows = /windows/i.test(navigator.userAgent);
 
   if (!isStandalone) {
-    // On iOS and Safari desktop: hide PWA install btn (doesnt work there)
-    // Only show the APK download option
-    if (isIOS || isSafari) {
-      if (installBtn) installBtn.style.display = 'none';
+    if (isAndroid) {
+      var at = document.querySelector('[data-tab="android"]');
+      if (at) at.click();
+    } else if (isWindows) {
+      var wt = document.querySelector('[data-tab="windows"]');
+      if (wt) wt.click();
     }
-    // Show banner for everyone not already installed
+    if (isIOS) {
+      if (sub) sub.textContent = 'Tap Share → Add to Home Screen in Safari.';
+      if (installBtn) { installBtn.textContent = 'How to install'; installBtn.onclick = function () { alert('Tap the Share button at the bottom of Safari, then tap “Add to Home Screen”.'); }; }
+    } else if (isSafari) {
+      if (sub) sub.textContent = 'File → Add to Dock in Safari menu bar.';
+      if (installBtn) { installBtn.textContent = 'How to install'; installBtn.onclick = function () { alert('Click “File” in the Safari menu bar, then click “Add to Dock”.'); }; }
+    }
     showBanner();
   }
-})();
-</script>
+})();</script>
 </body>
 </html>

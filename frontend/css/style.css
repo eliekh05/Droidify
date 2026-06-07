@@ -756,7 +756,7 @@ img { max-width: 100%; display: block; }
   left: 50%;
   transform: translateX(-50%) translateY(120%);
   z-index: 9998;
-  width: min(480px, calc(100vw - 2rem));
+  width: min(520px, calc(100vw - 2rem));
   transition: transform .35s cubic-bezier(.22,1,.36,1), opacity .35s ease;
   opacity: 0;
 }
@@ -768,42 +768,63 @@ img { max-width: 100%; display: block; }
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 16px;
-  padding: 1rem 1.1rem;
-  box-shadow: 0 8px 32px rgba(0,0,0,.45);
+  padding: 1.1rem 1.2rem 1rem;
+  box-shadow: 0 8px 32px rgba(0,0,0,.5);
   position: relative;
 }
 .install-banner-close {
   position: absolute;
-  top: .6rem; right: .75rem;
+  top: .65rem; right: .75rem;
   background: none; border: none; cursor: pointer;
-  color: var(--muted); font-size: 1.2rem; line-height: 1;
+  color: var(--muted); font-size: 1.15rem; line-height: 1;
   padding: .2rem .4rem; border-radius: 6px;
-  transition: color .15s ease, background .15s ease;
+  transition: color .15s, background .15s;
 }
 .install-banner-close:hover { color: var(--text); background: var(--card2); }
-.install-sections { display: flex; flex-direction: column; gap: .6rem; }
-.install-section {
-  display: flex; align-items: center; gap: .85rem;
+.install-banner-title {
+  font-size: .75rem; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--muted); margin: 0 0 .8rem;
 }
-.install-section-icon { font-size: 1.5rem; flex-shrink: 0; width: 2rem; text-align: center; }
-.install-section-body { flex: 1; min-width: 0; }
-.install-section-title { font-weight: 700; font-size: .9rem; color: var(--text); margin: 0; }
-.install-section-sub   { font-size: .75rem; color: var(--muted); margin: .1rem 0 0; }
-.install-divider {
-  height: 1px; background: var(--border); margin: .15rem 0;
+.install-banner-body {
+  display: flex; gap: .75rem;
+}
+/* Tabs — left column */
+.install-tabs {
+  display: flex; flex-direction: column; gap: .25rem;
+  min-width: 110px; flex-shrink: 0;
+}
+.install-tab {
+  background: none; border: none; cursor: pointer;
+  text-align: left; padding: .5rem .65rem;
+  border-radius: 8px; font-size: .8rem; font-weight: 600;
+  color: var(--muted); transition: background .15s, color .15s;
+  white-space: nowrap;
+}
+.install-tab:hover { background: var(--card2); color: var(--text); }
+.install-tab.active { background: var(--card2); color: var(--text); }
+/* Panels — right column */
+.install-panels { flex: 1; min-width: 0; }
+.install-panel { display: none; }
+.install-panel.active { display: block; }
+.install-panel-title {
+  font-size: .9rem; font-weight: 700; color: var(--text);
+  margin: 0 0 .3rem;
+}
+.install-panel-sub {
+  font-size: .78rem; color: var(--muted); line-height: 1.5;
+  margin: 0 0 .75rem;
+}
+.install-panel-note {
+  font-size: .72rem; color: var(--muted); margin: .5rem 0 0;
 }
 .install-btn {
-  flex-shrink: 0;
-  border: none; border-radius: 8px; font-weight: 700;
-  font-size: .8rem; padding: .45rem 1rem; cursor: pointer;
-  white-space: nowrap; text-decoration: none;
-  transition: transform .15s ease, box-shadow .15s ease;
-  display: inline-flex; align-items: center;
+  display: inline-block; border: none; border-radius: 8px;
+  font-weight: 700; font-size: .8rem; padding: .45rem 1rem;
+  cursor: pointer; white-space: nowrap; text-decoration: none;
+  transition: transform .15s, box-shadow .15s;
 }
 .install-btn:hover { transform: translateY(-1px); }
-.install-btn-primary {
-  background: var(--accent); color: #0b0f14;
-}
+.install-btn-primary { background: var(--accent); color: #0b0f14; }
 .install-btn-primary:hover { box-shadow: 0 4px 14px var(--accent-glow); }
 .install-btn-ghost {
   background: var(--card2); color: var(--text);
@@ -811,6 +832,8 @@ img { max-width: 100%; display: block; }
 }
 .install-btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
 @media (max-width: 480px) {
+  .install-banner-body { flex-direction: column; }
+  .install-tabs { flex-direction: row; min-width: unset; }
+  .install-tab { flex: 1; text-align: center; font-size: .72rem; padding: .4rem .3rem; }
   #install-banner { bottom: .75rem; }
-  .install-btn { font-size: .75rem; padding: .4rem .75rem; }
 }
