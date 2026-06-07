@@ -52,8 +52,15 @@
       "src": "/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
+      "form_factor": "wide",
+      "label": "Droidify \u2014 Android ROM & Device Index"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
       "form_factor": "narrow",
-      "label": "Droidify \u2014 search 945+ Android devices"
+      "label": "Droidify on mobile \u2014 browse 945+ devices"
     }
   ],
   "prefer_related_applications": false,
