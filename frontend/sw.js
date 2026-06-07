@@ -1,7 +1,7 @@
-'use strict';
+// This is the service worker with the combined offline experience (Offline page + Offline copy of pages)
 
-const CACHE       = 'droidify';
-const OFFLINE_URL = '/offline.html';
+const CACHE = 'droidify';
+const offlineFallbackPage = '/offline.html';
 
 const PRECACHE = [
   '/',
@@ -14,41 +14,36 @@ const PRECACHE = [
   '/favicon.svg',
 ];
 
-// ── Message handler (from PWABuilder) — allows clients to trigger SW update ──
-self.addEventListener('message', function (event) {
+self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
 });
 
-// ── Install — force-cache / and offline.html, pre-cache rest ─────────────────
-self.addEventListener('install', function (e) {
-  e.waitUntil(
-    caches.open(CACHE).then(function (cache) {
+self.addEventListener('install', async (event) => {
+  event.waitUntil(
+    caches.open(CACHE).then((cache) => {
+      // Force-cache / and offline.html on every install
       var critical = [
         cache.put('/', fetch('/')),
-        cache.put(OFFLINE_URL, fetch(OFFLINE_URL))
+        cache.put(offlineFallbackPage, fetch(offlineFallbackPage))
       ];
       var rest = PRECACHE
-        .filter(function (u) { return u !== '/' && u !== OFFLINE_URL; })
-        .map(function (url) {
-          return cache.match(url).then(function (hit) {
-            if (!hit) return cache.add(url).catch(function () {});
-          });
-        });
+        .filter((u) => u !== '/' && u !== offlineFallbackPage)
+        .map((url) => cache.match(url).then((hit) => {
+          if (!hit) return cache.add(url).catch(() => {});
+        }));
       return Promise.all(
-        critical.concat(rest).map(function (p) { return p.catch(function () {}); })
+        critical.concat(rest).map((p) => p.catch(() => {}))
       );
-    }).then(function () { return self.skipWaiting(); })
+    }).then(() => self.skipWaiting())
   );
 });
 
-// ── Activate — enable navigation preload (from PWABuilder) + claim clients ───
-self.addEventListener('activate', function (e) {
-  e.waitUntil(
+self.addEventListener('activate', async (event) => {
+  event.waitUntil(
     Promise.all([
       self.clients.claim(),
-      // Navigation preload speeds up navigation requests on supporting browsers
       self.registration.navigationPreload
         ? self.registration.navigationPreload.enable()
         : Promise.resolve()
@@ -56,68 +51,63 @@ self.addEventListener('activate', function (e) {
   );
 });
 
-// ── Fetch ─────────────────────────────────────────────────────────────────────
-self.addEventListener('fetch', function (e) {
-  var req = e.request;
-  var url = new URL(req.url);
+self.addEventListener('fetch', (event) => {
+  const req = event.request;
+  const url = new URL(req.url);
 
   // Skip non-GET and cross-origin
   if (req.method !== 'GET' || url.origin !== self.location.origin) return;
 
   // API — always network, 503 JSON when offline
   if (url.pathname.startsWith('/api/')) {
-    e.respondWith(
-      fetch(req).catch(function () {
-        return new Response(JSON.stringify({ error: 'offline' }), {
+    event.respondWith(
+      fetch(req).catch(() =>
+        new Response(JSON.stringify({ error: 'offline' }), {
           status: 503,
           headers: { 'Content-Type': 'application/json' }
-        });
-      })
+        })
+      )
     );
     return;
   }
 
   // Versioned static assets (?v=) — cache-first, background refresh
   if (url.search.indexOf('v=') !== -1) {
-    e.respondWith(
-      caches.match(req).then(function (cached) {
-        var networkFetch = fetch(req).then(function (fresh) {
-          if (fresh && fresh.status === 200) {
-            caches.open(CACHE).then(function (c) { c.put(req, fresh.clone()); });
-          }
+    event.respondWith(
+      caches.match(req).then((cached) => {
+        const networkFetch = fetch(req).then((fresh) => {
+          if (fresh && fresh.status === 200)
+            caches.open(CACHE).then((c) => c.put(req, fresh.clone()));
           return fresh;
-        }).catch(function () { return cached; });
+        }).catch(() => cached);
         return cached || networkFetch;
       })
     );
     return;
   }
 
-  // HTML navigation — use preload response if available (from PWABuilder),
-  // then network, then cache, then offline.html
-  var isNavigation = req.mode === 'navigate' ||
+  // HTML navigation — preload response first, then network, then cache, then offline page
+  const isNavigation = req.mode === 'navigate' ||
     url.pathname.endsWith('.html') ||
     url.pathname === '/' ||
     !url.pathname.includes('.');
 
   if (isNavigation) {
-    e.respondWith((async function () {
+    event.respondWith((async () => {
       try {
-        // Navigation preload (PWABuilder pattern) — parallel network request
-        var preload = await e.preloadResponse;
-        if (preload) {
-          caches.open(CACHE).then(function (c) { c.put(req, preload.clone()); });
-          return preload;
+        const preloadResp = await event.preloadResponse;
+        if (preloadResp) {
+          caches.open(CACHE).then((c) => c.put(req, preloadResp.clone()));
+          return preloadResp;
         }
-        var fresh = await fetch(req);
-        if (fresh && fresh.status === 200) {
-          caches.open(CACHE).then(function (c) { c.put(req, fresh.clone()); });
-        }
-        return fresh;
-      } catch (_) {
-        var cached = await caches.match(req);
+        const networkResp = await fetch(req);
+        if (networkResp && networkResp.status === 200)
+          caches.open(CACHE).then((c) => c.put(req, networkResp.clone()));
+        return networkResp;
+      } catch (error) {
+        const cached = await caches.match(req);
         if (cached) return cached;
-        var offline = await caches.match(OFFLINE_URL);
+        const offline = await caches.match(offlineFallbackPage);
         if (offline) return offline;
         return caches.match('/');
       }
@@ -126,14 +116,11 @@ self.addEventListener('fetch', function (e) {
   }
 
   // Everything else — network-first, cache on success
-  e.respondWith(
-    fetch(req).then(function (fresh) {
-      if (fresh && fresh.status === 200) {
-        caches.open(CACHE).then(function (c) { c.put(req, fresh.clone()); });
-      }
+  event.respondWith(
+    fetch(req).then((fresh) => {
+      if (fresh && fresh.status === 200)
+        caches.open(CACHE).then((c) => c.put(req, fresh.clone()));
       return fresh;
-    }).catch(function () {
-      return caches.match(req);
-    })
+    }).catch(() => caches.match(req))
   );
 });
