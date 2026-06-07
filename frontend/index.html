@@ -258,11 +258,11 @@
       if (wt) wt.click();
     }
     if (isIOS) {
-      if (sub) sub.textContent = 'Tap Share → Add to Home Screen in Safari.';
-      if (installBtn) { installBtn.textContent = 'How to install'; installBtn.onclick = function () { alert('Tap the Share button at the bottom of Safari, then tap “Add to Home Screen”.'); }; }
+      if (sub) sub.textContent = 'Use Share → Add to Home Screen in Safari';
+      if (installBtn) { installBtn.textContent = 'Step by step'; installBtn.onclick = function () { alert('1. Open this site in Safari (not Chrome or Firefox).\n2. Tap the Share button at the bottom of the screen (↑ icon).\n3. Scroll down and tap “Add to Home Screen”.\n4. Tap “Add”.\n\nDroidify will appear on your home screen like any other app.'); }; }
     } else if (isSafari) {
-      if (sub) sub.textContent = 'File → Add to Dock in Safari menu bar.';
-      if (installBtn) { installBtn.textContent = 'How to install'; installBtn.onclick = function () { alert('Click “File” in the Safari menu bar, then click “Add to Dock”.'); }; }
+      if (sub) sub.textContent = 'Use File → Add to Dock from the menu bar';
+      if (installBtn) { installBtn.textContent = 'Step by step'; installBtn.onclick = function () { alert('1. Make sure you are viewing the site in Safari on your Mac.\n2. Click “File” in the top menu bar.\n3. Click “Add to Dock”.\n4. Confirm the name and click “Add”.\n\nDroidify will appear in your Dock like any other app.'); }; }
     }
     showBanner();
   }
