@@ -8,41 +8,6 @@
     });
   }
 
-  // ── PWA install button ─────────────────────────────────────────────────────
-  var deferredPrompt = null;
-  var installWrap    = document.getElementById('pwa-install-wrap');
-
-  // Inject button markup once
-  if (installWrap) {
-    installWrap.innerHTML =
-      '<button id="pwa-install-btn" class="button is-primary is-small">' +
-      '&#8595; Install' +
-      '</button>';
-  }
-  var installBtn = document.getElementById('pwa-install-btn');
-
-  window.addEventListener('beforeinstallprompt', function (e) {
-    e.preventDefault();
-    deferredPrompt = e;
-    if (installWrap) installWrap.style.display = 'flex';
-  });
-
-  if (installBtn) {
-    installBtn.addEventListener('click', function () {
-      if (!deferredPrompt) return;
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then(function () {
-        deferredPrompt = null;
-        if (installWrap) installWrap.style.display = 'none';
-      });
-    });
-  }
-
-  window.addEventListener('appinstalled', function () {
-    deferredPrompt = null;
-    if (installWrap) installWrap.style.display = 'none';
-  });
-
   // ── Hero search ────────────────────────────────────────────────────────────
   var heroInput = document.getElementById('hero-search');
   var heroBtn   = document.getElementById('hero-search-btn');

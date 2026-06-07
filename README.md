@@ -46,9 +46,35 @@ The data on this page is seeded from a reference table and updated when new vers
 - **Guides** — Unlock bootloader → install recovery → flash ROM → root → restore → buy/sell. In that order, every time.
 - **Android versions** — every version from 1.0 to the latest, with API levels, codenames, and release dates in one place
 - **Watchlist + ROM alerts** — save devices, get notified when new builds drop
-- **PWA** — installable, works offline from cache
+- **PWA** — installable on any device directly from the browser, works offline from cache
+- **Android APK** — installable as a native Android app via PWABuilder TWA. No Play Store needed for sideload.
 
 ---
+
+## Install
+
+**Browser — any device:**
+Open [eliekh05-droidify-hf.hf.space](https://eliekh05-droidify-hf.hf.space) in Chrome or Edge. An install button appears in the address bar or at the top of the page when the browser decides the app is ready to install. Tap it. Done. Works on Android, Windows, macOS, and Linux. On iOS use Safari → Share → Add to Home Screen.
+
+**Android APK — sideload:**
+A native Android APK is available built using TWA (Trusted Web Activity). Same site, full screen, no browser address bar, works offline from cache. No Play Store account needed to sideload.
+
+1. Download the APK from the [Releases page](https://github.com/eliekh05/Droidify/releases)
+2. On your Android device: Settings → Security → Install unknown apps → allow your browser or file manager
+3. Open the APK file and install
+4. Droidify appears on your home screen like any other app
+
+**What is a TWA and why does it matter?**
+
+A Trusted Web Activity (TWA) is a thin native Android shell that opens your website full screen — no browser address bar, no browser chrome, just the app. The APK itself contains almost no code. It is a verified pointer to the website.
+
+This means:
+- When the site is updated on HuggingFace, every user who opens the app gets the update immediately — no new APK, no Play Store release, no user action required
+- It works exactly like pushing a Docker image to a registry — the container (APK) stays the same, the content inside (the website) is always the latest version
+- The APK only needs to be regenerated if the package name, signing key, or app metadata changes — not for any content, data, or feature update
+- Storage, battery, and memory usage is minimal because the app delegates everything to Chrome
+
+The only thing that requires a new APK release is a change to the native shell itself — for example, updating the app icon, changing the package name, or modifying the splash screen.
 
 ## Issues
 

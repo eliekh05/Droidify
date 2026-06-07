@@ -28,6 +28,19 @@ The only hardcoded data in the project right now is the Android versions referen
 
 ---
 
+## On the Android APK
+
+The APK does not need to be regenerated for any code or data changes. It only needs a new build when:
+
+- The app icon changes
+- The package name changes
+- The signing key changes
+- The splash screen changes
+
+Everything else — new features, bug fixes, data changes, UI updates — is live the moment the site deploys to HuggingFace. Do not open issues asking for APK updates when the site has been updated. It is already updated.
+
+---
+
 ## Commit style
 
 Short subject line. Present tense. No emoji. No period at the end.

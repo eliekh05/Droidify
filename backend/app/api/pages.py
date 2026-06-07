@@ -217,6 +217,10 @@ p{color:#4a6080;font-size:.9rem;line-height:1.6;margin:.75rem 0}
 async def device_page(codename: str, request: Request):
     if not await _gate(request): return _terms_redirect()
     import re as _re
+    if not _re.match(r"^[a-zA-Z0-9_.-]{1,50}$", codename):
+        from fastapi.responses import Response as _Resp
+        return _Resp(status_code=400)
+    _CODENAME_RE = _re.compile(r"^[a-zA-Z0-9_.-]{1,50}$")
     if not _re.match(r'^[a-zA-Z0-9_-]{1,64}$', codename):
         return _r(request, "device.html", "devices",
             title="Device not found — Droidify",

@@ -99,6 +99,30 @@ app.add_middleware(
 
 # Reject bodies over 64KB — this is a read-only API, no large payloads expected
 @app.middleware("http")
+async def security_headers(request, call_next):
+    """Add security headers to every response."""
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"]    = "nosniff"
+    response.headers["X-Frame-Options"]           = "SAMEORIGIN"
+    response.headers["X-XSS-Protection"]          = "1; mode=block"
+    response.headers["Referrer-Policy"]           = "strict-origin-when-cross-origin"
+    response.headers["Content-Language"]          = "en"
+    response.headers["Permissions-Policy"]        = "geolocation=(), microphone=(), camera=()"
+    # CSP — allows our CDN resources and self
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+        "img-src 'self' data: https://avatars.githubusercontent.com; "
+        "font-src 'self' https://cdn.jsdelivr.net; "
+        "connect-src 'self'; "
+        "frame-ancestors 'none'; "
+        "base-uri 'self'; "
+        "form-action 'self' https://github.com"
+    )
+    return response
+
+@app.middleware("http")
 async def limit_body_size(request, call_next):
     content_length = request.headers.get("content-length")
     if content_length and int(content_length) > 65536:
@@ -126,4 +150,32 @@ app.include_router(alerts_router, prefix="/api/alerts", tags=["alerts"])
 # Serve frontend static files — must be last so API routes take priority
 _static_dir = os.environ.get("STATIC_DIR",
     str(os.path.join(os.path.dirname(__file__), "..", "..", "frontend")))
+# html=True serves index.html as SPA fallback — does NOT enable directory listing
+# Starlette StaticFiles has no directory listing feature whatsoever
 app.mount("/", StaticFiles(directory=_static_dir, html=True), name="static")
+@app.get("/.well-known/assetlinks.json")
+async def assetlinks():
+    """
+    Digital Asset Links — required for TWA (Android APK) to verify this domain
+    and hide the browser address bar inside the app.
+
+    IMPORTANT: Replace sha256_cert_fingerprints with the fingerprint from
+    PWABuilder when generating the Android APK. PWABuilder shows it in the
+    package options under "Signing key" → "SHA-256 fingerprint".
+
+    Until the APK is generated this returns an empty array which is fine
+    for PWA install — it only matters for the TWA APK verification.
+    """
+    from fastapi.responses import JSONResponse
+    return JSONResponse([
+        {
+            "relation": ["delegate_permission/common.handle_all_urls"],
+            "target": {
+                "namespace": "android_app",
+                "package_name": "com.droidify.app",
+                "sha256_cert_fingerprints": [
+                    "REPLACE_WITH_FINGERPRINT_FROM_PWABUILDER"
+                ]
+            }
+        }
+    ])

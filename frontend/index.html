@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" translate="no">
 <head>
   <script>
     (function(){
@@ -24,6 +24,7 @@
       navigator.serviceWorker.register('/sw.js').catch(function () {});
     }
   </script>
+  <meta name="google" content="notranslate" />
 </head>
 <body>
 <div id="connection-overlay"><div class="conn-spinner"></div><p>Checking connection…</p></div>
@@ -33,7 +34,7 @@
   <div class="container">
     <div class="navbar-brand-row">
       <a href="/" class="droidify-logo">&#8203;<strong class="accent-text">Droid</strong>ify</a>
-      <div id="pwa-install-wrap" style="display:none;align-items:center;margin-left:.25rem"><button id="pwa-install-btn" style="background:var(--accent);color:#0b0f14;border:none;border-radius:8px;font-weight:700;font-size:.78rem;padding:.35rem .9rem;cursor:pointer;white-space:nowrap">&#8595; Install</button></div>
+      
       <label for="nav-toggle-cb" class="nav-burger" aria-label="menu">
         <span></span><span></span><span></span>
       </label>
@@ -142,6 +143,101 @@
   }
   checkAlerts();
   setInterval(checkAlerts,5*60*1000);
+})();
+</script>
+
+<!-- PWA / APK Install Banner -->
+<div id="install-banner" style="display:none" aria-live="polite">
+  <div class="install-banner-inner">
+    <button class="install-banner-close" id="install-banner-close" aria-label="Dismiss">&times;</button>
+    <div class="install-sections">
+
+      <!-- PWA section -->
+      <div class="install-section">
+        <div class="install-section-icon">&#128241;</div>
+        <div class="install-section-body">
+          <p class="install-section-title">Install Droidify</p>
+          <p class="install-section-sub">Add to home screen — works offline</p>
+        </div>
+        <button id="pwa-install-btn" class="install-btn install-btn-primary">Install</button>
+      </div>
+
+      <div class="install-divider"></div>
+
+      <!-- APK section -->
+      <div class="install-section">
+        <div class="install-section-icon">&#129302;</div>
+        <div class="install-section-body">
+          <p class="install-section-title">Android APK</p>
+          <p class="install-section-sub">Native app, no browser chrome</p>
+        </div>
+        <a href="https://github.com/eliekh05/Droidify/releases" target="_blank" rel="noopener" class="install-btn install-btn-ghost">Download</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+<!-- End Install Banner -->
+
+<script>
+// ── Install banner ────────────────────────────────────────────────────────────
+(function () {
+  var DISMISSED_KEY = 'droidify_install_dismissed';
+  var banner      = document.getElementById('install-banner');
+  var closeBtn    = document.getElementById('install-banner-close');
+  var installBtn  = document.getElementById('pwa-install-btn');
+  var deferredPrompt = null;
+
+  function showBanner() {
+    if (!banner) return;
+    if (sessionStorage.getItem(DISMISSED_KEY)) return;
+    // Small delay so it doesn't pop immediately on load
+    setTimeout(function () {
+      banner.style.display = 'block';
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () { banner.classList.add('show'); });
+      });
+    }, 2500);
+  }
+
+  function hideBanner() {
+    if (!banner) return;
+    banner.classList.remove('show');
+    setTimeout(function () { banner.style.display = 'none'; }, 350);
+    sessionStorage.setItem(DISMISSED_KEY, '1');
+  }
+
+  // Close button
+  if (closeBtn) closeBtn.addEventListener('click', hideBanner);
+
+  // PWA install
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    deferredPrompt = e;
+    showBanner();
+  });
+
+  if (installBtn) {
+    installBtn.addEventListener('click', function () {
+      if (!deferredPrompt) return;
+      hideBanner();
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(function () { deferredPrompt = null; });
+    });
+  }
+
+  // If already installed, hide banner
+  window.addEventListener('appinstalled', hideBanner);
+
+  // On iOS (no beforeinstallprompt) — show banner anyway after delay
+  // so users see the APK option even if PWA install isn't available
+  var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  var isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+  if (isIOS && !isStandalone) {
+    // On iOS hide the Install button, only show APK download
+    if (installBtn) installBtn.style.display = 'none';
+    showBanner();
+  }
 })();
 </script>
 </body>
