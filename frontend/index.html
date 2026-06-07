@@ -229,13 +229,21 @@
   // If already installed, hide banner
   window.addEventListener('appinstalled', hideBanner);
 
-  // On iOS (no beforeinstallprompt) — show banner anyway after delay
-  // so users see the APK option even if PWA install isn't available
+  // Show banner on ALL browsers after delay unless already installed or dismissed
+  // Safari/Firefox never fire beforeinstallprompt so we show regardless
+  var isStandalone = window.matchMedia('(display-mode: standalone)').matches
+    || navigator.standalone === true;
   var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  var isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-  if (isIOS && !isStandalone) {
-    // On iOS hide the Install button, only show APK download
-    if (installBtn) installBtn.style.display = 'none';
+  var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+
+  if (!isStandalone) {
+    // On iOS and Safari desktop: hide PWA install btn (doesnt work there)
+    // Only show the APK download option
+    if (isIOS || isSafari) {
+      if (installBtn) installBtn.style.display = 'none';
+    }
+    // Show banner for everyone not already installed
     showBanner();
   }
 })();

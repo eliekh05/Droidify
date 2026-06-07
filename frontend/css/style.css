@@ -321,11 +321,12 @@ img { max-width: 100%; display: block; }
   box-shadow: 0 8px 24px rgba(0,0,0,.25);
 }
 .card-content { padding: 1rem 1.1rem; }
+.card .title { color: var(--text) !important; }
 .card-mfr {
   font-size: .68rem;
   text-transform: uppercase;
   letter-spacing: .08em;
-  color: var(--muted);
+  color: #8ba3be;
   margin-bottom: .2rem;
 }
 .card-codename {
@@ -334,7 +335,7 @@ img { max-width: 100%; display: block; }
   color: var(--accent);
   margin-bottom: .4rem;
 }
-.card-sub { font-size: .82rem; color: var(--muted); line-height: 1.5; }
+.card-sub { font-size: .82rem; color: #8ba3be; line-height: 1.5; }
 .card-link { font-size: .78rem; color: var(--accent); font-weight: 600; }
 .card-link:hover { text-decoration: underline; }
 
