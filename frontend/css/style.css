@@ -747,3 +747,16 @@ img { max-width: 100%; display: block; }
 /* ── Terms progress bar ─────────────────────────────────────────────────── */
 #terms-progress-bar { position: fixed; top: 0; left: 0; right: 0; height: 4px; z-index: 9999; background: var(--border); pointer-events: none; }
 #terms-progress-fill { height: 100%; width: 0%; background: var(--accent); transition: width .1s linear; }
+
+/* ── PWA install button ─────────────────────────────────────────────────── */
+#pwa-install-wrap { display: none; align-items: center; margin-left: .25rem; }
+#pwa-install-btn {
+  background: var(--accent); color: #0b0f14; border: none;
+  border-radius: 8px; font-weight: 700; font-size: .78rem;
+  padding: .35rem .9rem; cursor: pointer; white-space: nowrap;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+#pwa-install-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px var(--accent-glow);
+}

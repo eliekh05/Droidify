@@ -1,431 +1,156 @@
-"""Android version history — live from apilevels.com, Wikipedia fallback, static fallback."""
-import re
-from html import unescape
+"""
+android_versions.py — Complete Android version history, fully hardcoded.
+
+Every release that shipped on real devices, with correct API levels,
+release dates, and official codenames. No scraping. No live fetching.
+No network calls. The data does not change — old Android versions
+do not get new API levels. New versions are added here manually
+when Google releases them.
+
+Why hardcoded: live sources (apilevels.com, Wikipedia) are inconsistent
+on subversions. Wikipedia's table format changes without notice and
+breaks parsers. The data is stable — this is the right approach.
+
+Sources verified against:
+  - developer.android.com/tools/releases/platforms
+  - source.android.com/docs/setup/about/build-numbers
+  - en.wikipedia.org/wiki/Android_version_history
+"""
 
 from app.services.cache import get as cache_get, set as cache_set
-from app.services.http import fetch, get_client
 
-APILEVELS_URL = "https://apilevels.com"
-
-# Authoritative version_code → codename mapping (from developer.android.com)
-# Used to correct codename when rowspan inheritance gives wrong value
-_VCODE_CODENAME: dict[str, str] = {
-    "BASE": None, "BASE_1_1": "Petit Four",
-    "CUPCAKE": "Cupcake", "DONUT": "Donut",
-    "ECLAIR": "Eclair", "ECLAIR_0_1": "Eclair", "ECLAIR_MR1": "Eclair",
-    "FROYO": "Froyo",
-    "GINGERBREAD": "Gingerbread", "GINGERBREAD_MR1": "Gingerbread",
-    "HONEYCOMB": "Honeycomb", "HONEYCOMB_MR1": "Honeycomb", "HONEYCOMB_MR2": "Honeycomb",
-    "ICE_CREAM_SANDWICH": "Ice Cream Sandwich", "ICE_CREAM_SANDWICH_MR1": "Ice Cream Sandwich",
-    "JELLY_BEAN": "Jelly Bean", "JELLY_BEAN_MR1": "Jelly Bean", "JELLY_BEAN_MR2": "Jelly Bean",
-    "KITKAT": "KitKat", "KITKAT_WATCH": "KitKat Watch",
-    "LOLLIPOP": "Lollipop", "LOLLIPOP_MR1": "Lollipop",
-    "M": "Marshmallow",
-    "N": "Nougat", "N_MR1": "Nougat",
-    "O": "Oreo", "O_MR1": "Oreo",
-    "P": "Pie",
-    "Q": "Quince Tart",
-    "R": "Red Velvet Cake",
-    "S": "Snow Cone", "S_V2": "Snow Cone v2",
-    "TIRAMISU": "Tiramisu",
-    "UPSIDE_DOWN_CAKE": "Upside Down Cake",
-    "VANILLA_ICE_CREAM": "Vanilla Ice Cream",
-    "BAKLAVA": "Baklava",
-    "CINNAMON_BUN": "Cinnamon Bun",
-}
-
-WIKIPEDIA_URL = (
-    "https://en.wikipedia.org/w/api.php"
-    "?action=parse&page=Android_version_history"
-    "&prop=text&format=json&disableeditsection=1"
-)
-
-_SKIP_KW = ("Jetpack", "targetSdk", "Google Play", "Earlier", "AndroidX",
-            "minSdk", "requirement", "library")
-_MONTH_MAP = {
-    "january":"01","february":"02","march":"03","april":"04",
-    "may":"05","june":"06","july":"07","august":"08",
-    "september":"09","october":"10","november":"11","december":"12",
-}
-
-def _ct(cell) -> str:
-    """Clean cell text — strip <style> and <sup> tags, collapse whitespace."""
-    for tag in cell.find_all(["style", "sup"]):
-        tag.decompose()
-    t = unescape(cell.get_text(separator=" ", strip=True))
-    return re.sub(r"\s{2,}", " ", t).strip()
-
-def _version_code(raw: str) -> str | None:
-    """Extract first valid UPPER_SNAKE_CASE version code from cell text."""
-    # Single-letter codes: M, N, O, P, Q, R, S (Android 6-12)
-    if re.match(r"^[A-Z]$", raw.strip()):
-        return raw.strip()
-    # Multi-char codes: BAKLAVA, CINNAMON_BUN, JELLY_BEAN_MR1, ...
-    codes = re.findall(r"\b([A-Z][A-Z_0-9]{2,})\b", raw)
-    skip  = {"BETA", "TBD", "API", "SDK", "ABI", "PREVIEW"}
-    valid = [c for c in codes if c not in skip]
-    return valid[0] if valid else None
-
-def _parse_date(year: int | None) -> str | None:
-    return f"{year}-01-01" if year and year >= 2008 else None
-
-def _parse_status(api: int, is_beta: bool, release_year: int | None = None) -> str:
-    """Parse support status string to active/preview/discontinued."""
-    if is_beta:
-        return "partial"
-    if release_year is None:
-        # Year TBD = developer preview, not publicly released yet
-        return "partial"
-    if api >= 34:
-        return "active"
+# ── Status helper ──────────────────────────────────────────────────────────────
+def _status(year: int) -> str:
+    if year >= 2024: return "active"
+    if year >= 2022: return "partial"
     return "unsupported"
 
-def _parse_row(texts: list[str]) -> list[dict] | None:
-    """
-    Parse one table row from apilevels.com into a list of API-level dicts.
-    Returns None for rows that should be skipped.
-    """
-    if not texts:
-        return None
-    n = len(texts)
 
-    # Skip 1-cell notice rows
-    if n == 1:
-        return None
+# ── Master version table ───────────────────────────────────────────────────────
+# Every row = one distinct API level that shipped on real devices.
+# Columns: version_number, codename, api_level, release_date, release_year
+_VERSIONS = [
+    # ── Pre-dessert ─────────────────────────────────────────────────────────────
+    ("1.0",   None,                  1,  "2008-09-23", 2008),
+    ("1.1",   "Petit Four",          2,  "2009-02-09", 2009),
+    # ── Cupcake / Donut ─────────────────────────────────────────────────────────
+    ("1.5",   "Cupcake",             3,  "2009-04-27", 2009),
+    ("1.6",   "Donut",               4,  "2009-09-15", 2009),
+    # ── Eclair ──────────────────────────────────────────────────────────────────
+    ("2.0",   "Eclair",              5,  "2009-10-26", 2009),
+    ("2.0.1", "Eclair",              6,  "2009-12-03", 2009),
+    ("2.1",   "Eclair",              7,  "2010-01-12", 2010),
+    # ── Froyo ───────────────────────────────────────────────────────────────────
+    ("2.2",   "Froyo",               8,  "2010-05-20", 2010),
+    ("2.2.1", "Froyo",               8,  "2011-01-18", 2011),
+    ("2.2.2", "Froyo",               8,  "2011-01-22", 2011),
+    ("2.2.3", "Froyo",               8,  "2011-11-21", 2011),
+    # ── Gingerbread ─────────────────────────────────────────────────────────────
+    ("2.3",   "Gingerbread",         9,  "2010-12-06", 2010),
+    ("2.3.1", "Gingerbread",         9,  "2010-12-09", 2010),
+    ("2.3.2", "Gingerbread",         9,  "2011-01-10", 2011),
+    ("2.3.3", "Gingerbread",         10, "2011-02-09", 2011),
+    ("2.3.4", "Gingerbread",         10, "2011-04-28", 2011),
+    ("2.3.5", "Gingerbread",         10, "2011-07-25", 2011),
+    ("2.3.6", "Gingerbread",         10, "2011-09-02", 2011),
+    ("2.3.7", "Gingerbread",         10, "2011-09-21", 2011),
+    # ── Honeycomb (tablets only) ─────────────────────────────────────────────────
+    ("3.0",   "Honeycomb",           11, "2011-02-22", 2011),
+    ("3.1",   "Honeycomb",           12, "2011-05-10", 2011),
+    ("3.2",   "Honeycomb",           13, "2011-07-15", 2011),
+    ("3.2.1", "Honeycomb",           13, "2011-09-20", 2011),
+    ("3.2.2", "Honeycomb",           13, "2011-09-30", 2011),
+    ("3.2.4", "Honeycomb",           13, "2012-03-29", 2012),
+    ("3.2.6", "Honeycomb",           13, "2012-07-05", 2012),
+    # ── Ice Cream Sandwich ──────────────────────────────────────────────────────
+    ("4.0",   "Ice Cream Sandwich",  14, "2011-10-18", 2011),
+    ("4.0.1", "Ice Cream Sandwich",  14, "2011-10-21", 2011),
+    ("4.0.2", "Ice Cream Sandwich",  14, "2011-11-28", 2011),
+    ("4.0.3", "Ice Cream Sandwich",  15, "2011-12-16", 2011),
+    ("4.0.4", "Ice Cream Sandwich",  15, "2012-03-29", 2012),
+    # ── Jelly Bean ──────────────────────────────────────────────────────────────
+    ("4.1",   "Jelly Bean",          16, "2012-07-09", 2012),
+    ("4.1.1", "Jelly Bean",          16, "2012-07-25", 2012),
+    ("4.1.2", "Jelly Bean",          16, "2012-10-09", 2012),
+    ("4.2",   "Jelly Bean",          17, "2012-11-13", 2012),
+    ("4.2.1", "Jelly Bean",          17, "2012-11-27", 2012),
+    ("4.2.2", "Jelly Bean",          17, "2013-02-11", 2013),
+    ("4.3",   "Jelly Bean",          18, "2013-07-24", 2013),
+    ("4.3.1", "Jelly Bean",          18, "2013-10-03", 2013),
+    # ── KitKat ──────────────────────────────────────────────────────────────────
+    ("4.4",   "KitKat",              19, "2013-10-31", 2013),
+    ("4.4.1", "KitKat",              19, "2013-12-05", 2013),
+    ("4.4.2", "KitKat",              19, "2013-12-09", 2013),
+    ("4.4.3", "KitKat",              19, "2014-06-02", 2014),
+    ("4.4.4", "KitKat",              19, "2014-06-19", 2014),
+    ("4.4W",  "KitKat Watch",        20, "2014-06-25", 2014),
+    ("4.4W.1","KitKat Watch",        20, "2014-09-06", 2014),
+    ("4.4W.2","KitKat Watch",        20, "2014-10-21", 2014),
+    # ── Lollipop ────────────────────────────────────────────────────────────────
+    ("5.0",   "Lollipop",            21, "2014-11-12", 2014),
+    ("5.0.1", "Lollipop",            21, "2014-12-02", 2014),
+    ("5.0.2", "Lollipop",            21, "2014-12-19", 2014),
+    ("5.1",   "Lollipop",            22, "2015-03-02", 2015),
+    ("5.1.1", "Lollipop",            22, "2015-04-20", 2015),
+    # ── Marshmallow ─────────────────────────────────────────────────────────────
+    ("6.0",   "Marshmallow",         23, "2015-10-05", 2015),
+    ("6.0.1", "Marshmallow",         23, "2015-12-07", 2015),
+    # ── Nougat ──────────────────────────────────────────────────────────────────
+    ("7.0",   "Nougat",              24, "2016-08-22", 2016),
+    ("7.1",   "Nougat",              25, "2016-10-04", 2016),
+    ("7.1.1", "Nougat",              25, "2016-12-05", 2016),
+    ("7.1.2", "Nougat",              25, "2017-04-03", 2017),
+    # ── Oreo ────────────────────────────────────────────────────────────────────
+    ("8.0",   "Oreo",                26, "2017-08-21", 2017),
+    ("8.1",   "Oreo",                27, "2017-12-05", 2017),
+    # ── Pie ─────────────────────────────────────────────────────────────────────
+    ("9",     "Pie",                 28, "2018-08-06", 2018),
+    # ── Android 10 ──────────────────────────────────────────────────────────────
+    ("10",    "Quince Tart",         29, "2019-09-03", 2019),
+    # ── Android 11 ──────────────────────────────────────────────────────────────
+    ("11",    "Red Velvet Cake",     30, "2020-09-08", 2020),
+    # ── Android 12 ──────────────────────────────────────────────────────────────
+    ("12",    "Snow Cone",           31, "2021-10-04", 2021),
+    ("12L",   "Snow Cone v2",        32, "2022-03-07", 2022),
+    # ── Android 13 ──────────────────────────────────────────────────────────────
+    ("13",    "Tiramisu",            33, "2022-08-15", 2022),
+    # ── Android 14 ──────────────────────────────────────────────────────────────
+    ("14",    "Upside Down Cake",    34, "2023-10-04", 2023),
+    # ── Android 15 ──────────────────────────────────────────────────────────────
+    ("15",    "Vanilla Ice Cream",   35, "2024-10-15", 2024),
+    # ── Android 16 ──────────────────────────────────────────────────────────────
+    ("16",    "Baklava",             36, "2025-06-03", 2025),
+    # ── Android 17 (preview) ────────────────────────────────────────────────────
+    ("17",    "Cinnamon Bun",        37, "2025-01-01", 2025),
+]
 
-    # Is the first cell an Android major version label?
-    is_android = bool(re.match(r"^Android\s+\d", texts[0], re.I))
 
-    if is_android:
-        android_cell = texts[0]
-        api_cell     = texts[1] if n > 1 else ""
-        vcode_cell   = texts[2] if n > 2 else ""
-        cn_cell      = texts[3] if n > 3 else ""
-        usage_cell   = texts[4] if n > 4 else ""
-        year_cell    = texts[5] if n > 5 else ""
-    else:
-        android_cell = ""
-        api_cell     = texts[0]
-        vcode_cell   = texts[1] if n > 1 else ""
-        cn_cell      = ""
-        usage_cell   = ""
-        year_cell    = ""
-        # For 3-cell sub-rows: [api_cell, vcode_cell, X] — X is usage/year/codename
-        if n == 3:
-            x = texts[2]
-            if re.search(r"\d+\.?\d*%|No data", x):  usage_cell = x
-            elif re.search(r"\b20\d{2}\b", x):        year_cell  = x
-            else:                                      cn_cell    = x
-        elif n == 4:
-            # [api, vcode, X, Y]
-            x, y = texts[2], texts[3]
-            if re.search(r"\d+\.?\d*%|No data", x):  usage_cell = x; year_cell = y
-            else:                                      cn_cell = x; year_cell = y
-
-    # API levels — a row can have one ("Level 35") or two sub-levels
-    apis = [int(m) for m in re.findall(r"Level\s+(\d+)", api_cell, re.I)]
-    if not apis:
-        return None
-
-    # Sub-version map: "Level 27 Android 8.1" → {27: "8.1"}
-    sub_versions: dict[int, str] = {}
-    for m in re.finditer(r"Level\s+(\d+)\s+Android\s+([\d.]+[\w.]*)", api_cell, re.I):
-        sub_versions[int(m.group(1))] = m.group(2)
-
-    # Android major from android_cell label
-    android_major = ""
-    if android_cell:
-        am = re.search(r"Android\s+([\d.]+)", android_cell, re.I)
-        if am:
-            android_major = am.group(1)
-
-    # Version code
-    vcode = _version_code(vcode_cell)
-
-    # Codename: reject noise values
-    cn: str | None = None
-    cn_raw = cn_cell.strip()
-    if cn_raw and cn_raw not in ("None", "—", "-", "", "No data", "TBD"):
-        cn = cn_raw
-
-    # Year
-    yr: int | None = None
-    for src in [year_cell, api_cell]:
-        ym = re.search(r"\b(200[89]|201\d|202[0-9])\b", src)
-        if ym:
-            yr = int(ym.group(1))
-            break
-
-    # Usage
-    usage: float | None = None
-    for src in [usage_cell]:
-        um = re.search(r"(\d+\.?\d*)\s*%", src)
-        if um:
-            usage = float(um.group(1))
-            break
-
-    # Beta
-    joined = " ".join(texts)
-    is_beta = "BETA" in joined or "PREVIEW" in joined.upper()
-
-    result = []
-    for api in apis:
-        ver = sub_versions.get(api, android_major)
-        result.append({
-            "api_level":        api,
-            "version_number":   ver,
-            "version_code":     vcode,
-            "codename":         cn,
-            "release_year":     yr,
-            "cumulative_usage": usage,
-            "is_beta":          is_beta,
+def _build_versions() -> list[dict]:
+    out = []
+    for ver, codename, api, date, year in _VERSIONS:
+        out.append({
+            "version_number":  ver,
+            "codename":        codename,
+            "api_level":       api,
+            "release_date":    date,
+            "release_year":    year,
+            "is_beta":         ver == "17",
+            "status":          "preview" if ver == "17" else _status(year),
+            "source":          "hardcoded",
         })
-    return result
+    return out
 
-def _parse_apilevels(html: str) -> list[dict]:
-    """Parse apilevels.com HTML → list of Android version dicts."""
-    from bs4 import BeautifulSoup
-    soup  = BeautifulSoup(html, "html.parser")
-    table = soup.find("table", class_="full-width")
-    if not table:
-        return []
-
-    rows = table.find_all("tr")
-    if not rows:
-        return []
-
-    # Track inherited (rowspan) values for: android_major, codename, year, usage
-    # We track last_android_major to avoid inheriting codenames across Android versions
-    last_android      = ""
-    last_android_major = ""       # e.g. "4", "5", "12"  — major version number
-    last_codename: str | None = None
-    last_year:     int | None = None
-    last_usage:    float | None = None
-
-    all_entries: list[dict] = []
-
-    for row in rows[1:]:  # skip header
-        # Clean style/sup before reading text
-        for tag in row.find_all(["style", "sup"]):
-            tag.decompose()
-
-        cells = row.find_all(["td", "th"])
-        if not cells:
-            continue
-
-        texts = [_ct(c) for c in cells]
-        joined = " ".join(texts)
-
-        # Skip notice rows
-        if len(cells) <= 2 and any(kw in joined for kw in _SKIP_KW):
-            continue
-        if len(cells) == 1:
-            continue
-
-        entries = _parse_row(texts)
-        if not entries:
-            continue
-
-        # Update inherited values from this row
-        for e in entries:
-            if e["version_number"]:
-                last_android = e["version_number"]
-                # Extract major version number for cross-version boundary detection
-                maj_m = re.match(r"^(\d+)", e["version_number"])
-                if maj_m:
-                    last_android_major = maj_m.group(1)
-            if e["codename"] is not None:
-                last_codename = e["codename"]
-            if e["release_year"] is not None:
-                last_year = e["release_year"]
-            if e["cumulative_usage"] is not None:
-                last_usage = e["cumulative_usage"]
-
-        # Fill inherited values for fields that were rowspan'd
-        for e in entries:
-            if not e["version_number"] and last_android:
-                e["version_number"] = last_android
-            if e["codename"] is None:
-                # Only inherit codename if same major Android version
-                ver = e["version_number"] or ""
-                maj_m = re.match(r"^(\d+)", ver)
-                same_major = (maj_m and maj_m.group(1) == last_android_major)
-                if same_major and last_codename:
-                    e["codename"] = last_codename
-            if e["release_year"] is None and last_year:
-                e["release_year"] = last_year
-            if e["cumulative_usage"] is None and last_usage:
-                e["cumulative_usage"] = last_usage
-
-        for e in entries:
-            api = e["api_level"]
-            status = _parse_status(api, e["is_beta"], e.get("release_year"))
-            # Override codename with authoritative map when version_code is known
-            codename = e["codename"]
-            if e["version_code"] and e["version_code"] in _VCODE_CODENAME:
-                codename = _VCODE_CODENAME[e["version_code"]]
-            all_entries.append({
-                "version_number":   e["version_number"] or "?",
-                "codename":         codename,
-                "api_level":        api,
-                "version_code":     e["version_code"],
-                "release_date":     _parse_date(e["release_year"]),
-                "security_patch":   None,
-                "release_year":     e["release_year"],
-                "cumulative_usage": e["cumulative_usage"],
-                "is_beta":          e["is_beta"],
-                "status":           status,
-                "source":           "apilevels.com",
-                "source_url":       APILEVELS_URL,
-            })
-
-    # Sort + deduplicate by API level
-    all_entries.sort(key=lambda x: x["api_level"])
-    seen: set[int] = set()
-    deduped: list[dict] = []
-    for e in all_entries:
-        if e["api_level"] not in seen:
-            seen.add(e["api_level"])
-            deduped.append(e)
-
-    return deduped
-
-def _parse_wikipedia(html: str) -> list[dict]:
-    """Wikipedia fallback parser — minimal, just needs to work."""
-    from bs4 import BeautifulSoup
-    soup = BeautifulSoup(html, "html.parser")
-    target = None
-    for tbl in soup.find_all("table", class_="wikitable"):
-        hdr = " ".join(th.get_text(strip=True) for th in tbl.find_all("th")[:8])
-        if "API" in hdr and "Version" in hdr:
-            target = tbl; break
-    if not target:
-        return []
-
-    results: list[dict] = []
-    last_codename: str | None = None
-
-    for row in target.find_all("tr")[1:]:
-        cells = row.find_all(["td", "th"])
-        n = len(cells)
-        if n < 3:
-            continue
-        def ct2(i): return re.sub(r"<[^>]+>", "", str(cells[i])).strip() if i < n else ""
-        if n < 5:
-            ver_col = ct2(0); api_raw = ct2(1)
-            codename = last_codename
-        else:
-            ver_col = ct2(2); api_raw = ct2(3)
-            cn = re.sub(r"\[.*?\]", "", ct2(1)).strip()
-            codename = (cn if cn and cn not in ("—","-","N/a") else last_codename)
-            if codename: last_codename = codename
-
-        ver_m = re.match(r"^([\d.]+[Lw]?)$", re.sub(r"\[.*$","",ver_col.split(":")[-1]).strip())
-        if not ver_m: continue
-        api_m = re.search(r"\b(\d+)\b", api_raw)
-        if not api_m: continue
-        api = int(api_m.group(1))
-        pfx = ver_col.split(":")[0].lower() if ":" in ver_col else ""
-        status = ("active" if "latest" in pfx or ("supported" in pfx and "un" not in pfx)
-                  else "partial" if "preview" in pfx or "beta" in pfx
-                  else "unsupported")
-        yr_m = re.search(r"\b(200[89]|201\d|202[0-9])\b", ct2(4) if n > 4 else "")
-        yr = int(yr_m.group(1)) if yr_m else None
-        results.append({
-            "version_number": ver_m.group(1), "codename": codename,
-            "api_level": api, "version_code": None,
-            "release_date": _parse_date(yr), "security_patch": None,
-            "release_year": yr, "cumulative_usage": None, "is_beta": "preview" in pfx,
-            "status": status, "source": "wikipedia",
-            "source_url": "https://en.wikipedia.org/wiki/Android_version_history",
-        })
-
-    results.sort(key=lambda x: x["api_level"])
-    seen: set[int] = set()
-    deduped = []
-    for r in results:
-        if r["api_level"] not in seen:
-            seen.add(r["api_level"]); deduped.append(r)
-    return deduped
 
 async def get_android_versions() -> list[dict]:
-    """
-    Fetch Android version history.
-    Priority: apilevels.com → Wikipedia → static fallback.
-    """
-    ck = "android_versions_v5"
-    cached = await cache_get(ck)
-    if cached:
+    ck = "android_versions_v6"
+    if cached := await cache_get(ck):
         return cached
-
-    async with get_client() as client:
-        resp_al = await fetch(client, APILEVELS_URL)
-        resp_wp = await fetch(client, WIKIPEDIA_URL)
-
-    # 1. apilevels.com
-    if resp_al and resp_al.status_code == 200:
-        try:
-            versions = _parse_apilevels(resp_al.text)
-            if len(versions) >= 25:
-                await cache_set(ck, versions, ttl=3600)
-                return versions
-        except Exception:
-            pass
-
-    # 2. Wikipedia
-    if resp_wp and resp_wp.status_code == 200:
-        try:
-            html = resp_wp.json()["parse"]["text"]["*"]
-            versions = _parse_wikipedia(html)
-            if len(versions) >= 20:
-                await cache_set(ck, versions, ttl=3600)
-                return versions
-        except Exception:
-            pass
-
-    # 3. Static fallback
-    versions = _static_fallback()
-    await cache_set(ck, versions, ttl=600)
+    versions = _build_versions()
+    await cache_set(ck, versions, ttl=86400)  # 24h — data never changes
     return versions
 
-def _static_fallback() -> list[dict]:
-    """Built-in last-resort data — Android 1.0 → 17 Preview."""
-    return [
-        {"version_number":"1.0",  "codename":None,               "api_level":1,  "version_code":"BASE",                   "release_year":2008,"release_date":"2008-09-23","security_patch":None,"cumulative_usage":None,"is_beta":False,"status":"unsupported","source":"static_fallback"},
-        {"version_number":"1.1",  "codename":"Petit Four",        "api_level":2,  "version_code":"BASE_1_1",               "release_year":2009,"release_date":"2009-02-09","security_patch":None,"cumulative_usage":None,"is_beta":False,"status":"unsupported","source":"static_fallback"},
-        {"version_number":"1.5",  "codename":"Cupcake",           "api_level":3,  "version_code":"CUPCAKE",                "release_year":2009,"release_date":"2009-04-27","security_patch":None,"cumulative_usage":None,"is_beta":False,"status":"unsupported","source":"static_fallback"},
-        {"version_number":"1.6",  "codename":"Donut",             "api_level":4,  "version_code":"DONUT",                  "release_year":2009,"release_date":"2009-09-15","security_patch":None,"cumulative_usage":None,"is_beta":False,"status":"unsupported","source":"static_fallback"},
-        {"version_number":"2.0",  "codename":"Eclair",            "api_level":5,  "version_code":"ECLAIR",                 "release_year":2009,"release_date":"2009-10-27","security_patch":None,"cumulative_usage":None,"is_beta":False,"status":"unsupported","source":"static_fallback"},
-        {"version_number":"2.0.1","codename":"Eclair",            "api_level":6,  "version_code":"ECLAIR_0_1",             "release_year":2009,"release_date":"2009-12-03","security_patch":None,"cumulative_usage":None,"is_beta":False,"status":"unsupported","source":"static_fallback"},
-        {"version_number":"2.1",  "codename":"Eclair",            "api_level":7,  "version_code":"ECLAIR_MR1",             "release_year":2010,"release_date":"2010-01-11","security_patch":None,"cumulative_usage":None,"is_beta":False,"status":"unsupported","source":"static_fallback"},
-        {"version_number":"2.2",  "codename":"Froyo",             "api_level":8,  "version_code":"FROYO",                  "release_year":2010,"release_date":"2010-05-20","security_patch":None,"cumulative_usage":None,"is_beta":False,"status":"unsupported","source":"static_fallback"},
-        {"version_number":"2.3",  "codename":"Gingerbread",       "api_level":9,  "version_code":"GINGERBREAD",            "release_year":2010,"release_date":"2010-12-06","security_patch":None,"cumulative_usage":None,"is_beta":False,"status":"unsupported","source":"static_fallback"},
-        {"version_number":"2.3.3","codename":"Gingerbread",       "api_level":10, "version_code":"GINGERBREAD_MR1",        "release_year":2011,"release_date":"2011-02-09","security_patch":None,"cumulative_usage":None,"is_beta":False,"status":"unsupported","source":"static_fallback"},
-        {"version_number":"3.0",  "codename":"Honeycomb",         "api_level":11, "version_code":"HONEYCOMB",              "release_year":2011,"release_date":"2011-02-22","security_patch":None,"cumulative_usage":None,"is_beta":False,"status":"unsupported","source":"static_fallback"},
-        {"version_number":"3.1",  "codename":"Honeycomb",         "api_level":12, "version_code":"HONEYCOMB_MR1",          "release_year":2011,"release_date":"2011-05-10","security_patch":None,"cumulative_usage":None,"is_beta":False,"status":"unsupported","source":"static_fallback"},
-        {"version_number":"3.2",  "codename":"Honeycomb",         "api_level":13, "version_code":"HONEYCOMB_MR2",          "release_year":2011,"release_date":"2011-07-15","security_patch":None,"cumulative_usage":None,"is_beta":False,"status":"unsupported","source":"static_fallback"},
-        {"version_number":"4.0",  "codename":"Ice Cream Sandwich","api_level":14, "version_code":"ICE_CREAM_SANDWICH",     "release_year":2011,"release_date":"2011-10-18","security_patch":None,"cumulative_usage":None,"is_beta":False,"status":"unsupported","source":"static_fallback"},
-        {"version_number":"4.0.3","codename":"Ice Cream Sandwich","api_level":15, "version_code":"ICE_CREAM_SANDWICH_MR1", "release_year":2011,"release_date":"2011-12-16","security_patch":None,"cumulative_usage":99.9,"is_beta":False,"status":"unsupported","source":"static_fallback"},
-        {"version_number":"4.1",  "codename":"Jelly Bean",        "api_level":16, "version_code":"JELLY_BEAN",             "release_year":2012,"release_date":"2012-07-09","security_patch":None,"cumulative_usage":99.9,"is_beta":False,"status":"unsupported","source":"static_fallback"},
-        {"version_number":"4.2",  "codename":"Jelly Bean",        "api_level":17, "version_code":"JELLY_BEAN_MR1",         "release_year":2012,"release_date":"2012-11-13","security_patch":None,"cumulative_usage":99.9,"is_beta":False,"status":"unsupported","source":"static_fallback"},
-        {"version_number":"4.3",  "codename":"Jelly Bean",        "api_level":18, "version_code":"JELLY_BEAN_MR2",         "release_year":2013,"release_date":"2013-07-24","security_patch":None,"cumulative_usage":99.9,"is_beta":False,"status":"unsupported","source":"static_fallback"},
-        {"version_number":"4.4",  "codename":"KitKat",            "api_level":19, "version_code":"KITKAT",                 "release_year":2013,"release_date":"2013-10-31","security_patch":None,"cumulative_usage":None,"is_beta":False,"status":"unsupported","source":"static_fallback"},
-        {"version_number":"4.4W", "codename":"KitKat Watch",      "api_level":20, "version_code":"KITKAT_WATCH",           "release_year":2014,"release_date":"2014-06-25","security_patch":None,"cumulative_usage":99.8,"is_beta":False,"status":"unsupported","source":"static_fallback"},
-        {"version_number":"5.0",  "codename":"Lollipop",          "api_level":21, "version_code":"LOLLIPOP",               "release_year":2014,"release_date":"2014-11-04","security_patch":None,"cumulative_usage":99.8,"is_beta":False,"status":"unsupported","source":"static_fallback"},
-        {"version_number":"5.1",  "codename":"Lollipop",          "api_level":22, "version_code":"LOLLIPOP_MR1",           "release_year":2015,"release_date":"2015-03-02","security_patch":None,"cumulative_usage":97.8,"is_beta":False,"status":"unsupported","source":"static_fallback"},
-        {"version_number":"6.0",  "codename":"Marshmallow",       "api_level":23, "version_code":"M",                      "release_year":2015,"release_date":"2015-09-29","security_patch":None,"cumulative_usage":97.5,"is_beta":False,"status":"unsupported","source":"static_fallback"},
-        {"version_number":"7.0",  "codename":"Nougat",            "api_level":24, "version_code":"N",                      "release_year":2016,"release_date":"2016-08-22","security_patch":None,"cumulative_usage":95.7,"is_beta":False,"status":"unsupported","source":"static_fallback"},
-        {"version_number":"7.1",  "codename":"Nougat",            "api_level":25, "version_code":"N_MR1",                  "release_year":2016,"release_date":"2016-10-04","security_patch":None,"cumulative_usage":95.1,"is_beta":False,"status":"unsupported","source":"static_fallback"},
-        {"version_number":"8.0",  "codename":"Oreo",              "api_level":26, "version_code":"O",                      "release_year":2017,"release_date":"2017-08-21","security_patch":None,"cumulative_usage":94.8,"is_beta":False,"status":"unsupported","source":"static_fallback"},
-        {"version_number":"8.1",  "codename":"Oreo",              "api_level":27, "version_code":"O_MR1",                  "release_year":2017,"release_date":"2017-12-05","security_patch":None,"cumulative_usage":93.4,"is_beta":False,"status":"unsupported","source":"static_fallback"},
-        {"version_number":"9",    "codename":"Pie",               "api_level":28, "version_code":"P",                      "release_year":2018,"release_date":"2018-08-06","security_patch":None,"cumulative_usage":91.8,"is_beta":False,"status":"unsupported","source":"static_fallback"},
-        {"version_number":"10",   "codename":"Quince Tart",       "api_level":29, "version_code":"Q",                      "release_year":2019,"release_date":"2019-09-03","security_patch":None,"cumulative_usage":89.1,"is_beta":False,"status":"unsupported","source":"static_fallback"},
-        {"version_number":"11",   "codename":"Red Velvet Cake",   "api_level":30, "version_code":"R",                      "release_year":2020,"release_date":"2020-09-08","security_patch":None,"cumulative_usage":84.4,"is_beta":False,"status":"unsupported","source":"static_fallback"},
-        {"version_number":"12",   "codename":"Snow Cone",         "api_level":31, "version_code":"S",                      "release_year":2021,"release_date":"2021-10-04","security_patch":None,"cumulative_usage":75.3,"is_beta":False,"status":"unsupported","source":"static_fallback"},
-        {"version_number":"12L",  "codename":"Snow Cone v2",      "api_level":32, "version_code":"S_V2",                   "release_year":2022,"release_date":"2022-03-07","security_patch":None,"cumulative_usage":75.3,"is_beta":False,"status":"unsupported","source":"static_fallback"},
-        {"version_number":"13",   "codename":"Tiramisu",          "api_level":33, "version_code":"TIRAMISU",               "release_year":2022,"release_date":"2022-08-15","security_patch":None,"cumulative_usage":64.4,"is_beta":False,"status":"unsupported","source":"static_fallback"},
-        {"version_number":"14",   "codename":"Upside Down Cake",  "api_level":34, "version_code":"UPSIDE_DOWN_CAKE",       "release_year":2023,"release_date":"2023-10-04","security_patch":None,"cumulative_usage":49.4,"is_beta":False,"status":"active","source":"static_fallback"},
-        {"version_number":"15",   "codename":"Vanilla Ice Cream", "api_level":35, "version_code":"VANILLA_ICE_CREAM",      "release_year":2024,"release_date":"2024-09-03","security_patch":None,"cumulative_usage":34.4,"is_beta":False,"status":"active","source":"static_fallback"},
-        {"version_number":"16",   "codename":"Baklava",           "api_level":36, "version_code":"BAKLAVA",                "release_year":2025,"release_date":"2025-06-10","security_patch":"2026-05-01","cumulative_usage":4.6,"is_beta":False,"status":"active","source":"static_fallback"},
-        {"version_number":"17",   "codename":"Cinnamon Bun",      "api_level":37, "version_code":"CINNAMON_BUN",           "release_year":2026,"release_date":None,"security_patch":None,"cumulative_usage":0.0,"is_beta":True,"status":"partial","source":"static_fallback"},
-    ]
+
+async def get_android_versions_dict() -> dict:
+    """API-friendly wrapper returning {total, versions}."""
+    versions = await get_android_versions()
+    return {"total": len(versions), "versions": versions}

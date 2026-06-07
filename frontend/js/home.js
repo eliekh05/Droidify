@@ -11,7 +11,15 @@
   // ── PWA install button ─────────────────────────────────────────────────────
   var deferredPrompt = null;
   var installWrap    = document.getElementById('pwa-install-wrap');
-  var installBtn     = document.getElementById('pwa-install-btn');
+
+  // Inject button markup once
+  if (installWrap) {
+    installWrap.innerHTML =
+      '<button id="pwa-install-btn" class="button is-primary is-small">' +
+      '&#8595; Install' +
+      '</button>';
+  }
+  var installBtn = document.getElementById('pwa-install-btn');
 
   window.addEventListener('beforeinstallprompt', function (e) {
     e.preventDefault();

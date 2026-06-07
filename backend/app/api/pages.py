@@ -143,11 +143,9 @@ async def guides_page(request: Request, q: str = ""):
 @router.get("/android", response_class=HTMLResponse)
 async def android_page(request: Request):
     if not await _gate(request): return _terms_redirect()
-    from app.scrapers.android_versions import get_android_versions
+    from app.scrapers.android_versions import get_android_versions, get_android_versions_dict
     try:
-        data     = await get_android_versions()
-        # get_android_versions returns a list directly
-        raw      = data if isinstance(data, list) else data.get("versions", [])
+        raw      = await get_android_versions()
         versions = list(reversed(raw))
     except Exception:
         versions = []
@@ -188,6 +186,32 @@ async def watchlist_remove(codename: str, request: Request):
         from app.db import remove_from_watchlist
         await remove_from_watchlist(session["user_id"], codename)
     return RedirectResponse("/watchlist", status_code=303)
+
+@router.get("/device", response_class=HTMLResponse)
+@router.get("/device/", response_class=HTMLResponse)
+async def device_bare(request: Request):
+    from fastapi.responses import HTMLResponse as _H
+    return _H("""<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Device lookup — Droidify</title>
+<style>
+body{background:#0b0f14;color:#e8eef5;font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;text-align:center}
+.wrap{max-width:480px;padding:2rem}
+.logo{font-size:1.6rem;font-weight:800;letter-spacing:-.04em;margin-bottom:2rem}
+.logo span{color:#3dd68c}
+code{background:#141c26;border:1px solid #1e2d42;border-radius:6px;padding:.2rem .5rem;font-size:.9rem;color:#3dd68c}
+a{color:#3dd68c}
+p{color:#4a6080;font-size:.9rem;line-height:1.6;margin:.75rem 0}
+</style></head>
+<body><div class="wrap">
+<div class="logo"><span>Droid</span>ify</div>
+<p>Nothing to see here without a device codename.</p>
+<p>Try: <code>/device/beryllium</code></p>
+<p>Or search on the <a href="/devices">devices page</a>.</p>
+<p style="font-size:.8rem;color:#2a3a50">API: <code>GET /api/devices/{codename}</code></p>
+</div></body></html>""", status_code=200)
+
 
 @router.get("/device/{codename}", response_class=HTMLResponse)
 async def device_page(codename: str, request: Request):

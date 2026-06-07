@@ -59,18 +59,19 @@
     <a href="/guides?q={{ device.codename | urlencode }}" class="button is-ghost">&#128218; Guides</a>
   </div>
 
-  {# ROMs #}
+  {# ROMs — filter built BEFORE section so clean_roms is in scope for the for loop #}
+  {% set ns = namespace(clean_roms=[]) %}
+  {% if device.roms %}
+    {% for rom in device.roms %}
+      {% if (rom.rom_type or 'custom') != 'recovery' %}
+        {% set ns.clean_roms = ns.clean_roms + [rom] %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+  {% set clean_roms = ns.clean_roms %}
+
   <section class="section pb-0">
     <div class="section-header" data-aos="fade-up">
-      {# Keep entry if: no rom_type set (assume ROM), or rom_type is not 'recovery' #}
-      {% set clean_roms = [] %}
-      {% if device.roms %}
-        {% for rom in device.roms %}
-          {% if (rom.rom_type or 'custom') != 'recovery' %}
-            {% set clean_roms = clean_roms + [rom] %}
-          {% endif %}
-        {% endfor %}
-      {% endif %}
       <h2 class="title is-6">ROMs{% if clean_roms %} ({{ clean_roms | length }}){% endif %}</h2>
     </div>
     <div class="columns is-multiline is-mobile">
