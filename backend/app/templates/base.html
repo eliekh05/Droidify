@@ -160,14 +160,13 @@
 <!-- End PWA Install Modal -->
 
 <script>(function () {
-  var overlay = document.getElementById('pwa-modal-overlay');
-  var closeBtn = document.getElementById('pwa-modal-close');
-  var navBtn   = document.getElementById('pwa-install-btn-nav');
+  var overlay    = document.getElementById('pwa-modal-overlay');
+  var closeBtn   = document.getElementById('pwa-modal-close');
+  var navBtn     = document.getElementById('pwa-install-btn-nav');
   var installBtn = document.getElementById('pwa-install-btn');
-  var sub = document.getElementById('pwa-install-sub');
+  var sub        = document.getElementById('pwa-install-sub');
   var deferredPrompt = null;
 
-  // Tab switching
   document.querySelectorAll('#pwa-modal .install-tab').forEach(function (tab) {
     tab.addEventListener('click', function () {
       document.querySelectorAll('#pwa-modal .install-tab').forEach(function (t) { t.classList.remove('active'); });
@@ -182,17 +181,10 @@
     if (!overlay) return;
     overlay.style.display = '';
     document.body.style.overflow = 'hidden';
-    // Auto-select best tab
     var ua = navigator.userAgent || '';
-    if (/android/i.test(ua)) {
-      var at = document.querySelector('#pwa-modal [data-tab="android"]');
-      if (at) at.click();
-    } else if (/windows/i.test(ua)) {
-      var wt = document.querySelector('#pwa-modal [data-tab="windows"]');
-      if (wt) wt.click();
-    }
+    if (/android/i.test(ua)) { var at = document.querySelector('#pwa-modal [data-tab="android"]'); if (at) at.click(); }
+    else if (/windows/i.test(ua)) { var wt = document.querySelector('#pwa-modal [data-tab="windows"]'); if (wt) wt.click(); }
   }
-
   function closeModal() {
     if (!overlay) return;
     overlay.style.display = 'none';
@@ -201,47 +193,35 @@
 
   if (navBtn) navBtn.addEventListener('click', openModal);
   if (closeBtn) closeBtn.addEventListener('click', closeModal);
-  if (overlay) overlay.addEventListener('click', function (e) {
-    if (e.target === overlay) closeModal();
-  });
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') closeModal();
-  });
+  if (overlay) overlay.addEventListener('click', function (e) { if (e.target === overlay) closeModal(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
 
-  // Handle browser install
-  window.addEventListener('beforeinstallprompt', function (e) {
-    e.preventDefault();
-    deferredPrompt = e;
-  });
+  window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); deferredPrompt = e; });
   window.addEventListener('appinstalled', closeModal);
 
   if (installBtn) {
     installBtn.addEventListener('click', function () {
-      if (deferredPrompt) {
-        closeModal();
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then(function () { deferredPrompt = null; });
-      }
+      if (deferredPrompt) { closeModal(); deferredPrompt.prompt(); deferredPrompt.userChoice.then(function () { deferredPrompt = null; }); }
     });
   }
 
-  // Safari/iOS instructions
-  var isIOS    = /iphone|ipad|ipod/i.test(navigator.userAgent || '');
-  var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent || '');
+  var ua2 = navigator.userAgent || '';
+  var isIOS    = /iphone|ipad|ipod/i.test(ua2);
+  var isSafari = /^((?!chrome|android).)*safari/i.test(ua2);
   if (isIOS && sub) {
     sub.textContent = 'Tap Share → Add to Home Screen in Safari.';
-    if (installBtn) { installBtn.textContent = 'Step by step'; installBtn.onclick = function () { alert('1. Open in Safari.
-2. Tap the Share button (↑).
-3. Tap “Add to Home Screen”.
-4. Tap “Add”.'); }; }
+    if (installBtn) {
+      installBtn.textContent = 'Step by step';
+      installBtn.onclick = function () { alert('1. Open in Safari.\n2. Tap the Share button.\n3. Tap Add to Home Screen.\n4. Tap Add.'); };
+    }
   } else if (isSafari && sub) {
     sub.textContent = 'File → Add to Dock from the menu bar.';
-    if (installBtn) { installBtn.textContent = 'Step by step'; installBtn.onclick = function () { alert('1. Click “File” in the Safari menu bar.
-2. Click “Add to Dock”.
-3. Click “Add”.'); }; }
+    if (installBtn) {
+      installBtn.textContent = 'Step by step';
+      installBtn.onclick = function () { alert('1. Click File in the Safari menu bar.\n2. Click Add to Dock.\n3. Click Add.'); };
+    }
   }
-})();
-</script>
+})();</script>
 
 
 </body>
