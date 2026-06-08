@@ -20,10 +20,25 @@ Sources verified against:
 from app.services.cache import get as cache_get, set as cache_set
 
 # ── Status helper ──────────────────────────────────────────────────────────────
-def _status(year: int) -> str:
-    if year >= 2024: return "active"
-    if year >= 2022: return "partial"
-    return "unsupported"
+def _status(ver: str, year: int) -> str:
+    """
+    Status verified against endoflife.date/android — June 2026:
+    - active:      Android 14, 15, 16 — isMaintained=True per endoflife.date
+    - unsupported: Android 13 and below — all EOL per Google security bulletins
+    - preview:     Android 17 — not yet released (handled separately)
+
+    Android 13 reached EOL on 2026-03-02.
+    Android 12/12L reached EOL on 2025-03-03.
+    Android 11 reached EOL on 2024-02-05.
+    Source: https://endoflife.date/android
+    """
+    try:
+        major = float(ver.split()[0]) if ver else 0
+    except (ValueError, IndexError):
+        major = 0
+
+    if major >= 14:  return "active"       # 14, 15, 16 — maintained
+    return "unsupported"                   # 13 and below — all EOL
 
 
 # ── Master version table ───────────────────────────────────────────────────────
@@ -135,7 +150,7 @@ def _build_versions() -> list[dict]:
             "release_date":    date,
             "release_year":    year,
             "is_beta":         ver == "17",
-            "status":          "preview" if ver == "17" else _status(year),
+            "status":          "preview" if ver == "17" else _status(ver, year),
             "source":          "hardcoded",
         })
     return out
