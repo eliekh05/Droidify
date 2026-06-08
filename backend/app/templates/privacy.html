@@ -11,52 +11,56 @@
 
     <div class="prose-card" data-aos="fade-up">
       <div class="pc-title">&#128683; If you never sign in</div>
-      <p>We collect nothing. No cookies. No analytics. No fingerprinting. You browse, we serve pages. That&rsquo;s the entire relationship.</p>
+      <p>We collect nothing. No cookies. No analytics. No fingerprinting. No IP logging. No page view tracking. You open the site, we serve pages. That is the entire relationship. There is no difference between a first visit and a hundredth visit from our side — we genuinely cannot tell them apart.</p>
+      <p style="margin-top:.5rem">Compare that to almost every other site you use: X tracks your reading habits to train its AI. Reddit logs your IP and browser fingerprint. XDA passes your activity to a network of third-party advertisers. We do none of that because we have no business reason to.</p>
     </div>
 
     <div class="prose-card" data-aos="fade-up">
       <div class="pc-title">&#128275; If you sign in with GitHub</div>
-      <p>GitHub sends us three things and we store all three:</p>
+      <p>GitHub OAuth sends us three things when you sign in and we store all three:</p>
       <ul>
-        <li><strong>Your GitHub username</strong> &mdash; shown in the navbar.</li>
-        <li><strong>Your avatar URL</strong> &mdash; shown next to your username. It&rsquo;s a GitHub CDN link, not the image itself.</li>
-        <li><strong>Your GitHub numeric ID</strong> &mdash; internal identifier so we know it&rsquo;s you across sessions.</li>
+        <li><strong>Your GitHub username</strong> &mdash; shown in the navbar so you know you are signed in.</li>
+        <li><strong>Your avatar URL</strong> &mdash; a link to your profile picture hosted on GitHub's CDN. We store the URL, not the image.</li>
+        <li><strong>Your GitHub numeric ID</strong> &mdash; an internal identifier so the server knows it is you across sessions.</li>
       </ul>
-      <p style="margin-top:.5rem">That&rsquo;s it. No email, no followers, no repos, no private data. GitHub OAuth with <code>read:user</code> scope only reads public profile data.</p>
+      <p style="margin-top:.5rem">That is all. The OAuth scope is <code>read:user</code> which only reads public profile data. No email. No followers. No repositories. No private data. GitHub shows you exactly what we asked for during the sign-in flow.</p>
     </div>
 
     <div class="prose-card" data-aos="fade-up">
       <div class="pc-title">&#128203; Your watchlist</div>
-      <p>Stored in our database tied to your GitHub ID. Up to 20 device codenames. Delete individual devices from the watchlist page. To delete your account entirely, open a GitHub issue.</p>
+      <p>Stored in our database tied to your GitHub numeric ID. Up to 20 device codenames. You can remove individual devices from the watchlist page at any time. If you want your entire account and watchlist deleted, open a GitHub issue and we will do it within 48 hours.</p>
     </div>
 
     <div class="prose-card" data-aos="fade-up">
       <div class="pc-title">&#128276; ROM alerts</div>
-      <p>When new ROM builds are found for a device in your watchlist, an alert is created in our database and shown as a badge on the Watchlist nav item. No emails, no push notifications. In-app only.</p>
+      <p>When new ROM builds are found for a device in your watchlist, an alert is created in our database and shown as a badge on the Watchlist nav item. That is it. No emails. No push notifications. No SMS. In-app badge only, visible only to you when signed in.</p>
     </div>
 
     <div class="prose-card" data-aos="fade-up">
       <div class="pc-title">&#127850; Cookies</div>
-      <p>One cookie. A signed session token that keeps you logged in. Expires in 30 days. No tracking cookies. No third-party cookies.</p>
+      <p>One cookie. A signed session token that keeps you logged in for 30 days. It is <code>httponly</code> (JavaScript cannot read it), <code>samesite=lax</code> (cannot be sent cross-site), and signed with a server-side secret (cannot be forged). If you never sign in, no cookie is ever set.</p>
     </div>
 
     <div class="prose-card" data-aos="fade-up">
       <div class="pc-title">&#127758; Third parties</div>
       <ul>
-        <li><strong>GitHub OAuth</strong> &mdash; for sign-in. Their privacy policy applies during that flow.</li>
-        <li><strong>Bulma CSS</strong> from jsDelivr CDN &mdash; stylesheet only, no tracking.</li>
-        <li><strong>HuggingFace</strong> &mdash; where the server runs. They see standard server logs (IP, timestamp, URL).</li>
+        <li><strong>GitHub OAuth</strong> &mdash; only during sign-in. Their privacy policy applies to that flow.</li>
+        <li><strong>jsDelivr CDN</strong> &mdash; serves the CSS stylesheet. No tracking, no cookies from them.</li>
+        <li><strong>HuggingFace</strong> &mdash; where the server runs. They see standard server logs (IP address, timestamp, URL requested) as any hosting provider does. We do not.</li>
       </ul>
+      <p style="margin-top:.5rem">No advertising networks. No analytics platforms. No social media tracking pixels. No "partners" who receive your data.</p>
     </div>
 
     <div class="prose-card" data-aos="fade-up">
       <div class="pc-title">&#128337; How long we keep data</div>
-      <p>Your account stays until you ask us to delete it. Open a GitHub issue to request deletion.</p>
+      <p>Your account and watchlist stay until you ask us to delete them. Open a GitHub issue to request deletion. We respond within 48 hours.</p>
     </div>
 
     <div class="honest-box accent-card" data-aos="fade-up">
-      <strong>Short version:</strong>
-      <span>Sign in = we store your GitHub username, avatar URL, and numeric ID. Never sign in = we store nothing. No ads. No tracking. No selling data. Ever.</span>
+      <strong>The short version:</strong>
+      <span>Never signed in &rarr; we store absolutely nothing about you.</span>
+      <span>Signed in &rarr; username, avatar URL, numeric GitHub ID, up to 20 watchlist codenames, one session cookie.</span>
+      <span>No ads. No tracking. No data sales. No third-party sharing. No AI training on your data. Ever.</span>
     </div>
 
     <p style="font-size:.82rem;color:var(--muted);text-align:center">Questions? <a href="https://github.com/eliekh05/Droidify/issues" target="_blank" rel="noopener" style="color:var(--accent)">Open a GitHub issue</a>.</p>

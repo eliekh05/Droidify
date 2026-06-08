@@ -9,31 +9,45 @@
 
   <div class="columns is-mobile is-variable is-3" data-aos="fade-up">
     <div class="column">
-      <p style="font-weight:700;font-size:.85rem;color:var(--muted);margin-bottom:1rem;text-transform:uppercase;letter-spacing:.06em">Now</p>
+      <p style="font-weight:700;font-size:.85rem;color:var(--muted);margin-bottom:1rem;text-transform:uppercase;letter-spacing:.06em">Without signing in</p>
       <div style="display:flex;flex-direction:column;gap:.1rem">
         <div class="perk-row"><span class="pi">&#128269;</span><div>Search everything<br><small>All devices, ROMs, guides, tools</small></div></div>
-        <div class="perk-row perk-no"><span class="pi">&#128203;</span><div>No watchlist<br><small>Can't save devices</small></div></div>
-        <div class="perk-row perk-no"><span class="pi">&#128241;</span><div>Read terms every new device<br><small>Browser memory only</small></div></div>
+        <div class="perk-row"><span class="pi">&#128241;</span><div>Install on any device<br><small>Browser, APK, or Windows app</small></div></div>
+        <div class="perk-row perk-no"><span class="pi">&#128203;</span><div>No watchlist<br><small>Can&rsquo;t save devices without an account</small></div></div>
         <div class="perk-row perk-no"><span class="pi">&#128276;</span><div>No ROM alerts<br><small>Sign in to enable</small></div></div>
+        <div class="perk-row perk-no"><span class="pi">&#128241;</span><div>Terms once, anywhere<br><small>Browser memory only</small></div></div>
       </div>
     </div>
     <div class="column">
       <p style="font-weight:700;font-size:.85rem;color:var(--accent);margin-bottom:1rem;text-transform:uppercase;letter-spacing:.06em">After signing in</p>
       <div style="display:flex;flex-direction:column;gap:.1rem">
         <div class="perk-row perk-yes"><span class="pi">&#128269;</span><div>Search everything<br><small>Same as before</small></div></div>
-        <div class="perk-row perk-yes"><span class="pi">&#128203;</span><div>Watchlist — up to 20 devices<br><small>Synced across all your devices</small></div></div>
-        <div class="perk-row perk-yes"><span class="pi">&#128241;</span><div>Terms once, anywhere<br><small>New device just opens the site</small></div></div>
+        <div class="perk-row perk-yes"><span class="pi">&#128241;</span><div>Install on any device<br><small>Same as before</small></div></div>
+        <div class="perk-row perk-yes"><span class="pi">&#128203;</span><div>Watchlist &mdash; up to 20 devices<br><small>Synced across all your devices</small></div></div>
         <div class="perk-row perk-yes"><span class="pi">&#128276;</span><div>ROM alerts<br><small>Badge on watchlist when new builds drop</small></div></div>
+        <div class="perk-row perk-yes"><span class="pi">&#128241;</span><div>Terms once, anywhere<br><small>Agreed on one device, done everywhere</small></div></div>
       </div>
+    </div>
+  </div>
+
+  <div class="prose-card" style="margin-top:1.5rem" data-aos="fade-up">
+    <div class="pc-title">&#128241; Install Droidify</div>
+    <p style="margin-bottom:.75rem">All install options work whether you are signed in or not. Sign-in is optional and only needed for the watchlist and ROM alerts.</p>
+    <div style="display:flex;flex-direction:column;gap:.6rem">
+      <div class="perk-row"><span class="pi">&#127760;</span><div><strong>Browser (recommended)</strong><br><small>Open in Chrome or Edge &rarr; install prompt appears automatically. Works on Android, Windows, macOS, Linux. On iOS: Safari &rarr; Share &rarr; Add to Home Screen.</small></div></div>
+      <div class="perk-row"><span class="pi">&#129302;</span><div><strong>Android APK</strong><br><small>Download from <a href="https://github.com/eliekh05/Droidify/releases/download/v1.0.0/Droidify.apk" style="color:var(--accent)">Releases</a>. Enable unknown sources, install. Full screen, no browser chrome. TWA &mdash; app updates automatically when the site updates.</small></div></div>
+      <div class="perk-row"><span class="pi">&#128759;</span><div><strong>Windows .msix</strong><br><small>Download from <a href="https://github.com/eliekh05/Droidify/releases/download/v1.0.0/Droidify.msix" style="color:var(--accent)">Releases</a>. Expect a SmartScreen warning &mdash; Microsoft flags anything not from their store. Click &ldquo;More info&rdquo; &rarr; &ldquo;Run anyway&rdquo;. Or just use Chrome/Edge to install from the browser, which has none of this friction.</small></div></div>
     </div>
   </div>
 
   <div class="honest-box" data-aos="fade-up">
     <strong>The honest bit:</strong>
-    <span>&#128275; Sign in uses GitHub OAuth. We read your public username and avatar. Nothing else.</span>
-    <span>&#128683; We don't store your email, password, or any private GitHub data.</span>
-    <span>&#9888;&#65039; Watchlist cap is 20 devices. Not 20 &ldquo;for free&rdquo; &mdash; just 20.</span>
-    <span>&#128276; ROM alerts are live. Badge appears on Watchlist when new ROM builds are found for your saved devices.</span>
+    <span>&#128275; Sign in uses GitHub OAuth. We read your public username and avatar. Nothing else. No email. No private data.</span>
+    <span>&#128683; We don&rsquo;t store your email, password, or any private GitHub data.</span>
+    <span>&#9888;&#65039; Watchlist cap is 20 devices. Not 20 &ldquo;for free&rdquo; &mdash; just 20. There is no paid tier.</span>
+    <span>&#128276; ROM alerts are live. Badge appears on Watchlist when new builds are found for your saved devices.</span>
+    <span>&#128241; The Android APK is a TWA &mdash; the app is the website. When we push an update to HuggingFace, your app is updated instantly. No new APK needed.</span>
+    <span>&#128759; The Windows .msix was generated by PWABuilder. It works but Microsoft&rsquo;s restrictions on non-store apps mean you will see warnings. The browser install is the better option on Windows.</span>
   </div>
 
   <div style="text-align:center" data-aos="fade-up">

@@ -16,50 +16,52 @@
 
     <div class="prose-card" data-aos="fade-up">
       <div class="pc-title">&#128269; What Droidify is</div>
-      <p>A free index. Fetches publicly available data about Android ROMs, recoveries, tools, and devices from third-party sources. Does not host, own, or distribute any firmware or ROM file. Every download link goes directly to whoever made it.</p>
+      <p>A free read-only index. It fetches publicly available metadata about Android ROMs, recoveries, root tools, and devices from third-party sources and displays it in one place. It does not host, own, store, or distribute any firmware file, ROM, recovery image, or binary. Every single download link on this site goes directly to the original project's own servers. Droidify is never in the path between you and the file.</p>
     </div>
 
     <div class="prose-card warn-card" data-aos="fade-up">
       <div class="pc-title">&#9888;&#65039; The stuff that actually matters</div>
       <div style="display:flex;flex-direction:column;gap:.75rem;margin-top:.25rem">
-        <div class="perk-row" style="padding:.4rem 0"><span class="pi">&#128275;</span><div><strong>Bootloader unlock wipes your device.</strong> Everything. Gone. Back up first.<br><small>Not negotiable. Every manufacturer. Every device.</small></div></div>
-        <div class="perk-row" style="padding:.4rem 0"><span class="pi">&#128683;</span><div><strong>Samsung Knox is permanent.</strong> Unlock the bootloader = Knox trips to 0x1 forever. No stock flash, no service centre undoes it. Knox, Samsung Pay, Secure Folder stop working permanently.<br><small>If you care about any of those — do not unlock.</small></div></div>
-        <div class="perk-row" style="padding:.4rem 0"><span class="pi">&#128244;</span><div><strong>Play Protect and banking apps.</strong> Rooting or uncertified ROMs can break certification. Banking apps and streaming services may stop working.<br><small>That conversation is with the ROM developer, not us.</small></div></div>
-        <div class="perk-row" style="padding:.4rem 0"><span class="pi">&#128220;</span><div><strong>Warranty.</strong> Unlocking voids it on most devices. Some let you re-lock to recover it.<br><small>Check before you proceed.</small></div></div>
-        <div class="perk-row" style="padding:.4rem 0"><span class="pi">&#128247;</span><div><strong>Bricked device.</strong> Wrong file, wrong variant, interrupted flash = permanent brick.<br><small>Go to XDA or the ROM&rsquo;s Telegram. They know how to unbrick. We don&rsquo;t.</small></div></div>
+        <div class="perk-row" style="padding:.4rem 0"><span class="pi">&#128275;</span><div><strong>Bootloader unlock wipes your device.</strong> Everything on internal storage is gone. Back up before you start. This is not optional and it is not reversible after the fact.<br><small>Every manufacturer. Every device. No exceptions.</small></div></div>
+        <div class="perk-row" style="padding:.4rem 0"><span class="pi">&#128683;</span><div><strong>Samsung Knox is permanent.</strong> The moment you unlock the bootloader on a Samsung device, Knox trips to 0x1. No stock flash undoes it. No Samsung service centre undoes it. Samsung Pay, Secure Folder, and Knox Workspace stop working permanently.<br><small>If any of those matter to you, do not unlock the bootloader.</small></div></div>
+        <div class="perk-row" style="padding:.4rem 0"><span class="pi">&#128244;</span><div><strong>Play Protect certification and banking apps.</strong> Rooting or flashing an uncertified ROM can break Play Protect certification. Banking apps, streaming services, and anything that checks for device integrity may stop working.<br><small>That conversation is with the ROM developer, not us.</small></div></div>
+        <div class="perk-row" style="padding:.4rem 0"><span class="pi">&#128220;</span><div><strong>Warranty.</strong> Unlocking the bootloader voids the manufacturer warranty on most devices. Some let you re-lock to recover it. Check your specific device and region before proceeding.<br><small>We cannot tell you whether your warranty is affected. The manufacturer can.</small></div></div>
+        <div class="perk-row" style="padding:.4rem 0"><span class="pi">&#128247;</span><div><strong>Bricked device.</strong> Flashing the wrong file, wrong variant, or interrupting a flash can brick your device. Some bricks are recoverable. Some are not.<br><small>Go to XDA or the ROM's Telegram group. They know how to unbrick your specific device. We do not.</small></div></div>
       </div>
     </div>
 
     <div class="prose-card" data-aos="fade-up">
       <div class="pc-title">&#128190; The files we link to</div>
-      <p>Every file was uploaded by its developer to their own infrastructure. We didn&rsquo;t upload it. If a file causes problems: the developer who uploaded it is who you need.</p>
+      <p>Every file linked on Droidify was uploaded by its developer to their own infrastructure — LineageOS mirrors, OrangeFox CDN, TWRP's servers, GitHub Releases, SourceForge. We did not upload it. We did not verify it beyond what the source reports. If a file causes problems, the developer who uploaded it is who you need to talk to.</p>
     </div>
 
     <div class="prose-card" data-aos="fade-up">
-      <div class="pc-title">&#128030; GitHub issues — what gets auto-closed</div>
+      <div class="pc-title">&#128030; GitHub issues that get auto-closed</div>
+      <p>These are not things we can help with and opening an issue will not change that:</p>
       <ul>
-        <li>Tripped Knox / voided warranty</li>
-        <li>Failed Play Protect certification</li>
-        <li>Data loss from flashing</li>
+        <li>Tripped Knox or voided warranty from following a guide</li>
+        <li>Failed Play Protect certification after flashing</li>
+        <li>Data loss from a wipe or failed flash</li>
         <li>Bricked device</li>
-        <li>Complaints about a ROM or recovery file</li>
-        <li>Requests to recover data or unbrick</li>
+        <li>Problems with a specific ROM or recovery file</li>
+        <li>Requests to recover data or unbrick a device</li>
       </ul>
+      <p style="margin-top:.5rem">All of these require help from the developer who made the ROM or the community for your specific device. XDA and Telegram groups are the right place.</p>
     </div>
 
     <div class="prose-card" data-aos="fade-up">
       <div class="pc-title">&#128279; No affiliation</div>
-      <p>Independent project. No relationship with LineageOS, Google, Samsung, OrangeFox, TWRP, Xiaomi, or anyone else on the site. All trademarks belong to their owners.</p>
+      <p>Droidify is an independent project with no relationship to LineageOS, Google, Samsung, OrangeFox, TWRP, Xiaomi, or any other project or manufacturer listed on the site. All trademarks, logos, and project names belong to their respective owners. Their presence on this site means we index their public data. It does not imply endorsement or partnership.</p>
     </div>
 
     <div class="prose-card" data-aos="fade-up">
       <div class="pc-title">&#128196; Open source</div>
-      <p>Source on <a href="https://github.com/eliekh05/Droidify" target="_blank" rel="noopener" style="color:var(--accent)">GitHub</a> under MIT. Fork it, self-host it, modify freely. MIT means no warranty and no liability &mdash; exactly what it says.</p>
+      <p>Source code is on <a href="https://github.com/eliekh05/Droidify" target="_blank" rel="noopener" style="color:var(--accent)">GitHub</a> under the MIT license. Fork it, self-host it, modify it freely. MIT means no warranty and no liability — exactly what it says on the tin.</p>
     </div>
 
     <div class="honest-box accent-card" data-aos="fade-up">
       <strong>Short version:</strong>
-      <span>Free index. Every flash decision is yours alone. Knox stays tripped. Data stays gone. Warranties stay void. Talk to the developer who made the file &mdash; not us.</span>
+      <span>Free index. Read-only. Every download goes directly to the original source. Every flash decision is yours alone. Knox stays tripped. Data stays gone. Warranties stay void. Talk to the developer who made the file, not us.</span>
     </div>
 
   </div>
