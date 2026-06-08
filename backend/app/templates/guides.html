@@ -34,6 +34,18 @@
   } %}
 
   <div class="columns is-multiline is-mobile">
+    {% if q and not device_found %}
+    <div class="warn-card mb-4" data-aos="fade-up" style="margin-bottom:1rem">
+      <strong>&#9888;&#65039; &ldquo;{{ q | e }}&rdquo; is not a known device codename.</strong>
+      Showing universal guides &mdash; these apply to any Android device, not specifically to yours.
+      {% if similar %}
+      <br><span style="font-size:.85rem;color:var(--muted)">Did you mean:
+      {% for d in similar %}<a href="/guides?q={{ d.codename | e }}" style="color:var(--accent)">{{ d.codename | e }}</a>{% if not loop.last %}, {% endif %}{% endfor %}?</span>
+      {% else %}
+      <br><span style="font-size:.85rem;color:var(--muted)">Try the exact codename &mdash; <a href="/devices?q={{ q | e }}" style="color:var(--accent)">find your device here</a>.</span>
+      {% endif %}
+    </div>
+    {% endif %}
     {% for g in guides %}
     {% set tm = type_meta.get(g.guide_type, ('📋', g.guide_type or 'Guide', 'is-light', '')) %}
     <div class="column is-12-mobile is-6-tablet is-4-desktop"

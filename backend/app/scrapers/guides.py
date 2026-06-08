@@ -11,12 +11,6 @@ from app.services.http import fetch, get_client
 LOS_INSTALL = "https://wiki.lineageos.org/devices/{codename}/install/"
 LOS_UPGRADE  = "https://wiki.lineageos.org/devices/{codename}/upgrade/"
 
-_GOS_DEVICES = frozenset([
-    "tokay","caiman","komodo","comet","shiba","husky",
-    "felix","tangorpro","lynx","cheetah","panther",
-    "bluejay","oriole","raven",
-])
-
 _ORDER = {
     "bootloader-unlock": 0,
     "install-recovery":  1,
@@ -241,8 +235,18 @@ async def get_guides_for_device(codename: str, manufacturer: str = "", guide_typ
         guides.append(los)
     else:
         guides.append(_g_flash_rom(cn))
-    # GrapheneOS for supported Pixels
-    if cn in _GOS_DEVICES:
+    # GrapheneOS — check live ROM data instead of a hardcoded device list
+    try:
+        from app.scrapers.roms import get_roms_for_device as _get_roms
+        roms = await _get_roms(cn)
+        has_gos = any(
+            'graphene' in (r.get('source') or '').lower() or
+            'graphene' in (r.get('name') or '').lower()
+            for r in roms
+        )
+    except Exception:
+        has_gos = False
+    if has_gos:
         guides.append({
             "guide_type": "install-rom",
             "title":      "Install GrapheneOS",

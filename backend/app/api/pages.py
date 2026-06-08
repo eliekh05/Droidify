@@ -127,9 +127,20 @@ async def tools_page(request: Request, q: str = ""):
 @router.get("/guides", response_class=HTMLResponse)
 async def guides_page(request: Request, q: str = ""):
     from app.scrapers.guides import get_all_guides as _get_all_guides, get_guides_for_device as _get_device_guides
+    from app.scrapers.devices import get_devices, get_device_by_codename
+    device_found   = False
+    similar        = []
     try:
         if q:
             guides = await _get_device_guides(q)
+            # Check if this is a real device codename
+            exact = await get_devices(q=q, limit=10)
+            devices = exact.get("devices", [])
+            # Exact codename match
+            device_found = any(d.get("codename", "").lower() == q.lower() for d in devices)
+            if not device_found:
+                # Suggest real devices whose codename contains the search term
+                similar = [d for d in devices if q.lower() in d.get("codename", "").lower()][:5]
         else:
             data   = await _get_all_guides(limit=50)
             guides = data.get("guides", [])
@@ -137,7 +148,7 @@ async def guides_page(request: Request, q: str = ""):
         guides = []
     return _r(request, "guides.html", "guides",
         title=("Guides — " + q + " — Droidify") if q else "Guides — Droidify",
-        guides=guides, q=q)
+        guides=guides, q=q, device_found=device_found, similar=similar)
 
 
 @router.get("/android", response_class=HTMLResponse)

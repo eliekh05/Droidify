@@ -356,12 +356,25 @@
     }
 
     // Level 2 — UA whitelist
-    var isChrome  = /Chrome\//.test(ua) && !/Edg\//.test(ua) && !/OPR\//.test(ua);
+    // Explicit untested check first — catches browsers that inject alongside Chrome tokens
+    var knownUntested = /Vivaldi\/|YaBrowser\/|OPR\/|DuckDuckGo\/|UCBrowser\/|MiuiBrowser\//i.test(ua);
+    if (knownUntested) {
+      showBanner('warn',
+        '&#8505;&#65039; We test on Chrome, Edge, Firefox, and Safari. ' +
+        'Your browser may work fine but we cannot guarantee it. ' +
+        'If something looks broken, try one of those browsers.');
+      return;
+    }
+    // Precise whitelist — exclude browsers that spoof Chrome/Safari UA
+    var isChrome  = /Chrome\//.test(ua) && !/Edg\//.test(ua) && !/OPR\//.test(ua) && !/Vivaldi\//.test(ua) && !/YaBrowser\//.test(ua);
     var isEdge    = /Edg\//.test(ua);
-    var isFirefox = /Firefox\//.test(ua);
-    var isSafari  = /Safari\//.test(ua) && !/Chrome/.test(ua);
+    var isFirefox = /Firefox\//.test(ua) && !/Seamonkey/.test(ua);
+    // Safari: must have Safari/ but NOT Chrome, AND not a known spoofer
+    var isSafari  = /Safari\//.test(ua) && !/Chrome/.test(ua) && !/YaBrowser/.test(ua) && !/OPR\//.test(ua);
     var isSamsung = /SamsungBrowser\//.test(ua);
-    if (!(isChrome || isEdge || isFirefox || isSafari || isSamsung)) {
+    // Brave self-identifies via navigator.brave — check it
+    var isBrave   = typeof navigator.brave !== 'undefined';
+    if (!(isChrome || isEdge || isFirefox || isSafari || isSamsung || isBrave)) {
       showBanner('warn',
         '&#8505;&#65039; We test on Chrome, Edge, Firefox, and Safari. ' +
         'Your browser may work fine but we cannot guarantee it.');
@@ -387,13 +400,21 @@
   function showBanner(level, html) {
     if (level !== 'inapp') {
       var k = 'droidify_compat_' + level;
-      if (sessionStorage.getItem(k)) return;
+      // Check localStorage with 7-day expiry
+      var stored = localStorage.getItem(k);
+      if (stored) {
+        try {
+          var exp = JSON.parse(stored);
+          if (Date.now() < exp) return; // still within expiry
+          localStorage.removeItem(k);   // expired — show again
+        } catch(e) { localStorage.removeItem(k); }
+      }
     }
     var b = document.createElement('div');
     b.className = 'compat-banner compat-' + level;
     b.setAttribute('role', 'alert');
     var close = level !== 'inapp'
-      ? '<button onclick="sessionStorage.setItem(\'droidify_compat_' + level + '\',\'1\');this.parentElement.remove()" aria-label="Dismiss">&times;</button>'
+      ? '<button onclick="(function(l){try{localStorage.setItem(\'droidify_compat_\'+l, JSON.stringify(Date.now()+7*24*60*60*1000))}catch(e){};})(\'' + level + '\');this.parentElement.remove()" aria-label="Dismiss">&times;</button>'
       : '';
     b.innerHTML = '<span>' + html + '</span>' + close;
     document.body.insertBefore(b, document.body.firstChild);
