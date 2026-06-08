@@ -1,40 +1,50 @@
-# Security
+# 🔐 Security
 
-Droidify is a read-only web application. It fetches public data from third-party sources, renders HTML, and stores a minimal amount of data for people who choose to sign in. No payments. No file uploads. No private data beyond a GitHub username and a watchlist.
+Droidify is a **read-only** web application. It fetches public data from third-party sources, renders HTML pages, and stores a minimal amount of data for people who choose to sign in. No payments. No file uploads. No private data beyond a GitHub username and a watchlist.
 
------
+---
 
-## What we want to hear about
+## 🎯 What we want to hear about
 
-- FastAPI route vulnerabilities — injection, path traversal, SSRF
-- Authentication or session issues — login bypass, accessing another user’s watchlist without permission
-- Data exposure — any user data visible to someone who should not see it
-- SSRF in scrapers — a scraper being manipulated into fetching internal addresses
-- Dependency CVEs with a realistic exploit path on this specific stack
+- **FastAPI route vulnerabilities** — injection, path traversal, SSRF
+- **Auth or session issues** — login bypass, accessing another user's watchlist
+- **Data exposure** — any user data visible to someone who should not see it
+- **SSRF in scrapers** — a scraper being manipulated into fetching internal addresses
+- **Dependency CVEs** with a realistic exploit path on this specific stack
 
-## What is out of scope
+## 🚫 What is out of scope
 
-- Inaccurate data from upstream sources — wrong ROM version or missing device is a data issue, not a security vulnerability
-- Content or safety of download links hosted by third parties — we link to them, we do not control them
-- Social engineering
-- Generic observations with no demonstrated impact — “you should add rate limiting to X” without a proof of concept
+- _Inaccurate data from upstream sources_ — wrong ROM version is a data issue, not a security vulnerability
+- _Content of download links hosted by third parties_ — we link to them, we do not control them
+- _Social engineering_ scenarios
+- _Generic observations_ with no demonstrated impact
 
------
+---
 
-## How to report
+## 📬 How to report
 
-Open a GitHub issue. If the details should not be public yet, describe the category without the full exploit and we will follow up privately. Tell us what the vulnerability is, how to reproduce it, and what an attacker could actually do with it.
+Open a GitHub issue. If the details should not be public yet, describe the category without the full exploit and we will follow up privately.
 
-Do not disclose publicly before a fix is deployed. We will move as fast as we can.
+Tell us:
+1. **What** the vulnerability is
+2. **How** to reproduce it
+3. **What** an attacker could actually do with it
 
-No bug bounty. If you want credit we will put your name in the commit.
+> _Do not disclose publicly before a fix is deployed._ We will move as fast as we can.
 
------
+No bug bounty. **We will credit you in the commit** if you want.
 
-## What we store
+---
 
-**Never signed in** — nothing. No analytics. No cookies. No fingerprinting. No tracking. Not even a page view counter.
+## 🗄️ What we store
 
-**Signed in with GitHub** — your GitHub username, avatar URL, and numeric GitHub ID. Your watchlist of up to 20 device codenames. One signed session cookie that expires after 30 days. The cookie is httponly, samesite, and signed server-side — it cannot be read by JavaScript, sent cross-site, or forged.
+**Never signed in** — _nothing_. No analytics. No cookies. No fingerprinting. No tracking. Not even a page view counter.
 
-We do not store passwords, email addresses, IP addresses, location, or any record of what pages you visited or when.
+**Signed in with GitHub:**
+- Your GitHub **username**, **avatar URL**, and **numeric ID**
+- Your **watchlist** — up to 20 device codenames
+- One **signed session cookie** expiring after 30 days
+
+The session cookie is `httponly` _(JavaScript cannot read it)_, `samesite=lax` _(cannot be sent cross-site)_, and signed server-side _(cannot be forged)_.
+
+> We do not store passwords, email addresses, IP addresses, location data, or any record of what pages you visited or when.

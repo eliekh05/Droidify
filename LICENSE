@@ -22,22 +22,10 @@ SOFTWARE.
 
 ---
 
-Additional notes:
+> This project is maintained by someone with hands-on experience flashing and running the ROMs, recoveries, and tools it indexes.
 
-This project is maintained by someone with hands-on experience flashing and
-running the ROMs, recoveries, and tools it indexes. Contributions from people
-who have not read the codebase and do not have direct experience with Android
-modding will not be accepted.
+> Data shown by Droidify — ROM builds, device specs, tool versions, recovery files — belongs to the respective upstream projects. Droidify does not host any files. All download links point to official upstream servers.
 
-Pull requests from non-collaborators will be closed. If you want to contribute,
-reach out first. Do not show up with code nobody asked for.
+> Flashing your device is your responsibility. The author is not liable for bricked devices, tripped Knox fuses, or voided warranties.
 
-Forks for personal study are fine. Publishing a fork as a replacement for this
-project is not.
-
-Data shown by Droidify (ROM builds, device specs, tool versions, recovery files)
-belongs to the respective upstream projects. Droidify does not host any files.
-All download links point to official upstream servers.
-
-Flashing your device is your responsibility. The author is not liable for
-bricked devices, tripped Knox fuses, or voided warranties.
+> Forks for personal study are welcome. Publishing a fork as a replacement for this project is not.

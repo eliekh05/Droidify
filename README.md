@@ -1,75 +1,81 @@
-# Droidify
+# 🤖 Droidify
 
-One place for Android modding. Search any device and see every custom ROM, recovery, root tool, and guide available for it — all pulled from 20+ public sources in real time. No account. No ads. No paywalls.
+> **One place for Android modding.** Search any device and see every custom ROM, recovery, root tool, and guide available for it — pulled live from 20+ public sources. No account needed. No ads. No paywalls.
 
-**Live site:** [eliekh05-droidify-hf.hf.space](https://eliekh05-droidify-hf.hf.space)
-
----
-
-## Why this exists
-
-Since Android 1.0 there has never been a single place to find what is available for your device. You had to check the LineageOS wiki, then TWRP, then OrangeFox, then XDA, then SourceForge, then crDroid — each one completely separate, none of them talking to each other. You had to already know what existed in order to find it, which is completely useless for anyone who is just getting started.
-
-All of that data has been publicly accessible the whole time. LineageOS has had a JSON API for years. TWRP has had a search endpoint for years. OrangeFox has had structured CDN data for years. Nobody built the aggregator. So we did.
+**🌐 Live site:** [eliekh05-droidify-hf.hf.space](https://eliekh05-droidify-hf.hf.space)
 
 ---
 
-## The data
+## 💡 Why this exists
+
+Since Android 1.0 there has **never** been a single place to find what is available for your device. You had to check the LineageOS wiki, then TWRP, then OrangeFox, then XDA, then SourceForge, then crDroid — each one completely separate, none of them connected. You had to *already know what existed* in order to find it, which is completely useless for anyone just starting out.
+
+All of that data has been publicly accessible the whole time. LineageOS has had a JSON API for years. TWRP has had a search endpoint for years. OrangeFox has had structured CDN data for years. **Nobody built the aggregator. So we did.**
+
+---
+
+## 📊 The data
 
 Everything you see on Droidify is fetched live from the original source. Nothing is made up, approximated, or served as current when it is actually old. If something fails to fetch you will see it clearly marked — it will never quietly pretend to be fresh data when it is not.
 
-There is one exception. The Android versions page uses a hardcoded reference table instead of scraping a live source. The reason is explained below.
+> ⚠️ **One exception:** The Android versions page uses a hardcoded reference table — explained below.
 
 ---
 
-## The Android versions page
+## 🤖 The Android versions page
 
-Most websites that cover Android versions only list the major releases — Android 10, 11, 12, 13, 14, 15. They skip the subversions that actually shipped on real hardware. Things like 2.3.1 through 2.3.7, 4.0 through 4.0.4, 4.1 through 4.1.2, 4.4 through 4.4.4, 5.0 through 5.0.2, and so on. Those versions existed. Devices shipped with them. People still have phones running them. They deserve to be listed.
+Most websites that cover Android versions only list the major releases. They skip the subversions that actually shipped on real hardware — things like _2.3.1 through 2.3.7_, _4.0 through 4.0.4_, _4.4 through 4.4.4_, and so on. Those versions existed. Devices shipped with them.
 
-The other problem is the naming. When someone sees a ROM targeting Android 14, a lot of people assume that means 14GB of storage. Others confuse it with the API level, which is 34. Android went from version 9 (Pie) straight to 10 and dropped the dessert naming scheme entirely, which trips up anyone who learned the old system. Android 12L appeared between 12 and 13 and most people have never even heard of it. The version number, the API level, the internal codename, and the release year are four completely different things and almost no site puts them all in one place clearly.
+The naming makes it worse. When someone sees a ROM targeting **Android 14**, many people think that means 14GB of storage. Others confuse it with the API level, which is actually **34**. Android went from version 9 (Pie) straight to 10 and dropped the dessert naming entirely. **Android 12L** appeared between 12 and 13 and most people have never heard of it.
 
-We built this page so anyone can look up what a version actually means — not just the number but the API level, the codename, when it was released, and its current support status.
+Version number, API level, internal codename, and release year are *four completely different things* and almost no site puts them all together clearly. We do.
 
-The data is hardcoded because the live sources that publish Android version history — primarily Wikipedia and apilevels.com — do not reliably include all subversions, and their format changes without warning which breaks scrapers. A carefully maintained reference table is more accurate and more stable than a live scrape that might return an incomplete list or fail entirely. Every entry has been verified against the official Android SDK documentation and source.android.com build numbers. New versions are added as Google announces them.
-
----
-
-## What it covers
-
-- **946+ devices** — search by name, codename, or manufacturer
-- **Custom ROMs** — LineageOS, GrapheneOS, crDroid, /e/OS, CalyxOS, DivestOS, postmarketOS, PixelExperience, and more
-- **Recoveries** — TWRP, OrangeFox, PBRP, SHRP, unofficial builds
-- **Root tools** — Magisk, KernelSU, APatch, LSPosed — versions fetched live from GitHub
-- **Flashing tools** — Odin, ADB/Fastboot, SP Flash Tool, Mi Flash, QFIL — live versions
-- **Guides** — Unlock bootloader → install recovery → flash ROM → root → restore → buy/sell. In that order, every time.
-- **Android versions** — every version from 1.0 to the latest including all subversions, with API levels, codenames, and release dates
-- **Watchlist + ROM alerts** — save devices, get notified when new builds drop
-- **PWA** — install directly from the browser on any device
+The data is **hardcoded** because the live sources — Wikipedia and apilevels.com — are inconsistent, don't reliably include all subversions, and change format without warning. A carefully maintained reference table is more accurate and more stable. Every entry is verified against official Android SDK documentation and [source.android.com](https://source.android.com) build numbers. New versions are added when Google announces them.
 
 ---
 
-## Install
+## ✅ What it covers
 
-**Browser — the best option for everyone:**
-Open the site in Chrome or Edge. An install button appears when the browser is ready. Tap it. Works on Android, Windows, macOS, and Linux. On iOS open in Safari → Share → Add to Home Screen. This is the smoothest install experience on every platform — no warnings, no friction, instant updates.
-
-**Android APK:**
-Download [Droidify.apk](https://github.com/eliekh05/Droidify/releases/download/v1.0.0/Droidify.apk) from Releases. Enable unknown sources, install, done. Full screen, no browser chrome. This is a TWA (Trusted Web Activity) — a thin native shell that opens the website directly. When the site updates, the app updates. No new APK needed for any content or feature change.
-
-**Windows:**
-Download [Droidify.msix](https://github.com/eliekh05/Droidify/releases/download/v1.0.0/Droidify.msix) from Releases and double click to install.
-
-> ⚠️ Expect SmartScreen warnings on Windows. The package is not signed through the Microsoft Store, so Windows will complain about it. Click "More info" then "Run anyway" if it gets blocked. The app is safe and the source code is right above. That said — installing through Chrome or Edge using the browser install button is a significantly better experience on Windows with none of this friction, and Microsoft has no ability to interfere with that. Use the browser install if you can.
+| Category | Details |
+|---|---|
+| 📱 **Devices** | 946+ — search by name, codename, or manufacturer |
+| 💿 **Custom ROMs** | LineageOS, GrapheneOS, crDroid, /e/OS, CalyxOS, DivestOS, postmarketOS, PixelExperience, and more |
+| 🔧 **Recoveries** | TWRP, OrangeFox, PBRP, SHRP, unofficial builds |
+| ⚡ **Root tools** | Magisk, KernelSU, APatch, LSPosed — live versions from GitHub |
+| 🛠️ **Flashing tools** | Odin, ADB/Fastboot, SP Flash Tool, Mi Flash, QFIL — live versions |
+| 📖 **Guides** | Unlock bootloader → recovery → ROM → root → restore → buy/sell |
+| 🤖 **Android versions** | Every version from 1.0 to latest including all subversions |
+| 📋 **Watchlist + alerts** | Save devices, get notified when new builds drop |
+| 📲 **PWA** | Install directly from the browser on any device |
 
 ---
 
-## Issues
+## 📲 Install
+
+### 🌐 Browser — *recommended for everyone*
+Open the site in Chrome or Edge. An install button appears automatically. Works on **Android, Windows, macOS, and Linux**. On iOS: Safari → Share → _Add to Home Screen_.
+
+This is the best option on every platform — no warnings, no friction, instant updates.
+
+### 🤖 Android APK
+Download [**Droidify.apk**](https://github.com/eliekh05/Droidify/releases/download/v1.0.0/Droidify.apk) from Releases. Enable unknown sources, install, done. Full screen, no browser chrome.
+
+This is a **TWA (Trusted Web Activity)** — a thin native shell that opens the website directly. When the site updates, the app updates automatically. _No new APK needed_ for any content or feature change.
+
+### 🪟 Windows
+Download [**Droidify.msix**](https://github.com/eliekh05/Droidify/releases/download/v1.0.0/Droidify.msix) from Releases and double click to install.
+
+> ⚠️ **Expect SmartScreen warnings.** The package is not signed through the Microsoft Store so Windows will complain about it. Click _"More info"_ → _"Run anyway"_. The app is safe and the source code is right above. If you want none of this friction, use the browser install — Microsoft cannot interfere with that and it works better anyway.
+
+---
+
+## 🚫 Issues
 
 This project should not have issues. If it does, open one and we will reach out. Nothing gets closed without an explanation. If something is broken we will fix it. If it cannot be fixed we will tell you exactly why.
 
 ---
 
-## Stack
+## 🏗️ Stack
 
 | Layer | Technology |
 |---|---|
@@ -82,9 +88,9 @@ This project should not have issues. If it does, open one and we will reach out.
 
 ---
 
-## API
+## 🔌 API
 
-Public. No authentication required. All GET.
+_Public. No authentication required. All GET._
 
 | Endpoint | Description |
 |---|---|
@@ -100,14 +106,14 @@ Public. No authentication required. All GET.
 
 ---
 
-## Data sources
+## 🌐 Data sources
 
-LineageOS API · LineageOS Wiki · OrangeFox CDN · TWRP search.json · Wikipedia · crDroid · SourceForge · GrapheneOS · postmarketOS · DivestOS · CalyxOS · /e/OS · Ubuntu Touch · NetHunter · customrombay.org · SamFW · GitHub Releases
+_LineageOS API · LineageOS Wiki · OrangeFox CDN · TWRP search.json · Wikipedia · crDroid · SourceForge · GrapheneOS · postmarketOS · DivestOS · CalyxOS · /e/OS · Ubuntu Touch · NetHunter · customrombay.org · SamFW · GitHub Releases_
 
-Nothing is redistributed. Every download link goes directly to the original project's own servers.
+> Nothing is redistributed. Every download link goes directly to the original project's own servers.
 
 ---
 
-## License
+## 📄 License
 
 MIT. The code is yours. See [DMCA.md](DMCA.md) for data and takedown policy.
