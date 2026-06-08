@@ -37,6 +37,19 @@
 }
 
 /* Light theme override */
+[data-theme="light"],
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {
+  --bg:         #f4f6f9;
+  --surface:    #ffffff;
+  --card:       #ffffff;
+  --card2:      #f0f2f5;
+  --border:     #dce3ed;
+  --text:       #0f1923;
+  --muted:      #5a6e85;
+  --accent-dim: rgba(61,214,140,.1);
+  --accent-glow:rgba(61,214,140,.2);
+}}
+
 [data-theme="light"] {
   --bg:         #f4f6f9;
   --surface:    #ffffff;
@@ -44,9 +57,32 @@
   --card2:      #f0f2f5;
   --border:     #dce3ed;
   --text:       #0f1923;
-  --muted:      #7a8fa8;
+  --muted:      #5a6e85;
   --accent-dim: rgba(61,214,140,.1);
+  --accent-glow:rgba(61,214,140,.2);
 }
+
+/* Navbar adapts to theme */
+[data-theme="light"] .navbar,
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .navbar {
+    background: rgba(255,255,255,.92) !important;
+    border-bottom-color: var(--border);
+  }
+}
+[data-theme="light"] .navbar { background: rgba(255,255,255,.92) !important; }
+
+/* Table rows in light */
+[data-theme="light"] .table tbody tr:hover td { background: rgba(240,242,245,.8) !important; }
+
+/* Cards in light */
+[data-theme="light"] .card { box-shadow: 0 1px 4px rgba(0,0,0,.06) !important; }
+
+/* Mobile nav background in light */
+[data-theme="light"] .nav-links { background: var(--surface); }
+
+/* Compat banners readable in light */
+[data-theme="light"] .compat-managed { background: #e8edf5; border-color: #c0ccd8; color: #3a4a5c; }
 
 /* ── Global reset ──────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -914,3 +950,57 @@ img { max-width: 100%; display: block; }
   color: #a0aabf;
 }
 .compat-managed strong { color: #c8d0e0; }
+
+/* ── PWA Install Modal ───────────────────────────────────────────────────── */
+#pwa-modal-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: fadeIn .2s ease;
+}
+#pwa-modal-overlay[style*="none"] { display: none !important; }
+#pwa-modal {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 1.5rem 1.5rem 1.25rem;
+  width: min(500px, 100%);
+  box-shadow: 0 16px 48px rgba(0,0,0,.5);
+  position: relative;
+  animation: modalSlideUp .25s cubic-bezier(.22,1,.36,1);
+}
+#pwa-modal-close {
+  position: absolute; top: .9rem; right: 1rem;
+  background: none; border: none; cursor: pointer;
+  color: var(--muted); font-size: 1.25rem; line-height: 1;
+  padding: .2rem .4rem; border-radius: 6px;
+  transition: color .15s, background .15s;
+}
+#pwa-modal-close:hover { color: var(--text); background: var(--card2); }
+.pwa-modal-title {
+  font-size: .75rem; font-weight: 700; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--muted); margin: 0 0 1rem;
+}
+.pwa-modal-body { display: flex; gap: .75rem; }
+#pwa-install-btn-nav {
+  background: none; border: none; cursor: pointer;
+  color: var(--muted); font-size: 1.1rem; padding: .25rem .3rem;
+  border-radius: 6px; line-height: 1;
+  transition: color .15s, background .15s;
+  display: flex; align-items: center; justify-content: center;
+}
+#pwa-install-btn-nav:hover { color: var(--accent); background: var(--card); }
+@keyframes modalSlideUp {
+  from { opacity: 0; transform: translateY(24px) scale(.97); }
+  to   { opacity: 1; transform: none; }
+}
+@media (max-width: 480px) {
+  .pwa-modal-body { flex-direction: column; }
+  .install-tabs { flex-direction: row; min-width: unset; }
+  .install-tab { flex: 1; text-align: center; font-size: .72rem; padding: .4rem .3rem; }
+}

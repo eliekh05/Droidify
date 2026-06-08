@@ -3,8 +3,14 @@
 <head>
   <script>
     (function(){
-      const t = localStorage.getItem('droidify_theme');
-      if (t && t !== 'system') document.documentElement.setAttribute('data-theme', t);
+      const t = localStorage.getItem('droidify_theme') || 'system';
+      if (t === 'system') {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-system-theme', '1');
+      } else {
+        document.documentElement.setAttribute('data-theme', t);
+      }
     })();
   </script>
   <meta charset="UTF-8" />
@@ -76,6 +82,7 @@
       <a href="/watchlist" class="navbar-item{% if active == 'watchlist' %} is-active{% endif %}">Watchlist<span class="alert-badge" id="alert-badge"></span></a>
       <div class="nav-end">
         <div id="auth-wrap"></div>
+        <button id="pwa-install-btn-nav" title="Install Droidify" aria-label="Install Droidify">&#11015;&#65039;</button>
         <div class="navbar-item theme-switcher" id="theme-switcher"></div>
         <a href="https://github.com/eliekh05/Droidify" class="button is-ghost navbar-item" target="_blank" rel="noopener"><span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></span></a>
       </div>
@@ -116,127 +123,125 @@
 })();
 </script>
 
-<!-- Install Banner -->
-<div id="install-banner" style="display:none" aria-live="polite">
-  <div class="install-banner-inner">
-    <button class="install-banner-close" id="install-banner-close" aria-label="Dismiss">&times;</button>
-    <p class="install-banner-title">Install Droidify</p>
-    <div class="install-banner-body">
-
-      <!-- Left tabs -->
+<!-- PWA Install Modal -->
+<div id="pwa-modal-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Install Droidify">
+  <div id="pwa-modal">
+    <button id="pwa-modal-close" aria-label="Close">&times;</button>
+    <p class="pwa-modal-title">Install Droidify</p>
+    <div class="pwa-modal-body">
       <div class="install-tabs">
         <button class="install-tab active" data-tab="browser">&#127760; Browser</button>
         <button class="install-tab" data-tab="android">&#129302; Android</button>
         <button class="install-tab" data-tab="windows">&#128759; Windows</button>
       </div>
-
-      <!-- Right panels -->
       <div class="install-panels">
-
-        <div class="install-panel active" id="tab-browser">
+        <div class="install-panel active" id="pwa-tab-browser">
           <p class="install-panel-title">Install from browser</p>
           <p class="install-panel-sub">Best option on every platform. No warnings, no friction. Works on Android, Windows, macOS and Linux.</p>
           <button id="pwa-install-btn" class="install-btn install-btn-primary">Install</button>
-          <p class="install-panel-note" id="install-sub"></p>
+          <p class="install-panel-note" id="pwa-install-sub"></p>
         </div>
-
-        <div class="install-panel" id="tab-android">
+        <div class="install-panel" id="pwa-tab-android">
           <p class="install-panel-title">Android APK</p>
           <p class="install-panel-sub">Full screen, no browser chrome. TWA — app updates automatically when the site updates.</p>
           <a href="https://github.com/eliekh05/Droidify/releases/download/v1.0.0/Droidify.apk" target="_blank" rel="noopener" class="install-btn install-btn-primary">Download APK</a>
-          <p class="install-panel-note">Enable unknown sources in Settings → Security before installing.</p>
+          <p class="install-panel-note">Enable unknown sources in Settings &rarr; Security before installing.</p>
         </div>
-
-        <div class="install-panel" id="tab-windows">
+        <div class="install-panel" id="pwa-tab-windows">
           <p class="install-panel-title">Windows</p>
-          <p class="install-panel-sub">Expect SmartScreen warnings — the package is not signed through the Microsoft Store. Use the browser install above for a smoother experience.</p>
+          <p class="install-panel-sub">Expect SmartScreen warnings &mdash; use the browser install above for a smoother experience.</p>
           <a href="https://github.com/eliekh05/Droidify/releases/download/v1.0.0/Droidify.msix" target="_blank" rel="noopener" class="install-btn install-btn-ghost">Download .msix</a>
-          <p class="install-panel-note">If blocked: click "More info" → "Run anyway".</p>
+          <p class="install-panel-note">If blocked: click &ldquo;More info&rdquo; &rarr; &ldquo;Run anyway&rdquo;.</p>
         </div>
-
       </div>
     </div>
   </div>
 </div>
-<!-- End Install Banner -->
+<!-- End PWA Install Modal -->
 
 <script>(function () {
-  var DISMISSED_KEY = 'droidify_install_dismissed';
-  var banner     = document.getElementById('install-banner');
-  var closeBtn   = document.getElementById('install-banner-close');
+  var overlay = document.getElementById('pwa-modal-overlay');
+  var closeBtn = document.getElementById('pwa-modal-close');
+  var navBtn   = document.getElementById('pwa-install-btn-nav');
   var installBtn = document.getElementById('pwa-install-btn');
-  var sub        = document.getElementById('install-sub');
+  var sub = document.getElementById('pwa-install-sub');
   var deferredPrompt = null;
 
-  document.querySelectorAll('.install-tab').forEach(function (tab) {
+  // Tab switching
+  document.querySelectorAll('#pwa-modal .install-tab').forEach(function (tab) {
     tab.addEventListener('click', function () {
-      document.querySelectorAll('.install-tab').forEach(function (t) { t.classList.remove('active'); });
-      document.querySelectorAll('.install-panel').forEach(function (p) { p.classList.remove('active'); });
+      document.querySelectorAll('#pwa-modal .install-tab').forEach(function (t) { t.classList.remove('active'); });
+      document.querySelectorAll('#pwa-modal .install-panel').forEach(function (p) { p.classList.remove('active'); });
       tab.classList.add('active');
-      var panel = document.getElementById('tab-' + tab.dataset.tab);
+      var panel = document.getElementById('pwa-tab-' + tab.dataset.tab);
       if (panel) panel.classList.add('active');
     });
   });
 
-  function showBanner() {
-    if (!banner || sessionStorage.getItem(DISMISSED_KEY)) return;
-    setTimeout(function () {
-      banner.style.display = 'block';
-      requestAnimationFrame(function () {
-        requestAnimationFrame(function () { banner.classList.add('show'); });
-      });
-    }, 2500);
+  function openModal() {
+    if (!overlay) return;
+    overlay.style.display = '';
+    document.body.style.overflow = 'hidden';
+    // Auto-select best tab
+    var ua = navigator.userAgent || '';
+    if (/android/i.test(ua)) {
+      var at = document.querySelector('#pwa-modal [data-tab="android"]');
+      if (at) at.click();
+    } else if (/windows/i.test(ua)) {
+      var wt = document.querySelector('#pwa-modal [data-tab="windows"]');
+      if (wt) wt.click();
+    }
   }
 
-  function hideBanner() {
-    if (!banner) return;
-    banner.classList.remove('show');
-    setTimeout(function () { banner.style.display = 'none'; }, 350);
-    sessionStorage.setItem(DISMISSED_KEY, '1');
+  function closeModal() {
+    if (!overlay) return;
+    overlay.style.display = 'none';
+    document.body.style.overflow = '';
   }
 
-  if (closeBtn) closeBtn.addEventListener('click', hideBanner);
-  window.addEventListener('appinstalled', hideBanner);
+  if (navBtn) navBtn.addEventListener('click', openModal);
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  if (overlay) overlay.addEventListener('click', function (e) {
+    if (e.target === overlay) closeModal();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeModal();
+  });
 
+  // Handle browser install
   window.addEventListener('beforeinstallprompt', function (e) {
     e.preventDefault();
     deferredPrompt = e;
   });
+  window.addEventListener('appinstalled', closeModal);
 
   if (installBtn) {
     installBtn.addEventListener('click', function () {
       if (deferredPrompt) {
-        hideBanner();
+        closeModal();
         deferredPrompt.prompt();
         deferredPrompt.userChoice.then(function () { deferredPrompt = null; });
       }
     });
   }
 
-  var isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
-  var isIOS     = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  var isSafari  = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-  var isAndroid = /android/i.test(navigator.userAgent);
-  var isWindows = /windows/i.test(navigator.userAgent);
-
-  if (!isStandalone) {
-    if (isAndroid) {
-      var at = document.querySelector('[data-tab="android"]');
-      if (at) at.click();
-    } else if (isWindows) {
-      var wt = document.querySelector('[data-tab="windows"]');
-      if (wt) wt.click();
-    }
-    if (isIOS) {
-      if (sub) sub.textContent = 'Use Share → Add to Home Screen in Safari';
-      if (installBtn) { installBtn.textContent = 'Step by step'; installBtn.onclick = function () { alert('1. Open this site in Safari (not Chrome or Firefox).\n2. Tap the Share button at the bottom of the screen (↑ icon).\n3. Scroll down and tap “Add to Home Screen”.\n4. Tap “Add”.\n\nDroidify will appear on your home screen like any other app.'); }; }
-    } else if (isSafari) {
-      if (sub) sub.textContent = 'Use File → Add to Dock from the menu bar';
-      if (installBtn) { installBtn.textContent = 'Step by step'; installBtn.onclick = function () { alert('1. Make sure you are viewing the site in Safari on your Mac.\n2. Click “File” in the top menu bar.\n3. Click “Add to Dock”.\n4. Confirm the name and click “Add”.\n\nDroidify will appear in your Dock like any other app.'); }; }
-    }
-    showBanner();
+  // Safari/iOS instructions
+  var isIOS    = /iphone|ipad|ipod/i.test(navigator.userAgent || '');
+  var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent || '');
+  if (isIOS && sub) {
+    sub.textContent = 'Tap Share → Add to Home Screen in Safari.';
+    if (installBtn) { installBtn.textContent = 'Step by step'; installBtn.onclick = function () { alert('1. Open in Safari.
+2. Tap the Share button (↑).
+3. Tap “Add to Home Screen”.
+4. Tap “Add”.'); }; }
+  } else if (isSafari && sub) {
+    sub.textContent = 'File → Add to Dock from the menu bar.';
+    if (installBtn) { installBtn.textContent = 'Step by step'; installBtn.onclick = function () { alert('1. Click “File” in the Safari menu bar.
+2. Click “Add to Dock”.
+3. Click “Add”.'); }; }
   }
-})();</script>
+})();
+</script>
 
 
 </body>
