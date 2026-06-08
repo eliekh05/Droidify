@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="container" style="padding-bottom:4rem">
+
+  <section class="hero-section">
+    <h1 class="hero-title"><span class="accent">Droid</span>ify</h1>
+    <p class="hero-sub">Devices, ROMs, recoveries, and tools &mdash; fetched in real time from LineageOS,
+    Wikipedia, OrangeFox, TWRP, GitHub and more. Zero hardcoded data.
+    Everything is free. Sign in with GitHub to save devices and get ROM alerts.</p>
+    <div class="hero-search">
+      <input class="input" type="search" id="hero-search"
+             placeholder="Search device, codename or manufacturer&#8230;"
+             autocomplete="off" />
+      <button class="button is-primary" id="hero-search-btn">Search</button>
+    </div>
+  </section>
+
+  <div class="sources-banner" data-aos="fade-up">
+    <div style="display:flex;flex-wrap:wrap;gap:.4rem;justify-content:center">
+      {% set sources = ["LineageOS API","Wikipedia","OrangeFox API","TWRP","GrapheneOS",
+                        "GitHub API","crDroid","DivestOS","CalyxOS","/e/OS"] %}
+      {% for s in sources %}
+      <span class="tag is-light source-badge">{{ s }}</span>
+      {% endfor %}
+    </div>
+    <p class="sources-note">All free &middot; Sign in optional &middot; Live data</p>
+  </div>
+
+  <!-- Stats -->
+  <section class="section pb-0" style="margin-top:1.5rem">
+    <div class="section-header" data-aos="fade-up">
+      <h2 class="title">Stats_</h2>
+    </div>
+    <div class="stats-box" data-aos="fade-up" data-aos-delay="100">
+      <div class="stat-item"><span class="stat-value" id="stat-devices">—</span><span class="stat-label">Devices Indexed</span></div>
+      <div class="stat-item"><span class="stat-value" id="stat-roms">—</span><span class="stat-label">ROM Builds</span></div>
+      <div class="stat-item"><span class="stat-value" id="stat-recoveries">—</span><span class="stat-label">Recovery Builds</span></div>
+      <div class="stat-item"><span class="stat-value" id="stat-tools">—</span><span class="stat-label">Tools Listed</span></div>
+      <div class="stat-item"><span class="stat-value" id="stat-android">—</span><span class="stat-label">Android Versions</span></div>
+    </div>
+  </section>
+
+  <!-- Featured devices -->
+  <section class="section pb-0">
+    <div class="section-header" data-aos="fade-up">
+      <h2 class="title">Featured devices_</h2>
+      <a href="/devices" class="section-link">Browse all &rarr;</a>
+    </div>
+    <div class="columns is-multiline is-mobile" id="featured-devices"></div>
+  </section>
+
+  <!-- ROM families -->
+  <section class="section pb-0">
+    <div class="section-header" data-aos="fade-up">
+      <h2 class="title">ROM families_</h2>
+      <a href="/roms" class="section-link">Browse all &rarr;</a>
+    </div>
+    <div class="columns is-multiline is-mobile" id="rom-families"></div>
+  </section>
+
+</main>
+{% endblock %}
+{% block scripts %}
+<script src="/js/home.js?v=525120"></script>
+{% endblock %}

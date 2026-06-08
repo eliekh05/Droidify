@@ -15,6 +15,11 @@ from app.db import get_watchlist, get_user_by_id
 
 router = APIRouter()
 
+@router.get("/", response_class=HTMLResponse)
+async def home_page(request: Request):
+    return _r(request, "index.html", "home", title="Droidify — Android ROM & Device Index")
+
+
 _tpl_dir = Path(__file__).parent.parent / "templates"
 templates = Jinja2Templates(directory=str(_tpl_dir))
 _V = os.environ.get("BUILD_TS", str(int(time.time())))
