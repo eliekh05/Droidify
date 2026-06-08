@@ -8,7 +8,7 @@
   <div class="table-container">
     <table class="table is-fullwidth is-hoverable">
       <thead>
-        <tr><th>Version</th><th>Codename</th><th>API</th><th>Year</th><th>Status</th></tr>
+        <tr><th>Version</th><th>Codename</th><th>API</th><th>Year</th></tr>
       </thead>
       <tbody>
         {% for v in versions %}
@@ -17,11 +17,6 @@
           <td style="color:var(--muted)">{{ (v.codename or '—') | e }}</td>
           <td style="font-family:var(--mono);color:var(--info)">{{ (v.api_level or '—') | string | e }}</td>
           <td style="color:var(--muted)">{{ (v.release_year or '—') | string | e }}</td>
-          <td>
-            {% if v.status == 'active' %}<span class="tag is-success">ACTIVE</span>
-            {% elif v.status == 'partial' %}<span class="tag is-warning">PREVIEW</span>
-            {% else %}<span class="tag is-dark">EOL</span>{% endif %}
-          </td>
         </tr>
         {% endfor %}
       </tbody>
