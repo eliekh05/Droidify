@@ -43,7 +43,6 @@ async def lifespan(app: FastAPI):
             from app.scrapers.unofficialtwrp import get_unofficialtwrp_devices
             from app.scrapers.roms import _build_lookup
 
-            # Run all scrapers concurrently — no sequential phases
             await asyncio.gather(
                 get_devices(limit=50),
                 get_android_versions(),
@@ -55,12 +54,23 @@ async def lifespan(app: FastAPI):
                 _build_lookup(),
                 return_exceptions=True,
             )
-            _log.warning("All caches hot")
+            # Save immediately after warm — next cold start restores from disk
+            save_to_disk()
+            _log.warning("All caches hot — saved to disk")
 
         except Exception as e:
             _log.warning("Warmup error (non-fatal): %s", e)
 
-    # Restore cache from disk (warms up from last run)
+    async def _periodic_save():
+        # Save cache to disk every 10 minutes so crashes don't lose much
+        while True:
+            await asyncio.sleep(600)
+            try:
+                save_to_disk()
+            except Exception:
+                pass
+
+    # Restore cache from disk (/data/ persists across HF restarts)
     from app.services.cache import load_from_disk, save_to_disk
     from app.db import init_db
     await init_db()
@@ -68,11 +78,12 @@ async def lifespan(app: FastAPI):
     _log.warning("Cache restored: %d entries from disk", restored)
 
     asyncio.get_event_loop().create_task(_warm())
+    asyncio.get_event_loop().create_task(_periodic_save())
     from app.services.alerts import run_alert_loop
     asyncio.get_event_loop().create_task(run_alert_loop())
     yield
 
-    # Save cache to disk on shutdown
+    # Save cache to disk on shutdown (best-effort)
     save_to_disk()
     _log.warning("Cache saved to disk on shutdown")
 

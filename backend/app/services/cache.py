@@ -12,7 +12,8 @@ _store: dict[str, tuple[Any, float]] = {}
 _lock  = asyncio.Lock()
 
 DEFAULT_TTL  = 300    # 5 minutes
-PERSIST_PATH = Path(os.environ.get("CACHE_PERSIST_PATH", "/tmp/droidify_cache.json"))
+_data_dir = Path("/data") if Path("/data").exists() else Path("/tmp")
+PERSIST_PATH = Path(os.environ.get("CACHE_PERSIST_PATH", str(_data_dir / "droidify_cache.json")))
 
 async def get(key: str) -> Any | None:
     async with _lock:
