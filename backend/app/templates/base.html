@@ -237,5 +237,136 @@
     showBanner();
   }
 })();</script>
+
+
 </body>
 </html>
+
+<script>/* ── Browser compatibility check ────────────────────────────────────────────
+   Level 0: In-app browser detection (UA — these apps self-identify)
+   Level 1: Feature detection — hard error if browser is actually broken
+   Level 2: UA whitelist — soft note for untested browsers
+   Level 3: Service worker only — very soft info
+   ─────────────────────────────────────────────────────────────────────── */
+(function () {
+  'use strict';
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', check);
+  } else { check(); }
+
+  function check() {
+    var ua  = navigator.userAgent || '';
+    var url = window.location.href;
+
+    // Level 0 — in-app browser detection
+    // Uses structural patterns not app names — works for any current or future app
+    //
+    // Android WebView: every app that opens a WebView gets "; wv)" in the UA automatically
+    // iOS in-app: no serviceWorker + standalone=false + inside a known shell pattern
+    // Some apps also self-identify (FB, Instagram etc) but we don't rely on that
+    var isAndroid   = /android/i.test(ua);
+    var isIOSDevice = /iphone|ipad|ipod/i.test(ua);
+
+    // Android: "; wv)" is the definitive WebView marker injected by Android OS itself
+    var isAndroidWebView = isAndroid && /; wv\)/.test(ua);
+
+    // iOS: WKWebView apps usually strip ServiceWorker, have no standalone, and often
+    // include a custom token. Most reliable signal is checking for known shell patterns.
+    // We also keep a short list of the worst offenders that add their own tokens.
+    var iOSShellPattern = /FBAN|FBAV|FBIOS|Instagram|TikTok|Snapchat|Twitter|Pinterest|WhatsApp|LinkedInApp|Line\/\d|GSA\//i;
+    var isIOSWebView = isIOSDevice && iOSShellPattern.test(ua);
+
+    if (isAndroidWebView || isIOSWebView) {
+      var escape = isAndroid
+        ? '<a class="compat-open-btn" href="intent://' + url.replace(/^https?:\/\//, '') + '#Intent;scheme=https;package=com.android.chrome;end">Open in Chrome</a>'
+        : '<a class="compat-open-btn" href="' + url + '" target="_blank" rel="noopener">Open in browser</a>';
+      showBanner('inapp',
+        '&#128683; You are viewing this inside an in-app browser. ' +
+        'It may block features, break interactions, and track everything you tap. ' + escape);
+      return;
+    }
+
+    // Level 0.5 — managed/restricted browser detection
+    // navigator.managed is a Chrome 121+ API that explicitly signals enterprise management
+    // We also test for common side effects of MDM policies: blocked storage, locked CSP
+    var isManagedBrowser = false;
+    if (navigator.managed && typeof navigator.managed.isManagedBrowser === 'function') {
+      try {
+        navigator.managed.isManagedBrowser().then(function(managed) {
+          if (managed) showManagedWarning();
+        }).catch(function() {});
+      } catch(e) {}
+    }
+    // Fallback: detect storage lockdown (common MDM side effect)
+    var storageBlocked = false;
+    try {
+      localStorage.setItem('_mgmt_test', '1');
+      localStorage.removeItem('_mgmt_test');
+    } catch(e) { storageBlocked = true; }
+
+    if (storageBlocked) {
+      showManagedWarning();
+      return;
+    }
+    // Level 1 — feature detection
+    var missing = [];
+    if (!window.CSS || !CSS.supports('color', 'var(--test)')) missing.push('CSS variables');
+    if (!CSS.supports || !CSS.supports('display', 'grid'))    missing.push('CSS Grid');
+    if (typeof fetch === 'undefined')                          missing.push('Fetch API');
+    if (typeof Promise === 'undefined')                        missing.push('Promises');
+    try { sessionStorage.setItem('_c','1'); sessionStorage.removeItem('_c'); }
+    catch (e) { missing.push('sessionStorage'); }
+    if (CSS.supports && !CSS.supports('selector(:is(a))'))    missing.push('modern CSS');
+    var noSW = typeof navigator.serviceWorker === 'undefined';
+    if (missing.length > 0) {
+      showBanner('error',
+        '&#9888;&#65039; Your browser is missing: <strong>' + missing.join(', ') +
+        '</strong>. Switch to <strong>Chrome</strong>, <strong>Edge</strong>, <strong>Firefox</strong>, or <strong>Safari</strong>.');
+      return;
+    }
+
+    // Level 2 — UA whitelist
+    var isChrome  = /Chrome\//.test(ua) && !/Edg\//.test(ua) && !/OPR\//.test(ua);
+    var isEdge    = /Edg\//.test(ua);
+    var isFirefox = /Firefox\//.test(ua);
+    var isSafari  = /Safari\//.test(ua) && !/Chrome/.test(ua);
+    var isSamsung = /SamsungBrowser\//.test(ua);
+    if (!(isChrome || isEdge || isFirefox || isSafari || isSamsung)) {
+      showBanner('warn',
+        '&#8505;&#65039; We test on Chrome, Edge, Firefox, and Safari. ' +
+        'Your browser may work fine but we cannot guarantee it.');
+      return;
+    }
+
+    // Level 3 — no service worker (Safari + Firefox already support SW)
+    if (noSW && !isSafari && !isFirefox) {
+      showBanner('info',
+        '&#8505;&#65039; Your browser does not support service workers so Droidify cannot be installed as an app. ' +
+        'Use Chrome or Edge to install it.');
+    }
+  }
+
+  function showManagedWarning() {
+    if (sessionStorage.getItem('droidify_compat_managed')) return;
+    showBanner('managed',
+      '&#127970; Your browser appears to be managed by an organisation. ' +
+      'Some features may be blocked by your IT policy and we cannot work around that. ' +
+      'If the site does not work correctly, try opening it on a personal device or a personal browser profile. ' +
+      'We do not offer support for managed browser environments.');
+  }
+  function showBanner(level, html) {
+    if (level !== 'inapp') {
+      var k = 'droidify_compat_' + level;
+      if (sessionStorage.getItem(k)) return;
+    }
+    var b = document.createElement('div');
+    b.className = 'compat-banner compat-' + level;
+    b.setAttribute('role', 'alert');
+    var close = level !== 'inapp'
+      ? '<button onclick="sessionStorage.setItem(\'droidify_compat_' + level + '\',\'1\');this.parentElement.remove()" aria-label="Dismiss">&times;</button>'
+      : '';
+    b.innerHTML = '<span>' + html + '</span>' + close;
+    document.body.insertBefore(b, document.body.firstChild);
+  }
+})();
+</script>

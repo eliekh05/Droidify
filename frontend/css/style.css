@@ -837,3 +837,80 @@ img { max-width: 100%; display: block; }
   .install-tab { flex: 1; text-align: center; font-size: .72rem; padding: .4rem .3rem; }
   #install-banner { bottom: .75rem; }
 }
+
+/* ── Browser compatibility banners ─────────────────────────────────────────── */
+.compat-banner {
+  position: relative;
+  z-index: 99999;
+  font-size: .82rem;
+  padding: .6rem 3rem .6rem 1rem;
+  display: flex;
+  align-items: center;
+  line-height: 1.5;
+}
+.compat-banner strong { color: #fff; }
+.compat-banner button {
+  position: absolute;
+  right: .75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: .2rem .4rem;
+  border-radius: 4px;
+  opacity: .8;
+}
+.compat-banner button:hover { opacity: 1; background: rgba(255,255,255,.15); }
+/* Hard error — orange */
+.compat-error {
+  background: #7c3a00;
+  border-bottom: 1px solid #c45a00;
+  color: #ffe8cc;
+}
+.compat-error button { color: #ffe8cc; }
+/* Soft warning — yellow */
+.compat-warn {
+  background: #4a3d00;
+  border-bottom: 1px solid #7a6500;
+  color: #fff3c0;
+}
+.compat-warn button { color: #fff3c0; }
+/* Info — subtle */
+.compat-info {
+  background: #0d2a3a;
+  border-bottom: 1px solid #1e4a66;
+  color: #b8d8ee;
+}
+.compat-info button { color: #b8d8ee; }
+
+/* In-app browser — red, non-dismissible */
+.compat-inapp {
+  background: #5c0a0a;
+  border-bottom: 2px solid #a01010;
+  color: #ffd0d0;
+  font-weight: 500;
+}
+.compat-inapp strong { color: #fff; }
+.compat-open-btn {
+  display: inline-block;
+  margin-left: .75rem;
+  background: #fff;
+  color: #5c0a0a;
+  font-weight: 700;
+  font-size: .78rem;
+  padding: .25rem .75rem;
+  border-radius: 6px;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.compat-open-btn:hover { background: #ffd0d0; }
+/* Managed browser — grey, dismissible */
+.compat-managed {
+  background: #1a1f2e;
+  border-bottom: 1px solid #2d3550;
+  color: #a0aabf;
+}
+.compat-managed strong { color: #c8d0e0; }
