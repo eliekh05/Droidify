@@ -153,6 +153,20 @@ app.include_router(recoveries_router, prefix="/api/recoveries",       tags=["rec
 app.include_router(guides_router,     prefix="/api/guides",           tags=["guides"])
 app.include_router(not_read_router, prefix="/not-read")
 app.include_router(auth_router,       prefix="/api/auth",            tags=["auth"])
+@app.get("/.well-known/assetlinks.json", include_in_schema=False)
+async def assetlinks():
+    from fastapi.responses import JSONResponse
+    return JSONResponse([{
+        "relation": ["delegate_permission/common.handle_all_urls"],
+        "target": {
+            "namespace": "android_app",
+            "package_name": "com.droidify.app",
+            "sha256_cert_fingerprints": [
+                "C8:37:CD:2C:5D:F1:AC:71:6A:0C:33:E8:B0:43:93:55:89:BC:82:0B:84:CE:D3:D9:43:80:2F:F1:49:4F:E7:66"
+            ]
+        }
+    }])
+
 app.include_router(terms_router,      prefix="/api/terms",            tags=["auth"])
 app.include_router(watchlist_router,   prefix="/api/watchlist",        tags=["watchlist"])
 app.include_router(pages_router)
