@@ -23,4 +23,4 @@ Tell us what to remove and we will do it within 48 hours. No questions asked.
 ---
 
 > Droidify does not host your files. Every link points directly to your own servers.
-> See [DMCA.md](../../DMCA.md) for the full policy.
+> See [DMCA.md](https://github.com/eliekh05/Droidify/blob/main/DMCA.md) for the full policy.

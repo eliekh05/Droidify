@@ -20,4 +20,4 @@ Do not disclose publicly before a fix is deployed.
 
 ---
 
-> See [SECURITY.md](../../SECURITY.md) for scope and policy.
+> See [SECURITY.md](https://github.com/eliekh05/Droidify/blob/main/SECURITY.md) for scope and policy.

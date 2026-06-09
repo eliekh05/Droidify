@@ -25,5 +25,5 @@ and we will respond within 48 hours.
 
 ---
 
-> See [DMCA.md](../../DMCA.md) for the full policy.
+> See [DMCA.md](https://github.com/eliekh05/Droidify/blob/main/DMCA.md) for the full policy.
 > We will respond within 48 hours.
