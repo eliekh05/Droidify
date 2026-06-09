@@ -251,3 +251,13 @@ async def get_all_watchlisted_users() -> list[dict]:
         )
         rows = await cur.fetchall()
         return [dict(r) for r in rows]
+
+async def delete_user(user_id: int) -> None:
+    """Delete a user and all their data (watchlist, alerts, terms record)."""
+    async with _db() as db:
+        # Cascade delete — watchlist and alerts reference users(id)
+        await db.execute("DELETE FROM watchlist WHERE user_id = ?",  (user_id,))
+        await db.execute("DELETE FROM rom_alerts WHERE user_id = ?", (user_id,))
+        await db.execute("DELETE FROM terms_agreements WHERE user_id = ?", (user_id,))
+        await db.execute("DELETE FROM users WHERE id = ?",           (user_id,))
+        await db.commit()

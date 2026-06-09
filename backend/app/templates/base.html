@@ -94,7 +94,7 @@
 
 <footer class="site-footer">
   <div class="container">
-    <p>Droidify &mdash; Live Android ecosystem indexer &middot; Free &amp; open sources only &middot; Account optional &middot; <a href="/privacy">Privacy</a> &middot; <a href="/terms?read=1">Terms</a> &middot; <a href="/faq">FAQ</a> &middot; <a href="/perks">Perks</a></p>
+    <p>Droidify &mdash; Live Android ecosystem indexer &middot; Free &amp; open sources only &middot; Account optional &middot; <a href="/privacy">Privacy</a> &middot; <a href="/terms?read=1">Terms</a> &middot; <a href="/faq">FAQ</a> &middot; <a href="/perks">Perks</a> &middot; <a href="https://github.com/eliekh05/Droidify/issues/new?template=takedown.md" target="_blank" rel="noopener">Takedown request</a> &middot; {% if session %}<button onclick="document.getElementById('delete-account-modal').style.display=''" style="background:none;border:none;color:var(--muted);font-size:.75rem;cursor:pointer;text-decoration:underline;padding:0">Delete account</button>{% endif %}</p>
   </div>
 </footer>
 <script src="/js/terms.js?v={{ v }}"></script>
@@ -228,6 +228,65 @@
 })();</script>
 
 
+<!-- Delete Account Modal -->
+<div id="delete-account-modal" style="display:none" role="dialog" aria-modal="true">
+  <div class="delete-modal-inner">
+    <p class="delete-modal-title">&#128465;&#65039; Delete account</p>
+    <p class="delete-modal-body">
+      This removes your Droidify account, watchlist, and all ROM alerts immediately.
+      It does <strong>not</strong> revoke GitHub&rsquo;s access token automatically.
+    </p>
+    <p class="delete-modal-body" style="margin-top:.5rem">
+      To fully disconnect Droidify from GitHub, go to
+      <strong>github.com &rarr; Settings &rarr; Applications &rarr; Authorized OAuth Apps &rarr; Droidify &rarr; Revoke</strong>
+      after deleting.
+    </p>
+    <div style="display:flex;gap:.6rem;margin-top:1.1rem;justify-content:flex-end">
+      <button id="delete-account-cancel" class="button is-small">Cancel</button>
+      <button id="delete-account-confirm" class="button is-small" style="background:#b60205;color:#fff;border-color:#b60205">Delete my account</button>
+    </div>
+  </div>
+</div>
+<!-- End Delete Account Modal -->
+<script>
+  // ── Delete account ────────────────────────────────────────────────────────
+  (function () {
+    var modal   = document.getElementById('delete-account-modal');
+    var trigger = document.getElementById('delete-account-btn');
+    var cancel  = document.getElementById('delete-account-cancel');
+    var confirm = document.getElementById('delete-account-confirm');
+
+    function openDelete()  { if (modal) { modal.style.display = ''; document.body.style.overflow = 'hidden'; } }
+    function closeDelete() { if (modal) { modal.style.display = 'none'; document.body.style.overflow = ''; } }
+
+    if (trigger) trigger.addEventListener('click', openDelete);
+    if (cancel)  cancel.addEventListener('click', closeDelete);
+    if (modal)   modal.addEventListener('click', function (e) { if (e.target === modal) closeDelete(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeDelete(); });
+
+    if (confirm) {
+      confirm.addEventListener('click', function () {
+        confirm.textContent = 'Deleting…';
+        confirm.disabled = true;
+        fetch('/api/auth/delete-account', { method: 'POST' })
+          .then(function (r) { return r.json(); })
+          .then(function (d) {
+            if (d.ok) {
+              closeDelete();
+              window.location.href = '/';
+            } else {
+              confirm.textContent = 'Error — try again';
+              confirm.disabled = false;
+            }
+          })
+          .catch(function () {
+            confirm.textContent = 'Error — try again';
+            confirm.disabled = false;
+          });
+      });
+    }
+  })();
+</script>
 </body>
 </html>
 

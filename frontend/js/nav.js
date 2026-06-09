@@ -179,6 +179,7 @@
               '<img src="' + d.user.avatar_url + '" class="auth-avatar" alt="' + d.user.login + '">' +
               '<span class="auth-login">' + d.user.login + '</span>' +
               '<a href="/api/auth/logout" class="auth-logout">Sign out</a>' +
+              '<button id="delete-account-btn" class="auth-delete-btn">Delete account</button>' +
             '</div>';
         } else {
           wrap.innerHTML =

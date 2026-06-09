@@ -1004,3 +1004,39 @@ img { max-width: 100%; display: block; }
   .install-tabs { flex-direction: row; min-width: unset; }
   .install-tab { flex: 1; text-align: center; font-size: .72rem; padding: .4rem .3rem; }
 }
+
+/* ── Delete account modal ────────────────────────────────────────────────── */
+#delete-account-modal {
+  position: fixed; inset: 0; z-index: 99999;
+  background: rgba(0,0,0,.65);
+  backdrop-filter: blur(4px);
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: fadeIn .2s ease;
+}
+#delete-account-modal[style*="none"] { display: none !important; }
+.delete-modal-inner {
+  background: var(--card);
+  border: 1px solid #b60205;
+  border-radius: 14px;
+  padding: 1.4rem 1.5rem;
+  width: min(420px, 100%);
+  box-shadow: 0 16px 48px rgba(0,0,0,.5);
+}
+.delete-modal-title {
+  font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: .75rem;
+}
+.delete-modal-body {
+  font-size: .84rem; color: var(--muted); line-height: 1.55;
+}
+.delete-modal-body strong { color: var(--text); }
+.auth-delete-btn {
+  background: none; border: none; cursor: pointer;
+  font-size: .78rem; color: var(--muted);
+  padding: .2rem .4rem; border-radius: 4px;
+  transition: color .15s, background .15s;
+  text-decoration: underline;
+}
+.auth-delete-btn:hover { color: var(--danger); background: rgba(248,113,113,.08); }

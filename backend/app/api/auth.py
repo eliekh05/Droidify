@@ -133,3 +133,15 @@ async def me(request: Request):
             "agreed_terms": agreed,
         }
     })
+
+@router.post("/delete-account", include_in_schema=False)
+async def delete_account(request: Request):
+    """Delete the current user's account and all their data, then sign out."""
+    session = get_session(request)
+    if not session:
+        return JSONResponse({"error": "not signed in"}, status_code=401)
+    from app.db import delete_user
+    await delete_user(session["user_id"])
+    response = JSONResponse({"ok": True})
+    clear_session(response)
+    return response

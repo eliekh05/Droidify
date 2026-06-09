@@ -16,7 +16,7 @@ Every download link on Droidify points directly to whoever made the file. _Linea
 
 **No lawyer. No formal filing. No questions asked.**
 
-Open a GitHub issue, tell us the project name and the URL on Droidify where it appears, and we will remove it **within 48 hours**.
+[**Open a takedown request &rarr;**](https://github.com/eliekh05/Droidify/issues/new?template=takedown.md) — tell us the project name and the URL on Droidify where it appears. We will remove it **within 48 hours**.
 
 If you want it **permanently blocked** so it never shows up again even if a scraper picks it up later, say so and we will add it to a blocklist. We have no interest in indexing anything from someone who does not want to be there.
 
@@ -24,7 +24,7 @@ If you want it **permanently blocked** so it never shows up again even if a scra
 
 ## 📋 Formal DMCA notices
 
-If you genuinely believe Droidify is hosting or redistributing a file you own the copyright to — _it is not_, but if you believe otherwise — open a GitHub issue and we will respond within 48 hours.
+If you genuinely believe Droidify is hosting or redistributing a file you own the copyright to — _it is not_, but if you believe otherwise — [**open a DMCA notice &rarr;**](https://github.com/eliekh05/Droidify/issues/new?template=dmca.md) and we will respond within **48 hours**.
 
 A DMCA notice needs to identify:
 - The **specific** copyrighted work
@@ -44,4 +44,8 @@ Droidify does not profit from anyone's work. **No ads. No fees.** Every link goe
 
 ## 📬 Contact
 
-GitHub Issues: [github.com/eliekh05/Droidify/issues](https://github.com/eliekh05/Droidify/issues)
+Takedown request: [https://github.com/eliekh05/Droidify/issues/new?template=takedown.md](https://github.com/eliekh05/Droidify/issues/new?template=takedown.md)
+
+DMCA notice: [https://github.com/eliekh05/Droidify/issues/new?template=dmca.md](https://github.com/eliekh05/Droidify/issues/new?template=dmca.md)
+
+General: [github.com/eliekh05/Droidify/issues](https://github.com/eliekh05/Droidify/issues)
