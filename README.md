@@ -58,7 +58,9 @@ Open the site in Chrome or Edge. An install button appears automatically. Works 
 This is the best option on every platform — no warnings, no friction, instant updates.
 
 ### 🤖 Android APK
-Download [**Droidify.apk**](https://github.com/eliekh05/Droidify/releases/download/v1.0.0/Droidify.apk) from Releases. Enable unknown sources, install, done. Full screen, no browser chrome.
+Download [**Droidify.apk**](https://github.com/eliekh05/Droidify/releases/download/v1.0.0/Droidify.apk) from Releases and install.
+
+> ⚠️ **Samsung devices (One UI 6.1.1+):** Auto Blocker is on by default and will block the APK. Go to _Settings → Security and Privacy → Auto Blocker → Off_ before installing. You can turn it back on after. Or skip the APK entirely and use the browser install — Chrome or Edge on Android, no Auto Blocker issue.
 
 This is a **TWA (Trusted Web Activity)** — a thin native shell that opens the website directly. When the site updates, the app updates automatically. _No new APK needed_ for any content or feature change.
 

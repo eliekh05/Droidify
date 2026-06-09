@@ -393,7 +393,7 @@ img { max-width: 100%; display: block; }
 /* ── Section headers ───────────────────────────────────────────────────── */
 .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
 .section-header .title { font-size: 1rem !important; font-weight: 700 !important; margin-bottom: 0 !important; }
-.section-header .title::after { content: '_'; color: var(--accent); }
+.section-header .title::after { content: ''; }
 .section-link { font-size: .8rem; color: var(--accent); }
 .section-link:hover { text-decoration: underline; }
 
