@@ -25,7 +25,6 @@ def _status(ver: str, year: int) -> str:
     Status verified against endoflife.date/android — June 2026:
     - active:      Android 14, 15, 16 — isMaintained=True per endoflife.date
     - unsupported: Android 13 and below — all EOL per Google security bulletins
-    - preview:     Android 17 — not yet released (handled separately)
 
     Android 13 reached EOL on 2026-03-02.
     Android 12/12L reached EOL on 2025-03-03.
@@ -135,8 +134,8 @@ _VERSIONS = [
     ("15",    "Vanilla Ice Cream",   35, "2024-10-15", 2024),
     # ── Android 16 ──────────────────────────────────────────────────────────────
     ("16",    "Baklava",             36, "2025-06-03", 2025),
-    # ── Android 17 (preview) ────────────────────────────────────────────────────
-    ("17",    "Cinnamon Bun",        37, "2025-01-01", 2025),
+    # ── Android 17 ──────────────────────────────────────────────────────────────
+    ("17",    "Cinnamon Bun",        37, "2026-06-16", 2026),
 ]
 
 
@@ -149,8 +148,8 @@ def _build_versions() -> list[dict]:
             "api_level":       api,
             "release_date":    date,
             "release_year":    year,
-            "is_beta":         ver == "17",
-            "status":          "preview" if ver == "17" else _status(ver, year),
+            "is_beta":         False,
+            "status":          _status(ver, year),
             "source":          "hardcoded",
         })
     return out
