@@ -156,7 +156,7 @@ def _build_versions() -> list[dict]:
 
 
 async def get_android_versions() -> list[dict]:
-    ck = "android_versions_v6"
+    ck = "android_versions_v7"
     if cached := await cache_get(ck):
         return cached
     versions = _build_versions()
