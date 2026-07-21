@@ -1,6 +1,6 @@
 # 🤖 Droidify
 
-> **One place for Android modding.** Search any device and see every custom ROM, recovery, root tool, and guide available for it — pulled live from 20+ public sources. No account needed. No ads. No paywalls.
+> **One place for Android modding.** Search any device and see every custom ROM, recovery, root tool, and guide available for it — pulled live from 20+ public sources. account optional. No ads. No paywalls.
 
 **🌐 Live site:** [eliekh05-droidify-hf.hf.space](https://eliekh05-droidify-hf.hf.space)
 
