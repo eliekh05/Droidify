@@ -1,6 +1,6 @@
 """MatrixxOS ROM scraper — uses GitHub OTA repo."""
 import asyncio
-from app.services.cache import cache_get, cache_set
+from app.services.cache import get as cache_get, set as cache_set
 from app.services.http import get_client
 
 MATRIXX_API  = "https://api.github.com/repos/Matrixx-Devices/android_vendor_MatrixxOTA/contents?ref=16.0"
