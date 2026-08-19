@@ -1,6 +1,7 @@
 """Unified ROM lookup — O(1) codename→roms dict built once at startup from all sources."""
 import asyncio
 import re
+from app.scrapers.matrixx import get_matrixx_roms
 
 from app.services.cache import get as cache_get, set as cache_set
 from app.services.http import fetch, get_client
@@ -246,6 +247,7 @@ async def _build_lookup() -> dict[str, list[dict]]:
     from app.scrapers.postmarketos import get_postmarketos_devices
 
     sources = await asyncio.gather(
+        get_matrixx_roms(),
         get_sourceforge_roms(),
         get_pixelexperience_roms(),
         get_unofficialtwrp_devices(),

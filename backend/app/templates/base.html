@@ -327,7 +327,7 @@
     if (isAndroidWebView || isIOSWebView) {
       var escape = isAndroid
         ? '<a class="compat-open-btn" href="intent://' + url.replace(/^https?:\/\//, '') + '#Intent;scheme=https;package=com.android.chrome;end">Open in Chrome</a>'
-        : '<a class="compat-open-btn" href="' + url + '" target="_blank" rel="noopener">Open in browser</a>';
+        : '<span class="compat-open-btn" style="background:none;border:1px solid #ffd0d0;color:#ffd0d0;cursor:default">Tap Share → Open in Safari</span>';
       showBanner('inapp',
         '&#128683; You are viewing this inside an in-app browser. ' +
         'It may block features, break interactions, and track everything you tap. ' + escape);
