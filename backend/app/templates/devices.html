@@ -26,9 +26,13 @@
           <div class="card-codename">{{ d.codename | e }}</div>
           <div class="tags mt-1">
             {% if d.has_lineageos %}<span class="tag is-success">LineageOS</span>{% endif %}
-            {% if d.has_grapheneos %}<span class="tag is-info">GrapheneOS</span>{% endif %}
+            {% if d.has_grapheneos %}<span class="tag is-primary">GrapheneOS</span>{% endif %}
             {% if d.has_twrp %}<span class="tag is-info">TWRP</span>{% endif %}
             {% if d.has_orangefox %}<span class="tag is-warning">OrangeFox</span>{% endif %}
+            {% if d.has_crDroid %}<span class="tag is-success">crDroid</span>{% endif %}
+            {% if d.has_matrixx %}<span class="tag is-info">MatrixxOS</span>{% endif %}
+            {% if d.has_eos %}<span class="tag is-info">/e/OS</span>{% endif %}
+            {% if d.has_calyxos %}<span class="tag is-primary">CalyxOS</span>{% endif %}
           </div>
         </div>
       </a>

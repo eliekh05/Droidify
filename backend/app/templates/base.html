@@ -195,13 +195,35 @@
     document.body.style.overflow = '';
   }
 
+  // Hide install button if already running as installed PWA
+  if (window.matchMedia('(display-mode: standalone)').matches ||
+      window.navigator.standalone === true) {
+    if (navBtn) navBtn.style.display = 'none';
+  }
   if (navBtn) navBtn.addEventListener('click', openModal);
   if (closeBtn) closeBtn.addEventListener('click', closeModal);
   if (overlay) overlay.addEventListener('click', function (e) { if (e.target === overlay) closeModal(); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
 
-  window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); deferredPrompt = e; });
-  window.addEventListener('appinstalled', closeModal);
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    // Check if already installed
+    if (navigator.getInstalledRelatedApps) {
+      navigator.getInstalledRelatedApps().then(function (apps) {
+        if (apps && apps.length > 0) return; // already installed — don't show button
+        deferredPrompt = e;
+      });
+    } else {
+      deferredPrompt = e;
+    }
+  });
+  // Also hide button if running as standalone PWA
+  if (window.matchMedia('(display-mode: standalone)').matches ||
+      window.navigator.standalone === true) {
+    var nb = document.getElementById('pwa-install-btn-nav');
+    if (nb) nb.style.display = 'none';
+  }
+  window.addEventListener('appinstalled', function() { closeModal(); if (navBtn) navBtn.style.display = 'none'; });
 
   if (installBtn) {
     installBtn.addEventListener('click', function () {
