@@ -21,6 +21,64 @@ _OEM_NORM: dict[str, str] = {
     "shift": "Shift", "bq": "BQ", "zte": "ZTE",
 }
 
+
+# Codename alias map — maps TWRP model numbers to LineageOS/ROM community codenames
+# TWRP uses manufacturer model numbers; ROM projects use community codenames
+# This map lets ROMs and recoveries match across the same device
+# Automatically bidirectional — if A maps to B, B also maps to A
+_CODENAME_ALIASES_RAW: dict[str, str] = {
+    # ── ASUS ──────────────────────────────────────────────────────────────────
+    "I002D":   "sake",        # ZenFone 8 (2021)
+    "I004D":   "vodka",       # ZenFone 8 Flip (2021)
+    "AI2202":  "sake2",       # ZenFone 9 (2022)
+    "AI2302":  "davinci",     # ZenFone 10 (2023)
+    "AI2401":  "asus_AI2401", # ZenFone 11 Ultra (2024)
+    "I003D":   "obiwan",      # ROG Phone 3 (2020)
+    "I005D":   "asus_I005D",  # ROG Phone 5 (2021)
+    "AI2201":  "asus_AI2201", # ROG Phone 6 (2022)
+    "AI2203":  "asus_AI2203", # ROG Phone 6D (2022)
+    "AI2301":  "asus_AI2301", # ROG Phone 7 (2023)
+    "ZS620KL": "Z01R",        # ZenFone 5Z (2018)
+    "ZS630KL": "I01WD",       # ZenFone 6 (2019)
+    "ZS670KS": "asus_I002D",  # ZenFone 7 (2020)
+    "ZS671KS": "asus_I002D",  # ZenFone 7 Pro (2020)
+    "X00TD":   "X00TD",       # ZenFone Max Pro M1
+    "X01BD":   "X01BD",       # ZenFone Max Pro M2
+    # ── Alcatel ───────────────────────────────────────────────────────────────
+    "4060O":   "pop3_5",      # Alcatel Pop 3 5"
+    "5085A":   "a571vl",      # Alcatel Verso / Jitterbug Smart2
+    "5059A":   "5059A",       # Alcatel 1X
+    "5002F":   "5002F",       # Alcatel 1
+    "5033A":   "5033A",       # Alcatel 3
+    # ── Amazon ────────────────────────────────────────────────────────────────
+    "KFASWI":  "suez",        # Fire HD 10 (2021)
+    "KFTRWI":  "mustang",     # Fire HD 10 (2019)
+    "KFMAWI":  "maverick",    # Fire HD 10 (2017)
+    "KFFOWI":  "ford",        # Fire HD 6/7 (2014)
+    "KFSUWI":  "suez",        # Fire HD 10 Plus (2021)
+    "KFONWI":  "karnak",      # Fire 7 (2019)
+    "KFKAWI":  "karnak",      # Fire 7 (2022)
+    "KFMEWI":  "meso",        # Fire HD 8 (2020)
+    "KFOCWI":  "meso",        # Fire HD 8 Plus (2020)
+    # ── Nothing ───────────────────────────────────────────────────────────────
+    "A063":    "Spacewar",    # Nothing Phone (1)
+    "A065":    "Pong",        # Nothing Phone (2)
+    "A142":    "PacManPro",   # Nothing Phone (2a)
+    # ── Fairphone ─────────────────────────────────────────────────────────────
+    "FP3":     "FP3",         # Fairphone 3
+    "FP4":     "FP4",         # Fairphone 4
+    "FP5":     "FP5",         # Fairphone 5
+    # ── OnePlus ───────────────────────────────────────────────────────────────
+    "OP594BL": "lemonade",    # OnePlus 9 (NA)
+    "OP594DL": "lemonade",    # OnePlus 9 (NA T-Mobile)
+}
+
+# Build bidirectional map automatically
+_CODENAME_ALIASES: dict[str, list[str]] = {}
+for _k, _v in _CODENAME_ALIASES_RAW.items():
+    _CODENAME_ALIASES.setdefault(_k.upper(), []).append(_v)
+    _CODENAME_ALIASES.setdefault(_v.upper(), []).append(_k)
+
 def _norm_oem(oem: str) -> str:
     if not oem:
         return ""
@@ -168,6 +226,10 @@ async def _get_all_devices() -> dict[str, dict]:
                     "has_grapheneos":    False,
                     "has_twrp":          False,
                     "has_orangefox":     False,
+                    "has_crDroid":       False,
+                    "has_matrixx":       False,
+                    "has_eos":           False,
+                    "has_calyxos":       False,
                     "lineageos_branches": [],
                     "wiki_url":          "",
                     "twrp_url":          "",
@@ -189,6 +251,17 @@ async def _get_all_devices() -> dict[str, dict]:
             if dev.get("has_orangefox"):
                 d["has_orangefox"] = True
                 d["orangefox_url"] = dev.get("orangefox_url", "")
+
+            # Set ROM-specific flags from source field
+            src_val = (dev.get("source") or "").lower()
+            if "crdroid" in src_val or "crdroid" in (dev.get("rom_name") or "").lower():
+                d["has_crDroid"] = True
+            if "matrixx" in src_val or "matrixx" in (dev.get("rom_name") or "").lower():
+                d["has_matrixx"] = True
+            if "/e/" in src_val or "eos" in src_val or "/e/os" in (dev.get("rom_name") or "").lower():
+                d["has_eos"] = True
+            if "calyx" in src_val or "calyx" in (dev.get("rom_name") or "").lower():
+                d["has_calyxos"] = True
 
             src = dev.get("source", "")
             if src and src not in d["sources"]:
@@ -245,6 +318,12 @@ async def get_devices(
         "limit":   limit,
         "devices": [_trim_device(d) for d in devices[offset: offset + limit]],
     }
+
+async def get_aliases(codename: str) -> list[str]:
+    """Return all known codenames for a device including aliases."""
+    base = _CODENAME_ALIASES.get(codename, [])
+    return [codename] + base
+
 
 async def get_device_by_codename(codename: str) -> dict | None:
     all_devices = await _get_all_devices()
