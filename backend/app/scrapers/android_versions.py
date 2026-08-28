@@ -135,6 +135,7 @@ _VERSIONS = [
     # ── Android 16 ──────────────────────────────────────────────────────────────
     ("16",    "Baklava",             36, "2025-06-03", 2025),
     # ── Android 17 ──────────────────────────────────────────────────────────────
+    ("16 QPR1", "Baklava",          36, "2025-12-02", 2025),
     ("17",    "Cinnamon Bun",        37, "2026-06-16", 2026),
 ]
 
@@ -160,7 +161,7 @@ async def get_android_versions() -> list[dict]:
     if cached := await cache_get(ck):
         return cached
     versions = _build_versions()
-    await cache_set(ck, versions, ttl=86400)  # 24h — data never changes
+    await cache_set(ck, versions, ttl=3600)   # 1h — catches updates quickly
     return versions
 
 
