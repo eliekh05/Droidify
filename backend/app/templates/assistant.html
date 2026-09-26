@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="container" style="padding-bottom:4rem;max-width:700px">
+
+  <div style="padding:3rem 0 2rem" data-aos="fade-up">
+    <h1 class="title" style="font-size:2rem;margin-bottom:.4rem">ROM Assistant</h1>
+    <p style="color:var(--muted);font-size:.88rem">Ask anything about custom ROMs, devices, or Android modding.</p>
+  </div>
+
+  <div id="chat-container">
+    <div id="chat-messages">
+      <div class="chat-msg assistant">
+        <div class="chat-bubble">
+          Hi — I can help you find ROMs, recoveries, and guides for your device. What device are you looking for?
+        </div>
+      </div>
+    </div>
+
+    <div id="chat-input-wrap">
+      <input id="chat-input" class="input" type="text"
+             placeholder="e.g. Poco F1, beryllium, Galaxy S21..."
+             autocomplete="off" maxlength="200" />
+      <button id="chat-send" class="button is-primary">Send</button>
+    </div>
+  </div>
+
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  var messages = document.getElementById('chat-messages');
+  var input    = document.getElementById('chat-input');
+  var sendBtn  = document.getElementById('chat-send');
+  var history  = []; // conversation history for context
+
+  function appendMsg(role, text) {
+    var div = document.createElement('div');
+    div.className = 'chat-msg ' + role;
+    var bubble = document.createElement('div');
+    bubble.className = 'chat-bubble';
+    bubble.innerHTML = text;
+    div.appendChild(bubble);
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function setLoading(on) {
+    sendBtn.disabled = on;
+    sendBtn.textContent = on ? '...' : 'Send';
+  }
+
+  async function send() {
+    var text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    appendMsg('user', text);
+    setLoading(true);
+
+    history.push({ role: 'user', content: text });
+
+    try {
+      var res = await fetch('/api/assistant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text, history: history.slice(-10) })
+      });
+      var data = await res.json();
+      var reply = data.reply || 'Sorry, something went wrong. Try again.';
+      appendMsg('assistant', reply);
+      history.push({ role: 'assistant', content: reply });
+    } catch (e) {
+      appendMsg('assistant', 'Connection error. Please try again.');
+    }
+
+    setLoading(false);
+    input.focus();
+  }
+
+  sendBtn.addEventListener('click', send);
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') send();
+  });
+})();
+</script>
+{% endblock %}

@@ -334,6 +334,10 @@ async def perks_page(request: Request):
     return _r(request, "perks.html", "perks",
         title="Perks — Droidify", user=user)
 
+@router.get("/assistant", response_class=HTMLResponse)
+async def assistant_page(request: Request):
+    return _r(request, "assistant.html", "assistant", title="ROM Assistant — Droidify")
+
 @router.get("/faq", response_class=HTMLResponse)
 async def faq_page(request: Request):
     return _r(request, "faq.html", "", title="FAQ — Droidify")
