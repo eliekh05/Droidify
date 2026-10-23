@@ -179,7 +179,11 @@ async def assistant(req: AssistantRequest, request: Request):
             async with httpx.AsyncClient(timeout=30) as client:
                 r = await client.post(
                     "https://api.anthropic.com/v1/messages",
-                    headers={"Content-Type": "application/json"},
+                    headers={
+                        "Content-Type": "application/json",
+                        "x-api-key": os.environ.get("ANTHROPIC_API_KEY", ""),
+                        "anthropic-version": "2023-06-01",
+                    },
                     json={
                         "model": "claude-sonnet-4-6",
                         "max_tokens": 1000,
