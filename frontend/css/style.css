@@ -1066,3 +1066,66 @@ img { max-width: 100%; display: block; }
 }
 #chat-input-wrap { display: flex; gap: .5rem; }
 #chat-input { flex: 1; }
+
+/* ── AI floating widget ─────────────────────────────────────────────────── */
+#ai-widget-btn {
+  position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 999;
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--accent); color: #0a1a0e;
+  border: none; cursor: pointer; font-size: 1.4rem;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,.4);
+  transition: transform .15s, box-shadow .15s;
+}
+#ai-widget-btn:hover { transform: scale(1.08); box-shadow: 0 6px 24px rgba(0,0,0,.5); }
+#ai-widget-panel {
+  position: fixed; bottom: 5rem; right: 1.5rem; z-index: 998;
+  width: min(380px, calc(100vw - 2rem));
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; box-shadow: 0 8px 40px rgba(0,0,0,.5);
+  display: none; flex-direction: column; overflow: hidden;
+}
+#ai-widget-panel.open { display: flex; }
+#ai-widget-header {
+  padding: .75rem 1rem; background: var(--card2);
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+#ai-widget-header span { font-size: .88rem; font-weight: 600; }
+#ai-widget-close { background: none; border: none; cursor: pointer;
+  color: var(--muted); font-size: 1.1rem; line-height: 1; }
+#ai-widget-messages {
+  flex: 1; overflow-y: auto; padding: .75rem;
+  display: flex; flex-direction: column; gap: .5rem;
+  max-height: 340px; min-height: 180px;
+}
+.aw-msg { display: flex; }
+.aw-msg.user { justify-content: flex-end; }
+.aw-bubble {
+  max-width: 85%; padding: .5rem .75rem;
+  border-radius: 12px; font-size: .82rem; line-height: 1.5;
+}
+.aw-msg.user .aw-bubble {
+  background: var(--accent); color: #0a1a0e;
+  border-radius: 12px 12px 2px 12px;
+}
+.aw-msg.assistant .aw-bubble {
+  background: var(--surface); color: var(--text);
+  border-radius: 12px 12px 12px 2px;
+}
+#ai-widget-input-wrap {
+  display: flex; gap: .4rem; padding: .6rem .75rem;
+  border-top: 1px solid var(--border);
+}
+#ai-widget-input {
+  flex: 1; font-size: .82rem;
+  padding: .4rem .6rem; border-radius: 8px;
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text);
+}
+#ai-widget-send {
+  padding: .4rem .7rem; border-radius: 8px; font-size: .82rem;
+  background: var(--accent); color: #0a1a0e; border: none; cursor: pointer;
+  font-weight: 600;
+}
+#ai-widget-send:disabled { opacity: .5; cursor: default; }

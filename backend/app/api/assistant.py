@@ -7,22 +7,18 @@ import os
 
 router = APIRouter()
 
-SYSTEM_PROMPT = """You are the Droidify ROM Assistant — an Android modding expert with live access to Droidify's device database.
+SYSTEM_PROMPT = """You are the Droidify ROM Assistant. You have live tools to query Droidify's Android ROM database.
 
-Droidify indexes custom ROMs, recoveries, root tools, and guides for hundreds of Android devices in real time from sources including LineageOS, OrangeFox, TWRP, GrapheneOS, crDroid, MatrixxOS, /e/OS, CalyxOS, SourceForge and more.
+Always use tools when a user asks about a device, ROM, recovery, or guide. Never guess.
 
-You have tools to query Droidify's live data. Always use them when a user asks about a specific device, ROM, or recovery — never guess or make up data.
-
-Rules:
-- Use search_device first whenever a user mentions a device name or codename
-- Use get_roms and get_recoveries to show what is actually available
-- If search returns nothing, say so honestly — do not invent ROM names
-- Always remind users to make a NANDroid backup before flashing
-- For Samsung: warn about Knox (permanent trip on bootloader unlock) and Auto Blocker (One UI 6.1.1+ blocks sideloading by default)
-- For GrapheneOS: only supports Pixel devices
-- Keep responses concise and use bullet points for lists
-- Format with simple HTML: <strong>, <br>, <ul><li>
-- If you do not know something, say so and suggest XDA Developers"""
+Key rules:
+- search_device first for any device mention, then get_roms/get_recoveries
+- If nothing found, say so honestly
+- Remind users to NANDroid backup before flashing
+- Samsung: Knox trips permanently on bootloader unlock; Auto Blocker blocks sideloading on One UI 6.1.1+
+- GrapheneOS: Pixels only
+- Use bullet points, keep responses short
+- Format with simple HTML: <strong>, <br>, <ul><li>"""
 
 TOOLS = [
     {
@@ -171,7 +167,7 @@ async def assistant(req: AssistantRequest, request: Request):
     base_url = _base_url(request)
 
     messages = []
-    for h in req.history[-8:]:
+    for h in req.history[-4]:
         role = h.get("role", "")
         content = h.get("content", "")
         if role in ("user", "assistant") and content:
@@ -193,8 +189,8 @@ async def assistant(req: AssistantRequest, request: Request):
                         "Authorization": f"Bearer {os.environ.get('GROQ_API_KEY', '')}",
                     },
                     json={
-                        "model": "openai/gpt-oss-120b",
-                        "max_tokens": 1000,
+                        "model": "llama-3.3-70b-versatile",
+                        "max_tokens": 512,
                         "temperature": 0.3,
                         "tools": _groq_tools(),
                         "tool_choice": "auto",

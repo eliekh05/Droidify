@@ -309,6 +309,85 @@
     }
   })();
 </script>
+
+<!-- AI floating widget -->
+<button id="ai-widget-btn" title="ROM Assistant" aria-label="Open ROM Assistant">🤖</button>
+<div id="ai-widget-panel" role="dialog" aria-label="ROM Assistant">
+  <div id="ai-widget-header">
+    <span>🤖 ROM Assistant</span>
+    <button id="ai-widget-close" aria-label="Close">✕</button>
+  </div>
+  <div id="ai-widget-messages">
+    <div class="aw-msg assistant"><div class="aw-bubble">Hi! Ask me about ROMs, recoveries, or flashing for your device.</div></div>
+  </div>
+  <div id="ai-widget-input-wrap">
+    <input id="ai-widget-input" type="text" placeholder="Device name or question…" maxlength="200" autocomplete="off" />
+    <button id="ai-widget-send">Send</button>
+  </div>
+</div>
+<script>
+(function(){
+  var btn   = document.getElementById('ai-widget-btn');
+  var panel = document.getElementById('ai-widget-panel');
+  var close = document.getElementById('ai-widget-close');
+  var msgs  = document.getElementById('ai-widget-messages');
+  var inp   = document.getElementById('ai-widget-input');
+  var send  = document.getElementById('ai-widget-send');
+  var history = [];
+
+  btn.addEventListener('click', function(){
+    panel.classList.toggle('open');
+    if (panel.classList.contains('open')) inp.focus();
+  });
+  close.addEventListener('click', function(){ panel.classList.remove('open'); });
+
+  function appendMsg(role, text){
+    var d = document.createElement('div');
+    d.className = 'aw-msg ' + role;
+    var b = document.createElement('div');
+    b.className = 'aw-bubble';
+    b.innerHTML = text;
+    d.appendChild(b);
+    msgs.appendChild(d);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  async function doSend(){
+    var text = inp.value.trim();
+    if (!text) return;
+    inp.value = '';
+    send.disabled = true;
+    send.textContent = '…';
+    appendMsg('user', text);
+    history.push({role:'user', content:text});
+    try {
+      var r = await fetch('/api/assistant', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({message: text, history: history.slice(-6)})
+      });
+      var data = await r.json();
+      var reply = data.reply || 'Something went wrong. Try again.';
+      appendMsg('assistant', reply);
+      history.push({role:'assistant', content:reply});
+    } catch(e) {
+      appendMsg('assistant', 'Connection error. Please try again.');
+    }
+    send.disabled = false;
+    send.textContent = 'Send';
+    inp.focus();
+  }
+
+  send.addEventListener('click', doSend);
+  inp.addEventListener('keydown', function(e){ if(e.key==='Enter') doSend(); });
+
+  // Hide widget on /assistant page (full page already)
+  if (window.location.pathname === '/assistant') {
+    btn.style.display = 'none';
+  }
+})();
+</script>
+
 </body>
 </html>
 
