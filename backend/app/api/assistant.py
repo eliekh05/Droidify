@@ -167,7 +167,7 @@ async def assistant(req: AssistantRequest, request: Request):
     base_url = _base_url(request)
 
     messages = []
-    for h in req.history[-8]:
+    for h in req.history[8]:
         role = h.get("role", "")
         content = h.get("content", "")
         if role in ("user", "assistant") and content:
