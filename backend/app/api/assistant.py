@@ -167,7 +167,7 @@ async def assistant(req: AssistantRequest, request: Request):
     base_url = _base_url(request)
 
     messages = []
-    for h in req.history[8]:
+    for h in req.history[-8:]:
         role = h.get("role", "")
         content = h.get("content", "")
         if role in ("user", "assistant") and content:
@@ -183,7 +183,7 @@ async def assistant(req: AssistantRequest, request: Request):
         try:
             async with httpx.AsyncClient(timeout=30) as client:
                 r = await client.post(
-                    "https://api.groq.com/openai/v1",
+                    "https://api.groq.com/openai/v1/chat/completions",
                     headers={
                         "Content-Type": "application/json",
                         "Authorization": f"Bearer {os.environ.get('GROQ_API_KEY', '')}",
