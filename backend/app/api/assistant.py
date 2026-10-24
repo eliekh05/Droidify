@@ -88,6 +88,15 @@ def _base_url(request: Request) -> str:
     return f"http://localhost:{port}"
 
 
+
+def _groq_tools() -> list:
+    """Convert Anthropic tool format to OpenAI/Groq format."""
+    return [
+        {"type": "function", "function": {"name": t["name"], "description": t["description"], "parameters": t["input_schema"]}}
+        for t in TOOLS
+    ]
+
+
 async def call_tool(name: str, inputs: dict, base_url: str) -> str:
     try:
         async with httpx.AsyncClient(timeout=10, base_url=base_url) as c:
@@ -178,18 +187,18 @@ async def assistant(req: AssistantRequest, request: Request):
         try:
             async with httpx.AsyncClient(timeout=30) as client:
                 r = await client.post(
-                    "https://api.anthropic.com/v1/messages",
+                    "https://api.groq.com/openai/v1/chat/completions",
                     headers={
                         "Content-Type": "application/json",
-                        "x-api-key": os.environ.get("ANTHROPIC_API_KEY", ""),
-                        "anthropic-version": "2023-06-01",
+                        "Authorization": f"Bearer {os.environ.get('GROQ_API_KEY', '')}",
                     },
                     json={
-                        "model": "claude-sonnet-4-6",
+                        "model": "llama-3.3-70b-versatile",
                         "max_tokens": 1000,
-                        "system": SYSTEM_PROMPT,
-                        "tools": TOOLS,
-                        "messages": messages,
+                        "temperature": 0.3,
+                        "tools": _groq_tools(),
+                        "tool_choice": "auto",
+                        "messages": [{"role": "system", "content": SYSTEM_PROMPT}] + messages,
                     },
                 )
                 if r.status_code != 200:
@@ -199,28 +208,29 @@ async def assistant(req: AssistantRequest, request: Request):
         except Exception as e:
             return JSONResponse({"reply": f"Connection error: {str(e)}"})
 
-        stop_reason = data.get("stop_reason")
-        content_blocks = data.get("content", [])
+        choice = data.get("choices", [{}])[0]
+        finish_reason = choice.get("finish_reason", "")
+        msg = choice.get("message", {})
 
-        if stop_reason == "end_turn":
-            text = next((b.get("text", "") for b in content_blocks if b.get("type") == "text"), "")
+        if finish_reason == "stop" or finish_reason == "length":
+            text = msg.get("content") or ""
             return JSONResponse({"reply": text or "I could not generate a response."})
 
-        elif stop_reason == "tool_use":
-            tool_results = []
-            for block in content_blocks:
-                if block.get("type") == "tool_use":
-                    result = await call_tool(block.get("name", ""), block.get("input", {}), base_url)
-                    tool_results.append({
-                        "type": "tool_result",
-                        "tool_use_id": block.get("id", ""),
-                        "content": result
-                    })
-            messages.append({"role": "assistant", "content": content_blocks})
-            messages.append({"role": "user", "content": tool_results})
+        elif finish_reason == "tool_calls":
+            tool_calls = msg.get("tool_calls", [])
+            messages.append({"role": "assistant", "content": msg.get("content"), "tool_calls": tool_calls})
+            for tc in tool_calls:
+                fn = tc.get("function", {})
+                import json as _json
+                try:
+                    args = _json.loads(fn.get("arguments", "{}"))
+                except Exception:
+                    args = {}
+                result = await call_tool(fn.get("name", ""), args, base_url)
+                messages.append({"role": "tool", "tool_call_id": tc.get("id", ""), "content": result})
 
         else:
-            last_error = f"Unexpected stop_reason: {stop_reason}. API response: {str(data)[:300]}"
+            last_error = f"Unexpected finish_reason: {finish_reason}. Response: {str(data)[:300]}"
             break
 
     return JSONResponse({"reply": f"Something went wrong: {last_error}" if last_error else "Max iterations reached. Please try again."})
