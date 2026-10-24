@@ -167,7 +167,7 @@ async def assistant(req: AssistantRequest, request: Request):
     base_url = _base_url(request)
 
     messages = []
-    for h in req.history[-4]:
+    for h in req.history[-8]:
         role = h.get("role", "")
         content = h.get("content", "")
         if role in ("user", "assistant") and content:
@@ -189,8 +189,8 @@ async def assistant(req: AssistantRequest, request: Request):
                         "Authorization": f"Bearer {os.environ.get('GROQ_API_KEY', '')}",
                     },
                     json={
-                        "model": "llama-3.3-70b-versatile",
-                        "max_tokens": 512,
+                        "model": "openai/gpt-oss-120b",
+                        "max_tokens": 1000,
                         "temperature": 0.3,
                         "tools": _groq_tools(),
                         "tool_choice": "auto",

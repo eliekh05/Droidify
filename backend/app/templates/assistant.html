@@ -5,6 +5,10 @@
   <div style="padding:3rem 0 2rem" data-aos="fade-up">
     <h1 class="title" style="font-size:2rem;margin-bottom:.4rem">ROM Assistant</h1>
     <p style="color:var(--muted);font-size:.88rem">Ask anything about custom ROMs, devices, or Android modding.</p>
+    <div style="display:flex;gap:.5rem;margin-top:.75rem">
+      <button id="page-clear" class="button is-small">🗑 Clear chat</button>
+      <button id="page-dl" class="button is-small">⬇ Download transcript</button>
+    </div>
   </div>
 
   <div id="chat-container">
@@ -81,6 +85,19 @@
   sendBtn.addEventListener('click', send);
   input.addEventListener('keydown', function (e) {
     if (e.key === 'Enter') send();
+  });
+  // Clear
+  document.getElementById('page-clear').addEventListener('click', function(){
+    history = [];
+    document.getElementById('chat-messages').innerHTML = '<div class="chat-msg assistant"><div class="chat-bubble">Chat cleared. How can I help?</div></div>';
+  });
+  // Download
+  document.getElementById('page-dl').addEventListener('click', function(){
+    if (!history.length) return;
+    var lines = history.map(function(h){ return (h.role==='user'?'You: ':'Assistant: ')+h.content.replace(/<[^>]+>/g,''); });
+    var blob = new Blob(['Droidify ROM Assistant\nChat Transcript\n'+new Date().toLocaleString()+'\n\n'+lines.join('\n\n')],{type:'text/plain'});
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = 'droidify-chat-'+Date.now()+'.txt'; a.click();
   });
 })();
 </script>
