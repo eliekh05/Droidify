@@ -181,7 +181,7 @@ async def assistant(req: AssistantRequest, request: Request):
     last_error = ""
     for iteration in range(5):
         try:
-            async with httpx.AsyncClient(timeout=30) as client:
+            async with httpx.AsyncClient(timeout=httpx.Timeout(60.0, connect=10.0)) as client:
                 r = await client.post(
                     "https://api.groq.com/openai/v1/chat/completions",
                     headers={
